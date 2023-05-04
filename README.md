@@ -37,9 +37,15 @@ The port is simply a designator of one such message streamassociated with a proc
 #### Links
 
 What is a Socket?
+
 https://www.youtube.com/watch?v=Gr2ROxZXuvQ
+
 https://www.youtube.com/watch?v=xBNBIDFP84A
+
 TCP RFC793
+
 	https://datatracker.ietf.org/doc/html/rfc793
+
 A Protocol For Packet Network Intercommunication
+
 	https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1092259
