@@ -12,7 +12,6 @@ SRC			=	main.cpp\
 				WebServ.cpp\
 
 VPATH		=	$(PATH_SRC)\
-				$(PATH_SRC)Networking\
 				
 OBJ			=	$(SRC:%.cpp=$(PATH_OBJ)%.o)
 #OBJ		= $(addprefix $(OBJ_PATH), $(notdir $(SRC:.c=.o)))

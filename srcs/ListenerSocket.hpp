@@ -1,16 +1,10 @@
 #ifndef LISTENERSOCKET_HPP
 #define LISTENERSOCKET_HPP
 
-#include "WebServ.hpp"
 
-#include <netdb.h>		// For struct addinfo
-#include <arpa/inet.h>	// For inet_ntop function
-#include <sys/socket.h>	// For socket functions
-#include <netinet/in.h>	// For sockaddr_in
+#include "main.hpp"
 
-#include <sys/epoll.h>
-
-class ListenerSocket 
+class ListenerSocket
 {
 	private:
 		struct addrinfo		_hints;
