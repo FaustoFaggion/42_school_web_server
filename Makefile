@@ -18,16 +18,16 @@ OBJ			=	$(SRC:%.cpp=$(PATH_OBJ)%.o)
 
 HEADER		=	WebServ.hpp\
 				ListenerSocket.hpp\
+				main.hpp\
 				
 all:	$(NAME)
 
-$(PATH_OBJ)%.o:	%.cpp $(HEADER)
+$(PATH_OBJ)%.o:	%.cpp
 	mkdir -p $(PATH_OBJ)
 	$(CC) $(FLAGS) -c $< -o $@
 
-$(NAME):	$(OBJ) $(HEADER)
+$(NAME):	$(OBJ)
 	$(CC) $(FLAGS) $(OBJ) -o $(NAME)
-# -I $(HEADER)
 
 clean:
 	rm -rf $(OBJ)
