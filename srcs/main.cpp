@@ -9,6 +9,9 @@
 #include <arpa/inet.h>	// For inet_ntop function
 #include <sys/socket.h>	// For socket functions
 #include <netinet/in.h>	// For sockaddr_in
+
+#include <sys/epoll.h>
+
 #include "WebServ.hpp"
 
 // int	main(void)
@@ -181,6 +184,83 @@ int main (void)
 	}
 
 	freeaddrinfo (result);
+
+	// Mark socket for accepting incoming connections using accept
+	if (listen (listener, BACKLOG) == -1)
+		strerror(errno);
+	
+	/*EPOLL FUNCTION*/
+	int efd;
+	if ((efd = epoll_create1 (0)) == -1)
+		std::cout << "ERROR: epoll_create1" << std::endl;
+	
+	struct epoll_event ev;
+	struct epoll_event ep_event [MAX_EVENTS];
+
+	ev.events = EPOLLIN; // File descriptor is available for read.
+	ev.data.fd = listener;
+	if (epoll_ctl (efd, EPOLL_CTL_ADD, listener, &ev) == -1)
+		std::cout << "ERROR: epoll_ctl" << std::endl;
+	
+	int nfds = 0;
+
+	socklen_t addrlen;
+	struct sockaddr_storage client_saddr; // Can store a IPv4 and IPv6 struct
+	char str [INET6_ADDRSTRLEN]; // size of IPv6 address
+	struct sockaddr_in  *ptr;
+	struct sockaddr_in6  *ptr1;
+
+	while (1)
+	{
+		// monitor readfds for readiness for reading
+		if ((nfds = epoll_wait (efd, ep_event, MAX_EVENTS,  -1)) == -1) // '-1' to block indefinitely
+			std::cout << "ERROR: epoll_wait" << std::endl;
+		
+		// Some sockets are ready. Examine readfds
+        for (int i = 0; i < nfds; i++)
+		{
+			if 	((ep_event[i].events & EPOLLIN) == EPOLLIN)
+			{
+				if (ep_event[i].data.fd == listener) // request for new connection
+				{
+					addrlen = sizeof (struct sockaddr_storage);
+					int fd_new;
+					if ((fd_new = accept (listener, (struct sockaddr *) &client_saddr, &addrlen)) == -1)
+                        std::cout << "ERROR: accept" << std::endl;
+                    
+					// add fd_new to epoll
+					ev.events = EPOLLIN;
+					ev.data.fd = fd_new;
+					if (epoll_ctl (efd, EPOLL_CTL_ADD, fd_new, &ev) == -1)
+						std::cout << "ERROR: epoll_ctl" << std::endl;
+					
+					// print IP address of the new client
+					if (client_saddr.ss_family == AF_INET)
+					{
+						ptr = (struct sockaddr_in *) &client_saddr;
+						inet_ntop (AF_INET, &(ptr -> sin_addr), str, sizeof (str));
+					}
+                    else if (client_saddr.ss_family == AF_INET6)
+					{
+						ptr1 = (struct sockaddr_in6 *) &client_saddr;
+						inet_ntop (AF_INET6, &(ptr1 -> sin6_addr), str, sizeof (str));
+					}
+					else
+					{
+						ptr = NULL;
+						fprintf (stderr, "Address family is neither AF_INET nor AF_INET6\n");
+					}
+                    // if (ptr) 
+                    //     syslog (LOG_USER | LOG_INFO, "%s %s", "Connection from client", str);
+				}
+				else // data from an existing connection, receive it
+				{
+					
+				}
+			}
+		}
+	}
+
 
 
 }
