@@ -10,6 +10,7 @@ PATH_OBJ	=	./obj/
 SRC			=	main.cpp\
 				ListenerSocket.cpp\
 				WebServ.cpp\
+				Connections.cpp\
 
 VPATH		=	$(PATH_SRC)\
 				
@@ -19,6 +20,7 @@ OBJ			=	$(SRC:%.cpp=$(PATH_OBJ)%.o)
 HEADER		=	WebServ.hpp\
 				ListenerSocket.hpp\
 				main.hpp\
+				Connections.hpp\
 				
 all:	$(NAME)
 
