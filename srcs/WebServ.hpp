@@ -1,19 +1,30 @@
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
-#include <iostream>
-#include <cstring>
+#include <iostream>		// For cout
+#include <string.h>		// For memset
+#include <unistd.h>		// For read
+#include <cstdlib>		// For exit() and EXIT_FAILURE
+#include <errno.h>
+#include <cstdio>		// For stderr
 
-#define MAX_EVENTS			1
-#define SERVER_PORT			"9999"
-#define BACKLOG				1
-
-// struct message {
-// 	int	protocol;
-// 	int port;
-// };
+#include "ListenerSocket.hpp"
 
 
 #define MAX_CONNECTIONS		10
+#define SERVER_PORT			"9999"
+
+
+class WebServ
+{
+	private:
+		ListenerSocket	listener;
+	public:
+		WebServ();
+		~WebServ();
+	
+	ListenerSocket	getListener() const;
+		
+};
 
 #endif

@@ -8,8 +8,8 @@ PATH_SRC	=	./srcs/
 PATH_OBJ	=	./obj/
 
 SRC			=	main.cpp\
-				#SimpleSocket.cpp\
-				BindingSocket.cpp\
+				ListenerSocket.cpp\
+				WebServ.cpp\
 
 VPATH		=	$(PATH_SRC)\
 				$(PATH_SRC)Networking\
@@ -18,9 +18,8 @@ OBJ			=	$(SRC:%.cpp=$(PATH_OBJ)%.o)
 #OBJ		= $(addprefix $(OBJ_PATH), $(notdir $(SRC:.c=.o)))
 
 HEADER		=	WebServ.hpp\
-				#SimpleSocket.hpp\
-				BindingSocket.hpp\
-
+				ListenerSocket.hpp\
+				
 all:	$(NAME)
 
 $(PATH_OBJ)%.o:	%.cpp $(HEADER)
