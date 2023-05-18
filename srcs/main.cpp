@@ -156,9 +156,9 @@ int main (void)
 	 /*	Scan through the list of address structures returned by getaddrinfo.
 		Stop when the socket and bind calls are successful. */
 
-    int listener, optval = 1;
-    socklen_t length;
-    struct addrinfo *rptr; // Don't loose reference of result linked list
+	int listener, optval = 1;
+	// socklen_t length;
+	struct addrinfo *rptr; // Don't loose reference of result linked list
     
 	for (rptr = result; rptr != NULL; rptr = rptr -> ai_next)
 	{
@@ -217,17 +217,18 @@ int main (void)
 			std::cout << "ERROR: epoll_wait" << std::endl;
 		
 		// Some sockets are ready. Examine readfds
-        for (int i = 0; i < nfds; i++)
+		for (int i = 0; i < nfds; i++)
 		{
 			if 	((ep_event[i].events & EPOLLIN) == EPOLLIN)
 			{
 				if (ep_event[i].data.fd == listener) // request for new connection
 				{
 					addrlen = sizeof (struct sockaddr_storage);
+					
 					int fd_new;
 					if ((fd_new = accept (listener, (struct sockaddr *) &client_saddr, &addrlen)) == -1)
-                        std::cout << "ERROR: accept" << std::endl;
-                    
+						std::cout << "ERROR: accept" << std::endl;
+					
 					// add fd_new to epoll
 					ev.events = EPOLLIN;
 					ev.data.fd = fd_new;
@@ -239,28 +240,51 @@ int main (void)
 					{
 						ptr = (struct sockaddr_in *) &client_saddr;
 						inet_ntop (AF_INET, &(ptr -> sin_addr), str, sizeof (str));
+						std::cout << "IPv4 \n";
 					}
                     else if (client_saddr.ss_family == AF_INET6)
 					{
 						ptr1 = (struct sockaddr_in6 *) &client_saddr;
 						inet_ntop (AF_INET6, &(ptr1 -> sin6_addr), str, sizeof (str));
+						std::cout << "IPv6 \n";
 					}
 					else
 					{
 						ptr = NULL;
-						fprintf (stderr, "Address family is neither AF_INET nor AF_INET6\n");
+						std::cout << stderr << " Address family is neither AF_INET nor AF_INET6" << std::endl;
 					}
                     // if (ptr) 
                     //     syslog (LOG_USER | LOG_INFO, "%s %s", "Connection from client", str);
 				}
 				else // data from an existing connection, receive it
 				{
-					
+					char	recv_message[100];
+
+					memset (&recv_message, '\0', sizeof (recv_message));
+					ssize_t numbytes = recv (ep_event[i].data.fd, &recv_message, sizeof(recv_message), 0);
+					if (numbytes == -1)
+						std::cout << "ERROR: recv" << std::endl;
+					else if (numbytes == 0) // connection closed by client
+					{
+						std::cout << stderr << "Socket " <<
+							ep_event [i].data.fd << " closed by client" << std::endl;
+						// delete fd from epoll
+						if (epoll_ctl (efd, EPOLL_CTL_DEL, ep_event [i].data.fd, &ev) == -1)
+							std::cout << "ERROR: epoll_ctl" << std::endl;
+						if (close (ep_event [i].data.fd) == -1)
+							std::cout << "ERROR: close by client" << std::endl;
+					}
+					else 
+					{
+						// data from client
+						std::cout << "The message was: " << recv_message << '\n';
+
+						std::string response = "Good talking to you\n";
+						send(ep_event[i].data.fd, response.c_str(), response.size(), 0);
+					}
 				}
 			}
 		}
 	}
-
-
-
+	return (0);
 }

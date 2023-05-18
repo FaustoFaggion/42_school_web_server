@@ -17,8 +17,8 @@ VPATH		=	$(PATH_SRC)\
 OBJ			=	$(SRC:%.cpp=$(PATH_OBJ)%.o)
 #OBJ		= $(addprefix $(OBJ_PATH), $(notdir $(SRC:.c=.o)))
 
-HEADER		=	#WebServ.hpp\
-				SimpleSocket.hpp\
+HEADER		=	WebServ.hpp\
+				#SimpleSocket.hpp\
 				BindingSocket.hpp\
 
 all:	$(NAME)
