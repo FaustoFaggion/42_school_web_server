@@ -240,13 +240,11 @@ int main (void)
 					{
 						ptr = (struct sockaddr_in *) &client_saddr;
 						inet_ntop (AF_INET, &(ptr -> sin_addr), str, sizeof (str));
-						std::cout << "IPv4 \n";
 					}
-                    else if (client_saddr.ss_family == AF_INET6)
+					else if (client_saddr.ss_family == AF_INET6)
 					{
 						ptr1 = (struct sockaddr_in6 *) &client_saddr;
 						inet_ntop (AF_INET6, &(ptr1 -> sin6_addr), str, sizeof (str));
-						std::cout << "IPv6 \n";
 					}
 					else
 					{
@@ -277,10 +275,10 @@ int main (void)
 					else 
 					{
 						// data from client
-						std::cout << "The message was: " << recv_message << '\n';
+						std::cout << recv_message << '\n';
 
-						std::string response = "Good talking to you\n";
-						send(ep_event[i].data.fd, response.c_str(), response.size(), 0);
+						// std::string response = "Good talking to you\n";
+						// send(ep_event[i].data.fd, response.c_str(), response.size(), 0);
 					}
 				}
 			}
