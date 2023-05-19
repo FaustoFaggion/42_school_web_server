@@ -54,15 +54,16 @@ int main (void)
 	// 	strerror(errno);
 	
 
-	WebServ			server;
+	WebServ			server(AF_UNSPEC, SOCK_STREAM, AI_PASSIVE, "9999");
 
-	int listener = server.getListener()._fd_listener;
+	server.create_listener_socket();
 
+	int listener = server.getFdListener();
+	std::cout << "main: " << listener << "\n";	
 	/*EPOLL FUNCTION*/
 	int efd;
 	if ((efd = epoll_create1 (0)) == -1)
-		std::cout << "ERROR: epoll_create1" << std::endl;
-	
+		std::cout << "ERROR: epoll_create" << std::endl;
 	struct epoll_event ev;
 	struct epoll_event ep_event [MAX_CONNECTIONS];
 

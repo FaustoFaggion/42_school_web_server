@@ -7,13 +7,22 @@
 class WebServ
 {
 	private:
-		ListenerSocket	listener;
+		int				_domain;
+		int				_type;
+		int				_flag;
+		std::string		_port;
+		int				_fd_listener;
+		ListenerSocket	_listener;
 	public:
 		WebServ();
+		WebServ(int domain, int type, int flag, std::string port);
 		~WebServ();
 	
-	ListenerSocket	getListener() const;
-		
+		int				getFdListener() const;
+		ListenerSocket	getListener() const;
+
+		void	setup_server(int domain, int type, int flag, std::string port);
+		void	create_listener_socket();
 };
 
 #endif

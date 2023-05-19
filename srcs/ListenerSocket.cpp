@@ -2,10 +2,10 @@
 
 ListenerSocket::ListenerSocket()
 {
-	addrinfo();
-	get_fd();
-	bind_fd_to_port();
-	listen_fd();
+	memset(&_hints, 0, sizeof(struct addrinfo));
+	memset(&_result, 0, sizeof(struct addrinfo));
+	_s = 0;
+	_fd_listener = 0;
 }
 
 ListenerSocket::~ListenerSocket()
@@ -13,20 +13,25 @@ ListenerSocket::~ListenerSocket()
 	freeaddrinfo(_result);
 }
 
-void	ListenerSocket::addrinfo()
+int		ListenerSocket::get_fd_listener()
+{
+	return (_fd_listener);
+}
+
+void	ListenerSocket::addrinfo(int domain, int type, int flag, std::string port)
 {
 	memset(&_hints, 0, sizeof (struct addrinfo));
-	_hints.ai_family = AF_UNSPEC;		/* allow IPv4 or IPv6 */
-	_hints.ai_socktype = SOCK_STREAM;	/* Stream socket */
-	_hints.ai_flags = AI_PASSIVE;		/* for wildcard IP address*/
-	if ((_s = getaddrinfo (NULL, SERVER_PORT, &_hints, &_result)) != 0)
+	_hints.ai_family = domain;		/* allow IPv4 or IPv6 */
+	_hints.ai_socktype = type;	/* Stream socket */
+	_hints.ai_flags = flag;		/* for wildcard IP address*/
+	if ((_s = getaddrinfo (NULL, port.c_str(), &_hints, &_result)) != 0)
 	{
 		std::cout << stderr << "getaddrinfo: " << gai_strerror (_s) << std::endl;
 		exit (EXIT_FAILURE);
 	}
 }
 
-void	ListenerSocket::get_fd()
+void	ListenerSocket::create_fd()
 {
 	int optval = 1;
 	_fd_listener = socket (_result->ai_family, _result->ai_socktype,
@@ -36,7 +41,7 @@ void	ListenerSocket::get_fd()
 
 		if (setsockopt (_fd_listener, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (int)) == -1)
 			std::cout << "ERROR: setsockopt" << std::endl;
-
+	std::cout << "socket: " << _fd_listener << "\n";
 }
 
 void	ListenerSocket::bind_fd_to_port()
