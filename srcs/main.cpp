@@ -59,7 +59,7 @@ int main (void)
 	server.create_listener_socket();
 
 	int listener = server.getFdListener();
-	std::cout << "main: " << listener << "\n";	
+
 	/*EPOLL FUNCTION*/
 	int efd;
 	if ((efd = epoll_create1 (0)) == -1)

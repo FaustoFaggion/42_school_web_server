@@ -41,7 +41,6 @@ void	ListenerSocket::create_fd()
 
 		if (setsockopt (_fd_listener, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof (int)) == -1)
 			std::cout << "ERROR: setsockopt" << std::endl;
-	std::cout << "socket: " << _fd_listener << "\n";
 }
 
 void	ListenerSocket::bind_fd_to_port()
