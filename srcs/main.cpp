@@ -58,101 +58,86 @@ int main (void)
 
 	server.create_listener_socket();
 
-	int listener = server.getFdListener();
+	server.create_connections();
+
+	server.run();
 
 	/*EPOLL FUNCTION*/
-	int efd;
-	if ((efd = epoll_create1 (0)) == -1)
-		std::cout << "ERROR: epoll_create" << std::endl;
-	struct epoll_event ev;
-	struct epoll_event ep_event [MAX_CONNECTIONS];
+	// int efd;
+	// if ((efd = epoll_create(MAX_CONNECTIONS)) == -1)
+	// 	std::cout << "ERROR: epoll_create" << std::endl;
+	// struct epoll_event ev;
+	// struct epoll_event ep_event [MAX_CONNECTIONS];
 
-	ev.events = EPOLLIN; // File descriptor is available for read.
-	ev.data.fd = listener;
-	if (epoll_ctl (efd, EPOLL_CTL_ADD, listener, &ev) == -1)
-		std::cout << "ERROR: epoll_ctl" << std::endl;
+	// ev.events = EPOLLIN; // File descriptor is available for read.
+	// ev.data.fd = listener;
+	// if (epoll_ctl (efd, EPOLL_CTL_ADD, listener, &ev) == -1)
+	// 	std::cout << "ERROR: epoll_ctl" << std::endl;
 	
-	int nfds = 0;
+	// int nfds = 0;
 
-	socklen_t addrlen;
-	struct sockaddr_storage client_saddr; // Can store a IPv4 and IPv6 struct
-	char str [INET6_ADDRSTRLEN]; // size of IPv6 address
-	struct sockaddr_in  *ptr;
-	struct sockaddr_in6  *ptr1;
-
-	while (1)
-	{
-		// monitor readfds for readiness for reading
-		if ((nfds = epoll_wait (efd, ep_event, MAX_CONNECTIONS,  -1)) == -1) // '-1' to block indefinitely
-			std::cout << "ERROR: epoll_wait" << std::endl;
+	// socklen_t addrlen;
+	// struct sockaddr_storage client_saddr; // Can store a IPv4 and IPv6 struct
+// 	while (1)
+// 	{
+// 		// monitor readfds for readiness for reading
+// 		if ((nfds = epoll_wait (efd, ep_event, MAX_CONNECTIONS,  -1)) == -1) // '-1' to block indefinitely
+// 			std::cout << "ERROR: epoll_wait" << std::endl;
 		
-		// Some sockets are ready. Examine readfds
-		for (int i = 0; i < nfds; i++)
-		{
-			if 	((ep_event[i].events & EPOLLIN) == EPOLLIN)
-			{
-				if (ep_event[i].data.fd == listener) // request for new connection
-				{
-					addrlen = sizeof (struct sockaddr_storage);
+// 		// Some sockets are ready. Examine readfds
+// 		for (int i = 0; i < nfds; i++)
+// 		{
+// 			if 	((ep_event[i].events & EPOLLIN) == EPOLLIN)
+// 			{
+// 				if (ep_event[i].data.fd == listener) // request for new connection
+// 				{
+// 					addrlen = sizeof (struct sockaddr_storage);
 					
-					int fd_new;
-					if ((fd_new = accept (listener, (struct sockaddr *) &client_saddr, &addrlen)) == -1)
-						std::cout << "ERROR: accept" << std::endl;
+// 					int fd_new;
+// 					if ((fd_new = accept (listener, (struct sockaddr *) &client_saddr, &addrlen)) == -1)
+// 						std::cout << "ERROR: accept" << std::endl;
 					
-					// add fd_new to epoll
-					ev.events = EPOLLIN;
-					ev.data.fd = fd_new;
-					if (epoll_ctl (efd, EPOLL_CTL_ADD, fd_new, &ev) == -1)
-						std::cout << "ERROR: epoll_ctl" << std::endl;
-					
-					// print IP address of the new client
-					if (client_saddr.ss_family == AF_INET)
-					{
-						ptr = (struct sockaddr_in *) &client_saddr;
-						inet_ntop (AF_INET, &(ptr -> sin_addr), str, sizeof (str));
-					}
-					else if (client_saddr.ss_family == AF_INET6)
-					{
-						ptr1 = (struct sockaddr_in6 *) &client_saddr;
-						inet_ntop (AF_INET6, &(ptr1 -> sin6_addr), str, sizeof (str));
-					}
-					else
-					{
-						ptr = NULL;
-						std::cout << stderr << " Address family is neither AF_INET nor AF_INET6" << std::endl;
-					}
-                    // if (ptr) 
-                    //     syslog (LOG_USER | LOG_INFO, "%s %s", "Connection from client", str);
-				}
-				else // data from an existing connection, receive it
-				{
-					char	recv_message[100];
+// 					// add fd_new to epoll
+// 					ev.events = EPOLLIN;
+// 					ev.data.fd = fd_new;
+// 					if (epoll_ctl (efd, EPOLL_CTL_ADD, fd_new, &ev) == -1)
+// 						std::cout << "ERROR: epoll_ctl" << std::endl;
+// 					else if (client_saddr.ss_family != AF_INET && client_saddr.ss_family == AF_INET6)
+// 					{
+// 						std::cout << stderr << " Address family is neither AF_INET nor AF_INET6" << std::endl;
+// 					}
+//                     // if (ptr) 
+//                     //     syslog (LOG_USER | LOG_INFO, "%s %s", "Connection from client", str);
+// 				}
+// 				else // data from an existing connection, receive it
+// 				{
+// 					char	recv_message[100];
 
-					memset (&recv_message, '\0', sizeof (recv_message));
-					ssize_t numbytes = recv (ep_event[i].data.fd, &recv_message, sizeof(recv_message), 0);
-					if (numbytes == -1)
-						std::cout << "ERROR: recv" << std::endl;
-					else if (numbytes == 0) // connection closed by client
-					{
-						std::cout << stderr << "Socket " <<
-							ep_event [i].data.fd << " closed by client" << std::endl;
-						// delete fd from epoll
-						if (epoll_ctl (efd, EPOLL_CTL_DEL, ep_event [i].data.fd, &ev) == -1)
-							std::cout << "ERROR: epoll_ctl" << std::endl;
-						if (close (ep_event [i].data.fd) == -1)
-							std::cout << "ERROR: close by client" << std::endl;
-					}
-					else 
-					{
-						// data from client
-						std::cout << recv_message << '\n';
+// 					memset (&recv_message, '\0', sizeof (recv_message));
+// 					ssize_t numbytes = recv (ep_event[i].data.fd, &recv_message, sizeof(recv_message), 0);
+// 					if (numbytes == -1)
+// 						std::cout << "ERROR: recv" << std::endl;
+// 					else if (numbytes == 0) // connection closed by client
+// 					{
+// 						std::cout << stderr << "Socket " <<
+// 							ep_event [i].data.fd << " closed by client" << std::endl;
+// 						// delete fd from epoll
+// 						if (epoll_ctl (efd, EPOLL_CTL_DEL, ep_event [i].data.fd, &ev) == -1)
+// 							std::cout << "ERROR: epoll_ctl" << std::endl;
+// 						if (close (ep_event [i].data.fd) == -1)
+// 							std::cout << "ERROR: close by client" << std::endl;
+// 					}
+// 					else 
+// 					{
+// 						// data from client
+// 						std::cout << recv_message << '\n';
 
-						// std::string response = "Good talking to you\n";
-						// send(ep_event[i].data.fd, response.c_str(), response.size(), 0);
-					}
-				}
-			}
-		}
-	}
-	return (0);
+// 						// std::string response = "Good talking to you\n";
+// 						// send(ep_event[i].data.fd, response.c_str(), response.size(), 0);
+// 					}
+// 				}
+// 			}
+// 		}
+// 	}
+// 	return (0);
 }
