@@ -1,8 +1,27 @@
 #include "main.hpp"
 #include "WebServ.hpp"
 
-int main (void)
+int	main(int argc, char *argv[])
 {
+
+	if (argc != 2)
+		std::cout << "Wrong number of arguments" << std::endl;
+	
+	WebServ		server;
+
+	server.parse_file(argv[1]);
+	
+	server.create_listener_socket();
+
+	server.create_connections();
+
+	server.run();
+
+	return (0);
+}
+
+// int main (void)
+// {
 	// struct addrinfo hints;
 	// struct addrinfo *result;
 	// int				s;
@@ -53,15 +72,6 @@ int main (void)
 	// if (listen (listener, BACKLOG) == -1)
 	// 	strerror(errno);
 	
-
-	WebServ			server(AF_UNSPEC, SOCK_STREAM, AI_PASSIVE, "9999");
-
-	server.create_listener_socket();
-
-	server.create_connections();
-
-	server.run();
-
 	/*EPOLL FUNCTION*/
 	// int efd;
 	// if ((efd = epoll_create(MAX_CONNECTIONS)) == -1)
@@ -140,4 +150,4 @@ int main (void)
 // 		}
 // 	}
 // 	return (0);
-}
+// }

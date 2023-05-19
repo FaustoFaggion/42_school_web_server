@@ -2,6 +2,8 @@
 #define WEBSERV_HPP
 
 #include "main.hpp"
+#include <stdio.h>
+#include <fstream>
 #include "ListenerSocket.hpp"
 
 class WebServ
@@ -28,6 +30,7 @@ class WebServ
 		int				getFdListener() const;
 		ListenerSocket	getListener() const;
 
+		void	parse_file(char *file);
 		void	setup_server(int domain, int type, int flag, std::string port);
 		void	create_listener_socket();
 		void	create_connections();

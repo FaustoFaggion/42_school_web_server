@@ -29,6 +29,37 @@ int				WebServ::getFdListener() const
 	return (_fd_listener);
 }
 
+void	WebServ::parse_file(char *file)
+{
+	std::fstream	conf_file;
+	std::string		buff;
+
+	conf_file.open(file,  std::fstream::in);
+	if (conf_file.fail())
+		std::cout << "Configuration file fail to read" << std::endl;
+	while (1)
+	{
+		std::getline(conf_file, buff,'\n');
+		if (conf_file.eof())
+			break ;
+
+	}
+
+}
+
+
+
+case /* constant-expression */:
+	/* code */
+	break;
+
+default:
+	break;
+}
+
+
+
+
 void	WebServ::setup_server(int domain, int type, int flag, std::string port)
 {
 	_listener.addrinfo(domain, type, flag, port);
