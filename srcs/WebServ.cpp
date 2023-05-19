@@ -5,13 +5,13 @@ WebServ::WebServ()
 	_domain = 0;
 	_type = 0;
 	_flag = 0;
-	_port = "0";
+	_port = "";
 	_fd_listener = 0;
 }
 
-WebServ::WebServ(int domain, int type, int flag, std::string port)
+WebServ::WebServ(int type)
 {
-	_listener.addrinfo(domain, type, flag, port);
+	_listener.addrinfo(_domain, type, _flag, _port);
 }
 
 WebServ::~WebServ()
@@ -29,6 +29,73 @@ int				WebServ::getFdListener() const
 	return (_fd_listener);
 }
 
+void	WebServ::fill_struct_conf_file(std::string buff)
+{
+	
+	if (strncmp("listen [::]", buff.c_str(), 11) == 0)
+	{
+		if (_domain == AF_INET)
+			_domain = AF_UNSPEC;
+		else
+			_domain = AF_INET6;
+		if (_port == "")
+		{
+			int i = 12;
+			while (isdigit(buff.at(i)) == true)
+			{
+				_port += buff.at(i);
+				i++;
+			}
+		}
+	}
+	else if (strncmp("listen", buff.c_str(), 6) == 0)
+	{
+		_domain = AF_INET;
+		int i = 7;
+		while (isdigit(buff.at(i)) == true)
+		{
+			_port += buff.at(i);
+			i++;
+		}
+	}
+	else if (strncmp("server_name", buff.c_str(), 11) == 0)
+	{
+		std::string	server_name;
+		int i = 12;
+
+		while (buff.at(i) != '\0')
+		{
+			server_name += buff.at(i);
+			i++;
+		}
+		if (strcmp("localhost", server_name.c_str()) == 0)
+			_flag = AI_PASSIVE;
+
+	}
+	else if (strncmp("worker_connections", buff.c_str(), 18) == 0)
+	{
+		int i = 18;
+		std::string	tmp;
+		while (isspace(buff.at(i)))
+			i++;
+		while (isdigit(buff.at(i)))
+		{
+			tmp += buff.at(i);
+			i++;
+		}
+		_max_connections = atoi(tmp.c_str());
+	}
+}
+
+void	cleanSpaces(std::string& str) {
+    // Remove leading spaces
+    str.erase(str.begin(), std::find_if(str.begin(), str.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+
+    // Remove trailing spaces
+    str.erase(std::find_if(str.rbegin(), str.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), str.end());
+	str += '\0';
+}
+
 void	WebServ::parse_file(char *file)
 {
 	std::fstream	conf_file;
@@ -40,6 +107,9 @@ void	WebServ::parse_file(char *file)
 	while (1)
 	{
 		std::getline(conf_file, buff,'\n');
+		cleanSpaces(buff);
+		fill_struct_conf_file(buff);
+		std::cout << buff << std::endl;
 		if (conf_file.eof())
 			break ;
 
@@ -47,22 +117,9 @@ void	WebServ::parse_file(char *file)
 
 }
 
-
-
-case /* constant-expression */:
-	/* code */
-	break;
-
-default:
-	break;
-}
-
-
-
-
-void	WebServ::setup_server(int domain, int type, int flag, std::string port)
+void	WebServ::setup_server(int type)
 {
-	_listener.addrinfo(domain, type, flag, port);
+	_listener.addrinfo(_domain, type, _flag, _port);
 }
 
 void	WebServ::create_listener_socket()

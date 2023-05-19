@@ -5,12 +5,17 @@ int	main(int argc, char *argv[])
 {
 
 	if (argc != 2)
+	{
 		std::cout << "Wrong number of arguments" << std::endl;
+		exit(2);
+	}
 	
 	WebServ		server;
 
 	server.parse_file(argv[1]);
-	
+
+	server.setup_server(SOCK_STREAM);
+
 	server.create_listener_socket();
 
 	server.create_connections();

@@ -4,6 +4,7 @@
 #include "main.hpp"
 #include <stdio.h>
 #include <fstream>
+#include <algorithm>
 #include "ListenerSocket.hpp"
 
 class WebServ
@@ -13,6 +14,7 @@ class WebServ
 		int							_type;
 		int							_flag;
 		std::string					_port;
+		int							_max_connections;
 		int							_fd_listener;
 		ListenerSocket				_listener;
 		int 						_efd;
@@ -24,17 +26,19 @@ class WebServ
 	
 	public:
 		WebServ();
-		WebServ(int domain, int type, int flag, std::string port);
+		WebServ(int type);
 		~WebServ();
 	
 		int				getFdListener() const;
 		ListenerSocket	getListener() const;
 
 		void	parse_file(char *file);
-		void	setup_server(int domain, int type, int flag, std::string port);
+		void	setup_server(int type);
 		void	create_listener_socket();
 		void	create_connections();
 		void	run();
+	private:
+		void	fill_struct_conf_file(std::string buff);
 };
 
 #endif
