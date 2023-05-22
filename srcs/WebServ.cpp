@@ -9,9 +9,13 @@ WebServ::WebServ()
 	_fd_listener = 0;
 }
 
-WebServ::WebServ(int type)
+WebServ::WebServ(FileParser file)
 {
-	_listener.addrinfo(_domain, type, _flag, _port);
+	_domain = file.get_domain();
+	_type = file.get_type();
+	_port = file.get_port();
+	_flag = file.get_flag();
+	_worker_connections = file.get_worker_connections();
 }
 
 WebServ::~WebServ()
@@ -27,94 +31,6 @@ ListenerSocket	WebServ::getListener() const
 int				WebServ::getFdListener() const
 {
 	return (_fd_listener);
-}
-
-void	WebServ::fill_struct_conf_file(std::string buff)
-{
-	
-	if (strncmp("listen [::]", buff.c_str(), 11) == 0)
-	{
-		if (_domain == AF_INET)
-			_domain = AF_UNSPEC;
-		else
-			_domain = AF_INET6;
-		if (_port == "")
-		{
-			int i = 12;
-			while (isdigit(buff.at(i)) == true)
-			{
-				_port += buff.at(i);
-				i++;
-			}
-		}
-	}
-	else if (strncmp("listen", buff.c_str(), 6) == 0)
-	{
-		_domain = AF_INET;
-		int i = 7;
-		while (isdigit(buff.at(i)) == true)
-		{
-			_port += buff.at(i);
-			i++;
-		}
-	}
-	else if (strncmp("server_name", buff.c_str(), 11) == 0)
-	{
-		std::string	server_name;
-		int i = 12;
-
-		while (buff.at(i) != '\0')
-		{
-			server_name += buff.at(i);
-			i++;
-		}
-		if (strcmp("localhost", server_name.c_str()) == 0)
-			_flag = AI_PASSIVE;
-
-	}
-	else if (strncmp("worker_connections", buff.c_str(), 18) == 0)
-	{
-		int i = 18;
-		std::string	tmp;
-		while (isspace(buff.at(i)))
-			i++;
-		while (isdigit(buff.at(i)))
-		{
-			tmp += buff.at(i);
-			i++;
-		}
-		_max_connections = atoi(tmp.c_str());
-	}
-}
-
-void	cleanSpaces(std::string& str) {
-    // Remove leading spaces
-    str.erase(str.begin(), std::find_if(str.begin(), str.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-
-    // Remove trailing spaces
-    str.erase(std::find_if(str.rbegin(), str.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), str.end());
-	str += '\0';
-}
-
-void	WebServ::parse_file(char *file)
-{
-	std::fstream	conf_file;
-	std::string		buff;
-
-	conf_file.open(file,  std::fstream::in);
-	if (conf_file.fail())
-		std::cout << "Configuration file fail to read" << std::endl;
-	while (1)
-	{
-		std::getline(conf_file, buff,'\n');
-		cleanSpaces(buff);
-		fill_struct_conf_file(buff);
-		std::cout << buff << std::endl;
-		if (conf_file.eof())
-			break ;
-
-	}
-
 }
 
 void	WebServ::setup_server(int type)
@@ -133,7 +49,7 @@ void	WebServ::create_listener_socket()
 void	WebServ::create_connections()
 {
 	/*EPOLL FUNCTION*/
-	if ((_efd = epoll_create(MAX_CONNECTIONS)) == -1)
+	if ((_efd = epoll_create(_worker_connections)) == -1)
 		std::cout << "ERROR: epoll_create" << std::endl;
 	_ev.events = EPOLLIN; // File descriptor is available for read.
 	_ev.data.fd = _fd_listener;
@@ -141,14 +57,14 @@ void	WebServ::create_connections()
 		std::cout << "ERROR: epoll_ctl" << std::endl;
 }
 
+
 void	WebServ::run()
 {
 	_nfds = 0;
-
 	while (1)
 	{
 		// monitor readfds for readiness for reading
-		if ((_nfds = epoll_wait (_efd, _ep_event, MAX_CONNECTIONS,  -1)) == -1) // '-1' to block indefinitely
+		if ((_nfds = epoll_wait (_efd, _ep_event, _worker_connections,  -1)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
 		
 		// Some sockets are ready. Examine readfds
@@ -163,9 +79,8 @@ void	WebServ::run()
 					int fd_new;
 					if ((fd_new = accept (_fd_listener, (struct sockaddr *) &_client_saddr, &_addrlen)) == -1)
 						std::cout << "ERROR: accept" << std::endl;
-					
 					// add fd_new to epoll
-					_ev.events = EPOLLIN;
+					_ev.events = EPOLLIN | EPOLLOUT;
 					_ev.data.fd = fd_new;
 					if (epoll_ctl (_efd, EPOLL_CTL_ADD, fd_new, &_ev) == -1)
 						std::cout << "ERROR: epoll_ctl" << std::endl;
@@ -176,16 +91,16 @@ void	WebServ::run()
 				}
 				else // data from an existing connection, receive it
 				{
-					char	recv_message[100];
+					char	buff[10];
 
-					memset (&recv_message, '\0', sizeof (recv_message));
-					ssize_t numbytes = recv (_ep_event[i].data.fd, &recv_message, sizeof(recv_message), 0);
+					memset (&buff, '\0', sizeof (buff));
+					ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
 					if (numbytes == -1)
 						std::cout << "ERROR: recv" << std::endl;
 					else if (numbytes == 0) // connection closed by client
 					{
 						std::cout << stderr << "Socket " <<
-							_ep_event [i].data.fd << " closed by client" << std::endl;
+						_ep_event [i].data.fd << " closed by client" << std::endl;
 						// delete fd from epoll
 						if (epoll_ctl (_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev) == -1)
 							std::cout << "ERROR: epoll_ctl" << std::endl;
@@ -194,14 +109,34 @@ void	WebServ::run()
 					}
 					else 
 					{
+						std::map<int, std::string>::iterator	it;
+						
+						connections[_ep_event[i].data.fd] += buff;
 						// data from client
-						std::cout << recv_message << '\n';
-
-						// std::string response = "Good talking to you\n";
-						// send(ep_event[i].data.fd, response.c_str(), response.size(), 0);
+						it = connections.find(_ep_event[i].data.fd);
+						
+						if (*((*it).second.end() - 1) == '\n' && *((*it).second.end() - 2) == '\r')
+							request_parser((*it).second);
 					}
 				}
 			}
+			else if ((_ep_event[i].events & EPOLLOUT) == EPOLLOUT)
+			{
+				std::map<int, std::string>::iterator	it;
+				it = connections.find(_ep_event[i].data.fd);
+				std::string response = "Good talking to you\n";
+				send(_ep_event[i].data.fd, (*it).second.c_str(), response.size(), 0);
+				// if (_ep_event[i].data.fd == _fd_listener)
+					close(_ep_event[i].data.fd);
+			}
 		}
 	}
+}
+
+void	WebServ::request_parser(std::string &request)
+{
+
+
+	if (strncmp("GET / HTTP/1.1", request.c_str(), 14) == 0)
+		request = "Raoniiiiiiii\n";
 }

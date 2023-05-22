@@ -1,5 +1,6 @@
 #include "main.hpp"
 #include "WebServ.hpp"
+#include "FileParser.hpp"
 
 int	main(int argc, char *argv[])
 {
@@ -10,9 +11,9 @@ int	main(int argc, char *argv[])
 		exit(2);
 	}
 	
-	WebServ		server;
+	FileParser	conf_file(argv[1]);
 
-	server.parse_file(argv[1]);
+	WebServ		server(conf_file);
 
 	server.setup_server(SOCK_STREAM);
 

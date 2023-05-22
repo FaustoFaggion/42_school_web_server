@@ -6,6 +6,8 @@
 #include <fstream>
 #include <algorithm>
 #include "ListenerSocket.hpp"
+#include "FileParser.hpp"
+#include <map>
 
 class WebServ
 {
@@ -14,31 +16,32 @@ class WebServ
 		int							_type;
 		int							_flag;
 		std::string					_port;
-		int							_max_connections;
+		int							_worker_connections;
 		int							_fd_listener;
 		ListenerSocket				_listener;
+
+		std::map<int, std::string>	connections;
 		int 						_efd;
 		int							_nfds;
 		struct epoll_event			_ev;
 		struct epoll_event			_ep_event [MAX_CONNECTIONS];
 		socklen_t 					_addrlen;
 		struct sockaddr_storage		_client_saddr; // Can store a IPv4 and IPv6 struct
-	
+
 	public:
 		WebServ();
-		WebServ(int type);
+		WebServ(FileParser file);
 		~WebServ();
 	
 		int				getFdListener() const;
 		ListenerSocket	getListener() const;
 
-		void	parse_file(char *file);
 		void	setup_server(int type);
 		void	create_listener_socket();
 		void	create_connections();
 		void	run();
-	private:
-		void	fill_struct_conf_file(std::string buff);
+
+		void	request_parser(std::string &file);
 };
 
 #endif
