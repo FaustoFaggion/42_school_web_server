@@ -6,6 +6,7 @@ ListenerSocket::ListenerSocket()
 	memset(&_result, 0, sizeof(struct addrinfo));
 	_s = 0;
 	_fd_listener = 0;
+
 }
 
 ListenerSocket::~ListenerSocket()
@@ -18,7 +19,57 @@ int		ListenerSocket::get_fd_listener()
 	return (_fd_listener);
 }
 
-void	ListenerSocket::addrinfo(int domain, int type, int flag, std::string port)
+int			ListenerSocket::get_domain() const
+{
+	return (_domain);
+}
+
+std::string	ListenerSocket::get_port() const
+{
+	return (_port);
+}
+
+int			ListenerSocket::get_flag() const
+{
+	return (_flag);
+}
+
+int			ListenerSocket::get_worker_connections() const
+{
+	return (_worker_connections);
+}
+
+int			ListenerSocket::get_type() const
+{
+	return (_type);
+}
+
+void		ListenerSocket::set_domain(int domain)
+{
+	_domain = domain;
+}
+
+void		ListenerSocket::set_port(std::string port)
+{
+	_port = port;
+}
+
+void		ListenerSocket::set_flag(int flag)
+{
+	_flag = flag;
+}
+
+void		ListenerSocket::set_worker_connections(int connections)
+{
+	_worker_connections = connections;
+}
+
+void		ListenerSocket::set_type(int type)
+{
+	_type = type;
+}
+
+void		ListenerSocket::addrinfo(int domain, int type, int flag, std::string port)
 {
 	memset(&_hints, 0, sizeof (struct addrinfo));
 	_hints.ai_family = domain;		/* allow IPv4 or IPv6 */

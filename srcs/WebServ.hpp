@@ -12,11 +12,6 @@
 class WebServ
 {
 	private:
-		int							_domain;
-		int							_type;
-		int							_flag;
-		std::string					_port;
-		int							_worker_connections;
 		int							_fd_listener;
 		ListenerSocket				_listener;
 
