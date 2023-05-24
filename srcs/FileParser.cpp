@@ -129,7 +129,7 @@ void	FileParser::parse_listener_socket(char *file)
 		std::getline(conf_file, buff,'\n');
 		cleanSpaces(buff);
 		fill_struct_conf_file(buff);
-		std::cout << buff << std::endl;
+		// std::cout << buff << std::endl;
 		if (conf_file.eof())
 			break ;
 

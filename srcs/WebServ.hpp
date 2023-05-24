@@ -15,7 +15,7 @@ class WebServ
 		int							_fd_listener;
 		ListenerSocket				_listener;
 
-		std::map<int, std::string>	connections;
+		std::map<int, std::string>	map_connections;
 		int 						_efd;
 		int							_nfds;
 		struct epoll_event			_ev;

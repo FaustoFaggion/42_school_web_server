@@ -48,35 +48,39 @@ void	WebServ::create_connections()
 	/*EPOLL FUNCTION*/
 	if ((_efd = epoll_create(_listener.get_worker_connections())) == -1)
 		std::cout << "ERROR: epoll_create" << std::endl;
-	_ev.events = EPOLLIN; // File descriptor is available for read.
+	/*FD IS AVAIABLE FOR READ*/
+	_ev.events = EPOLLIN;
 	_ev.data.fd = _fd_listener;
 	if (epoll_ctl (_efd, EPOLL_CTL_ADD, _fd_listener, &_ev) == -1)
 		std::cout << "ERROR: epoll_ctl" << std::endl;
 }
-
 
 void	WebServ::run()
 {
 	_nfds = 0;
 	while (1)
 	{
-		// monitor readfds for readiness for reading
+		/*MONITOR FDS. STILL WAITING UNTIL A EVENT HEAPPENS IN A FD*/
 		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  -1)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
-		
-		// Some sockets are ready. Examine readfds
+
+		/*LOOP INTO EPOLL READY LIST*/
 		for (int i = 0; i < _nfds; i++)
 		{
+			/*CHECK IF EVENT TO READ*/
 			if 	((_ep_event[i].events & EPOLLIN) == EPOLLIN)
 			{
+				/*CHECK IF IT IS THE LISTENER SOCKET*/
 				if (_ep_event[i].data.fd == _fd_listener) // request for new connection
 				{
 					_addrlen = sizeof (struct sockaddr_storage);
 					
+					/*CREATE NEW FILE DESCRIPTOR TO CONNECTO TO CLIENT*/
 					int fd_new;
 					if ((fd_new = accept (_fd_listener, (struct sockaddr *) &_client_saddr, &_addrlen)) == -1)
 						std::cout << "ERROR: accept" << std::endl;
-					// add fd_new to epoll
+					
+					/*ADD NEW FD EPOOL TO MONNITORING THE EVENTS*/
 					_ev.events = EPOLLIN | EPOLLOUT;
 					_ev.data.fd = fd_new;
 					if (epoll_ctl (_efd, EPOLL_CTL_ADD, fd_new, &_ev) == -1)
@@ -85,50 +89,57 @@ void	WebServ::run()
 					{
 						std::cout << stderr << " Address family is neither AF_INET nor AF_INET6" << std::endl;
 					}
+					/*ADD fd_new TO MAP_CONNECTIONS AND SET TO EMPTY*/
+					map_connections[fd_new] = "";
 				}
-				else // data from an existing connection, receive it
+				else /*FD FROM A EXISTING CONNECTION*/
 				{
 					char	buff[10];
 
 					memset (&buff, '\0', sizeof (buff));
+					/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
 					ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
 					if (numbytes == -1)
 						std::cout << "ERROR: recv" << std::endl;
-					else if (numbytes == 0) // connection closed by client
+					/*CONNECTION CLOSED BY THE CLIENT*/
+					else if (numbytes == 0)
 					{
 						std::cout << stderr << "Socket " <<
 						_ep_event [i].data.fd << " closed by client" << std::endl;
-						// delete fd from epoll
+						/*DELETE FD FROM EPOLL*/
 						if (epoll_ctl (_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev) == -1)
 							std::cout << "ERROR: epoll_ctl" << std::endl;
+						/*CLOSE FD*/
 						if (close (_ep_event [i].data.fd) == -1)
 							std::cout << "ERROR: close by client" << std::endl;
 					}
 					else 
 					{
+						/*CONCAT DATA UNTIL FIND \r \n THAT MEANS THE END OF REQUEST DATA*/
+						map_connections[_ep_event[i].data.fd] += buff;
+						/*CHECK IF REQUEST DATA FINISHED*/
 						std::map<int, std::string>::iterator	it;
-						
-						connections[_ep_event[i].data.fd] += buff;
-						// data from client
-						it = connections.find(_ep_event[i].data.fd);
-						
+						it = map_connections.find(_ep_event[i].data.fd);
 						if (*((*it).second.end() - 1) == '\n' && *((*it).second.end() - 2) == '\r')
+						{
+							std::cout << "connect fd: " << _ep_event[i].data.fd << "\n";
 							request_parser((*it).second);
+						}
 					}
 				}
 			}
 			else if ((_ep_event[i].events & EPOLLOUT) == EPOLLOUT)
 			{
 				std::map<int, std::string>::iterator	it;
-				it = connections.find(_ep_event[i].data.fd);
+				it = map_connections.find(_ep_event[i].data.fd);
+				/*PROTECTION FROM CONNECTION HAND-SHAKE*/
 				if (!(*it).second.empty())
 				{
-					std::cout << _ep_event[i].data.fd << "\n";
 					send(_ep_event[i].data.fd, (*it).second.c_str(), (*it).second.size(), 0);
-					(*it).second.clear();
+					/*DELETE FROM EPOLL AND CLOSE FD*/
 					epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev);
 					close(_ep_event[i].data.fd);
-					connections.erase(_ep_event[i].data.fd);
+					map_connections.erase(_ep_event[i].data.fd);
 				}
 			}
 		}
@@ -138,7 +149,10 @@ void	WebServ::run()
 void	WebServ::request_parser(std::string &request)
 {
 
-	request = "Raoniiiiiiii\n";
+	std::cout << "request:\n " << request << "\n";
+	// request = "Raoniiiiiiii\n";
+	request  = "https://www.google.com";
 	if (strncmp("GET / HTTP/1.1", request.c_str(), 14) == 0)
-		request = "Raoniiiiiiii\n";
+	{
+	}
 }
