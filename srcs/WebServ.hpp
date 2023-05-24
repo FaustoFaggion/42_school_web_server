@@ -4,6 +4,7 @@
 #include "main.hpp"
 #include <stdio.h>
 #include <fstream>
+#include <sstream>
 #include <algorithm>
 #include "ListenerSocket.hpp"
 #include "FileParser.hpp"

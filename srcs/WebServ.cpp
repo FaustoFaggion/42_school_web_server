@@ -148,27 +148,49 @@ void	WebServ::run()
 
 void	WebServ::request_parser(std::string &request)
 {
-	std::cout << request << "\n\n";
+	std::fstream			conf_file;
+	std::stringstream		buff;
 
 	if (strncmp("GET / HTTP/1.1", request.c_str(), 14) == 0)
 	{
+		conf_file.open("html_get.html",  std::fstream::in);
+		if (conf_file.fail())
+			std::cout << "Configuration file fail to read" << std::endl;
+		buff << conf_file.rdbuf();
+
 		request = "HTTP/1.1 200 OK\r\n";
     	request += "Content-Type: text/html\r\n";
     	request += "\r\n";
-    	request += "<h1>GET METHOD!</h1>\r\n";
+    	request += buff.str();
+		conf_file.close();
 	}
 	else if (strncmp("POST / HTTP/1.1", request.c_str(), 15) == 0)
 	{
+		conf_file.open("html_post.html",  std::fstream::in);
+		if (conf_file.fail())
+			std::cout << "Configuration file fail to read" << std::endl;
+		buff << conf_file.rdbuf();
+
 		request = "HTTP/1.1 200 OK\r\n";
     	request += "Content-Type: text/html\r\n";
     	request += "\r\n";
-    	request += "<h1>POST METHOD</h1>\r\n";
+    	request += buff.str();
+		conf_file.close();
 	}
 	else if (strncmp("DELETE / HTTP/1.1", request.c_str(), 17) == 0)
 	{
+		/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
+
+		conf_file.open("html_del.html",  std::fstream::in);
+		if (conf_file.fail())
+			std::cout << "Configuration file fail to read" << std::endl;
+		buff << conf_file.rdbuf();
+		
+		/*HTTP RESPONSE SYNTAX*/
 		request = "HTTP/1.1 200 OK\r\n";
     	request += "Content-Type: text/html\r\n";
     	request += "\r\n";
-    	request += "<h1>DELETE METHOD!</h1>\r\n";
+		request += buff.str();
+		conf_file.close();
 	}
 }
