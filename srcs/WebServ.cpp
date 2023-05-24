@@ -135,7 +135,7 @@ void	WebServ::run()
 				/*PROTECTION FROM CONNECTION HAND-SHAKE*/
 				if (!(*it).second.empty())
 				{
-					send(_ep_event[i].data.fd, (*it).second.c_str(), (*it).second.size(), 0);
+					send(_ep_event[i].data.fd, (*it).second.c_str(), (*it).second.size(), MSG_CONFIRM);
 					/*DELETE FROM EPOLL AND CLOSE FD*/
 					epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev);
 					close(_ep_event[i].data.fd);
@@ -148,11 +148,27 @@ void	WebServ::run()
 
 void	WebServ::request_parser(std::string &request)
 {
+	std::cout << request << "\n\n";
 
-	std::cout << "request:\n " << request << "\n";
-	// request = "Raoniiiiiiii\n";
-	request  = "https://www.google.com";
 	if (strncmp("GET / HTTP/1.1", request.c_str(), 14) == 0)
 	{
+		request = "HTTP/1.1 200 OK\r\n";
+    	request += "Content-Type: text/html\r\n";
+    	request += "\r\n";
+    	request += "<h1>GET METHOD!</h1>\r\n";
+	}
+	else if (strncmp("POST / HTTP/1.1", request.c_str(), 15) == 0)
+	{
+		request = "HTTP/1.1 200 OK\r\n";
+    	request += "Content-Type: text/html\r\n";
+    	request += "\r\n";
+    	request += "<h1>POST METHOD</h1>\r\n";
+	}
+	else if (strncmp("DELETE / HTTP/1.1", request.c_str(), 17) == 0)
+	{
+		request = "HTTP/1.1 200 OK\r\n";
+    	request += "Content-Type: text/html\r\n";
+    	request += "\r\n";
+    	request += "<h1>DELETE METHOD!</h1>\r\n";
 	}
 }
