@@ -7,14 +7,19 @@
 #include <algorithm>
 #include <map>
 
+struct listener_socket {
+	int				_domain;
+	std::string		_port;
+	int				_flag;
+	int				_type;
+	int				_worker_connections;
+};
+
 class FileParser {
 
 	private:
-		int				_domain;
-		std::string		_port;
-		int				_flag;
-		int				_type;
-		int				_worker_connections;
+		listener_socket						_listener;
+		std::map<std::string, std::string>	_path;
 
 	public:
 		FileParser();
@@ -28,8 +33,8 @@ class FileParser {
 		int			get_type() const;
 
 
-		void	parse_listener_socket(char *file);
-		void	fill_struct_conf_file(std::string buff);
+		void	parse_file(char *file);
+		void	setup_listener(std::string buff);
 
 
 };

@@ -6,6 +6,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <fcntl.h>
 #include "ListenerSocket.hpp"
 #include "FileParser.hpp"
 #include <map>
@@ -36,6 +37,10 @@ class WebServ
 		void	create_listener_socket();
 		void	create_connections();
 		void	run();
+		
+		void	accept_new_connection();
+		void	receive_data(int i);
+		void	response(int i);
 
 		void	request_parser(std::string &file);
 };

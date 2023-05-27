@@ -72,77 +72,98 @@ void	WebServ::run()
 			{
 				/*CHECK IF IT IS THE LISTENER SOCKET*/
 				if (_ep_event[i].data.fd == _fd_listener) // request for new connection
-				{
-					_addrlen = sizeof (struct sockaddr_storage);
-					
-					/*CREATE NEW FILE DESCRIPTOR TO CONNECTO TO CLIENT*/
-					int fd_new;
-					if ((fd_new = accept (_fd_listener, (struct sockaddr *) &_client_saddr, &_addrlen)) == -1)
-						std::cout << "ERROR: accept" << std::endl;
-					
-					/*ADD NEW FD EPOOL TO MONNITORING THE EVENTS*/
-					_ev.events = EPOLLIN | EPOLLOUT;
-					_ev.data.fd = fd_new;
-					if (epoll_ctl (_efd, EPOLL_CTL_ADD, fd_new, &_ev) == -1)
-						std::cout << "ERROR: epoll_ctl" << std::endl;
-					else if (_client_saddr.ss_family != AF_INET && _client_saddr.ss_family == AF_INET6)
-					{
-						std::cout << stderr << " Address family is neither AF_INET nor AF_INET6" << std::endl;
-					}
-					/*ADD fd_new TO MAP_CONNECTIONS AND SET TO EMPTY*/
-					map_connections[fd_new] = "";
-				}
-				else /*FD FROM A EXISTING CONNECTION*/
-				{
-					char	buff[10];
-
-					memset (&buff, '\0', sizeof (buff));
-					/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
-					ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
-					if (numbytes == -1)
-						std::cout << "ERROR: recv" << std::endl;
-					/*CONNECTION CLOSED BY THE CLIENT*/
-					else if (numbytes == 0)
-					{
-						std::cout << stderr << "Socket " <<
-						_ep_event [i].data.fd << " closed by client" << std::endl;
-						/*DELETE FD FROM EPOLL*/
-						if (epoll_ctl (_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev) == -1)
-							std::cout << "ERROR: epoll_ctl" << std::endl;
-						/*CLOSE FD*/
-						if (close (_ep_event [i].data.fd) == -1)
-							std::cout << "ERROR: close by client" << std::endl;
-					}
-					else 
-					{
-						/*CONCAT DATA UNTIL FIND \r \n THAT MEANS THE END OF REQUEST DATA*/
-						map_connections[_ep_event[i].data.fd] += buff;
-						/*CHECK IF REQUEST DATA FINISHED*/
-						std::map<int, std::string>::iterator	it;
-						it = map_connections.find(_ep_event[i].data.fd);
-						if (*((*it).second.end() - 1) == '\n' && *((*it).second.end() - 2) == '\r')
-						{
-							std::cout << "connect fd: " << _ep_event[i].data.fd << "\n";
-							request_parser((*it).second);
-						}
-					}
-				}
+					accept_new_connection();
+				/*FD FROM A EXISTING CONNECTION*/
+				else 
+					receive_data(i);
 			}
 			else if ((_ep_event[i].events & EPOLLOUT) == EPOLLOUT)
-			{
-				std::map<int, std::string>::iterator	it;
-				it = map_connections.find(_ep_event[i].data.fd);
-				/*PROTECTION FROM CONNECTION HAND-SHAKE*/
-				if (!(*it).second.empty())
-				{
-					send(_ep_event[i].data.fd, (*it).second.c_str(), (*it).second.size(), MSG_CONFIRM);
-					/*DELETE FROM EPOLL AND CLOSE FD*/
-					epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev);
-					close(_ep_event[i].data.fd);
-					map_connections.erase(_ep_event[i].data.fd);
-				}
-			}
+				response(i);
 		}
+	}
+}
+
+void	WebServ::accept_new_connection()
+{
+	_addrlen = sizeof (struct sockaddr_storage);
+
+	/*CREATE NEW FILE DESCRIPTOR TO CONNECTO TO CLIENT*/
+	int fd_new;
+	if ((fd_new = accept (_fd_listener, (struct sockaddr *) &_client_saddr, &_addrlen)) == -1)
+		std::cout << "ERROR: accept" << std::endl;
+	// fcntl(fd_new, F_SETFL, O_NONBLOCK);
+	/*ADD NEW FD EPOOL TO MONNITORING THE EVENTS*/
+	_ev.events = EPOLLIN | EPOLLOUT;
+	_ev.data.fd = fd_new;
+	
+	std::cout << "new_fd: " << fd_new << "\n";
+
+	if (epoll_ctl (_efd, EPOLL_CTL_ADD, fd_new, &_ev) == -1)
+		std::cout << "ERROR: epoll_ctl" << std::endl;
+	else if (_client_saddr.ss_family != AF_INET && _client_saddr.ss_family == AF_INET6)
+	{
+		std::cout << stderr << " Address family is neither AF_INET nor AF_INET6" << std::endl;
+	}
+	/*ADD fd_new TO MAP_CONNECTIONS AND SET TO EMPTY*/
+	map_connections[fd_new] = "";
+}
+
+void	WebServ::receive_data(int i)
+{
+	char	buff[2048];
+
+
+	memset (&buff, '\0', sizeof (buff));
+	/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
+	ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
+	if (numbytes == -1)
+		std::cout << "ERROR: recv" << std::endl;
+	/*CONNECTION CLOSED BY THE CLIENT*/
+	else if (numbytes == 0)
+	{
+		std::cout << stderr << "Socket " <<
+		_ep_event [i].data.fd << " closed by client" << std::endl;
+		/*DELETE FD FROM EPOLL*/
+		if (epoll_ctl (_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev) == -1)
+			std::cout << "ERROR: epoll_ctl" << std::endl;
+		/*CLOSE FD*/
+		if (close (_ep_event [i].data.fd) == -1)
+			std::cout << "ERROR: close by client" << std::endl;
+	}
+	else 
+	{
+		/*CONCAT DATA UNTIL FIND \r \n THAT MEANS THE END OF REQUEST DATA*/
+		map_connections[_ep_event[i].data.fd] += buff;
+		/*CHECK IF REQUEST DATA FINISHED*/
+		std::map<int, std::string>::iterator	it;
+		it = map_connections.find(_ep_event[i].data.fd);
+		if ((*it).second.find("\r\n\r\n") != std::string::npos)
+		{
+			std::cout << "received data fd: " << _ep_event[i].data.fd << "\n";
+			std::cout <<  (*it).second << "\n";
+			request_parser((*it).second);
+
+			// _ev.events = EPOLLOUT;
+			// epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
+		}
+	}
+}
+
+void	WebServ::response(int i)
+{
+	std::map<int, std::string>::iterator	it;
+	it = map_connections.find(_ep_event[i].data.fd);
+	std::cout << "response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.c_str() << "\n";
+	/*PROTECTION FROM CONNECTION HAND-SHAKE*/
+	if (!(*it).second.empty())
+	{
+		int	fd = _ep_event[i].data.fd;
+		std::cout << "inside response fd: " << _ep_event[i].data.fd << " : " << (*it).second.c_str() << "\n";
+		send(_ep_event[i].data.fd, (*it).second.c_str(), (*it).second.size(), 0);
+		/*DELETE FROM EPOLL AND CLOSE FD*/
+		epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev);
+		close(fd);
+		map_connections.erase(fd);
 	}
 }
 
@@ -153,7 +174,7 @@ void	WebServ::request_parser(std::string &request)
 
 	if (strncmp("GET / HTTP/1.1", request.c_str(), 14) == 0)
 	{
-		conf_file.open("html_get.html",  std::fstream::in);
+		conf_file.open("./srcs/locations/html_get.html",  std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();
@@ -164,9 +185,15 @@ void	WebServ::request_parser(std::string &request)
     	request += buff.str();
 		conf_file.close();
 	}
+	else if (strncmp("GET /favicon.ico HTTP/1.1", request.c_str(), strlen("GET /favicon.ico HTTP/1.1")))
+	{
+		request = "HTTP/1.1 404 Not Found";
+		request += "Content-Length: 0";
+
+	}
 	else if (strncmp("POST / HTTP/1.1", request.c_str(), 15) == 0)
 	{
-		conf_file.open("html_post.html",  std::fstream::in);
+		conf_file.open("./srcs/locations/html_post.html",  std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();
@@ -181,7 +208,7 @@ void	WebServ::request_parser(std::string &request)
 	{
 		/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
 
-		conf_file.open("html_del.html",  std::fstream::in);
+		conf_file.open("./srcs/locations/html_del.html",  std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();

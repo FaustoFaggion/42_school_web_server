@@ -2,21 +2,21 @@
 
 FileParser::FileParser()
 {
-	_domain = 0;
-	_type = 0;
-	_flag = 0;
-	_port = "";
-	_worker_connections = 0;
+	_listener._domain = 0;
+	_listener._type = 0;
+	_listener._flag = 0;
+	_listener._port = "";
+	_listener._worker_connections = 0;
 }
 
 FileParser::FileParser(char * file)
 {
-	_domain = 0;
-	_type = 0;
-	_flag = 0;
-	_port = "";
-	_worker_connections = 0;
-	parse_listener_socket(file);
+	_listener._domain = 0;
+	_listener._type = 0;
+	_listener._flag = 0;
+	_listener._port = "";
+	_listener._worker_connections = 0;
+	parse_file(file);
 }
 
 FileParser::~FileParser()
@@ -26,55 +26,55 @@ FileParser::~FileParser()
 
 int			FileParser::get_domain() const
 {
-	return (_domain);
+	return (_listener._domain);
 }
 
 std::string	FileParser::get_port() const
 {
-	return (_port);
+	return (_listener._port);
 }
 
 int			FileParser::get_flag() const
 {
-	return (_flag);
+	return (_listener._flag);
 }
 
 int			FileParser::get_worker_connections() const
 {
-	return (_worker_connections);
+	return (_listener._worker_connections);
 }
 
 int			FileParser::get_type() const
 {
-	return (_type);
+	return (_listener._type);
 }
 
-void	FileParser::fill_struct_conf_file(std::string buff)
+void	FileParser::setup_listener(std::string buff)
 {
 	
 	if (strncmp("listen [::]", buff.c_str(), 11) == 0)
 	{
-		if (_domain == AF_INET)
-			_domain = AF_UNSPEC;
+		if (_listener._domain == AF_INET)
+			_listener._domain = AF_UNSPEC;
 		else
-			_domain = AF_INET6;
-		if (_port == "")
+			_listener._domain = AF_INET6;
+		if (_listener._port == "")
 		{
 			int i = 12;
 			while (isdigit(buff.at(i)) == true)
 			{
-				_port += buff.at(i);
+				_listener._port += buff.at(i);
 				i++;
 			}
 		}
 	}
 	else if (strncmp("listen", buff.c_str(), 6) == 0)
 	{
-		_domain = AF_INET;
+		_listener._domain = AF_INET;
 		int i = 7;
 		while (isdigit(buff.at(i)) == true)
 		{
-			_port += buff.at(i);
+			_listener._port += buff.at(i);
 			i++;
 		}
 	}
@@ -89,7 +89,7 @@ void	FileParser::fill_struct_conf_file(std::string buff)
 			i++;
 		}
 		if (strcmp("localhost", server_name.c_str()) == 0)
-			_flag = AI_PASSIVE;
+			_listener._flag = AI_PASSIVE;
 
 	}
 	else if (strncmp("worker_connections", buff.c_str(), 18) == 0)
@@ -103,7 +103,7 @@ void	FileParser::fill_struct_conf_file(std::string buff)
 			tmp += buff.at(i);
 			i++;
 		}
-		_worker_connections = atoi(tmp.c_str());
+		_listener._worker_connections = atoi(tmp.c_str());
 	}
 }
 
@@ -116,7 +116,7 @@ void	cleanSpaces(std::string& str) {
 	str += '\0';
 }
 
-void	FileParser::parse_listener_socket(char *file)
+void	FileParser::parse_file(char *file)
 {
 	std::fstream	conf_file;
 	std::string		buff;
@@ -128,7 +128,7 @@ void	FileParser::parse_listener_socket(char *file)
 	{
 		std::getline(conf_file, buff,'\n');
 		cleanSpaces(buff);
-		fill_struct_conf_file(buff);
+		setup_listener(buff);
 		// std::cout << buff << std::endl;
 		if (conf_file.eof())
 			break ;
