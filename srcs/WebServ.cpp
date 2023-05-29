@@ -81,15 +81,15 @@ void	WebServ::run()
 			/*CHECK IF EVENT TO WRITE*/
 			else if ((_ep_event[i].events & EPOLLOUT) == EPOLLOUT)
 				response(i);
-			else if ((_ep_event[i].events & EPOLLHUP) == EPOLLHUP)
-			{
-				int	fd = _ep_event[i].data.fd;
-				std::cout << "DELETE fd: " << _ep_event[i].data.fd << "\n";
-				/*DELETE FROM EPOLL AND CLOSE FD*/
-				epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev);
-				close(fd);
-				map_connections.erase(fd);
-			}
+			// else if ((_ep_event[i].events & EPOLLHUP) == EPOLLHUP)
+			// {
+			// 	int	fd = _ep_event[i].data.fd;
+			// 	std::cout << "DELETE fd: " << _ep_event[i].data.fd << "\n";
+			// 	/*DELETE FROM EPOLL AND CLOSE FD*/
+			// 	epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev);
+			// 	close(fd);
+			// 	map_connections.erase(fd);
+			// }
 
 
 		}
@@ -198,6 +198,7 @@ void	WebServ::request_parser(std::string &request)
 
 		request = "HTTP/1.1 200 OK\r\n";
     	request += "Content-Type: text/html\r\n";
+		request += "Connection: close\r\n";
     	request += "\r\n";
     	request += buff.str();
 		request += "\r\n";
