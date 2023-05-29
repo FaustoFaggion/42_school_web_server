@@ -64,6 +64,7 @@ void	WebServ::run()
 		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  1000)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
 
+		// std::cout << _nfds << "\n";
 		/*LOOP INTO EPOLL READY LIST*/
 		for (int i = 0; i < _nfds; i++)
 		{
@@ -80,6 +81,17 @@ void	WebServ::run()
 			/*CHECK IF EVENT TO WRITE*/
 			else if ((_ep_event[i].events & EPOLLOUT) == EPOLLOUT)
 				response(i);
+			else if ((_ep_event[i].events & EPOLLHUP) == EPOLLHUP)
+			{
+				int	fd = _ep_event[i].data.fd;
+				std::cout << "DELETE fd: " << _ep_event[i].data.fd << "\n";
+				/*DELETE FROM EPOLL AND CLOSE FD*/
+				epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev);
+				close(fd);
+				map_connections.erase(fd);
+			}
+
+
 		}
 	}
 }
