@@ -61,7 +61,7 @@ void	WebServ::run()
 	while (1)
 	{
 		/*MONITOR FDS. STILL WAITING UNTIL A EVENT HEAPPENS IN A FD*/
-		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  -1)) == -1) // '-1' to block indefinitely
+		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  1000)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
 
 		/*LOOP INTO EPOLL READY LIST*/
@@ -70,13 +70,14 @@ void	WebServ::run()
 			/*CHECK IF EVENT TO READ*/
 			if 	((_ep_event[i].events & EPOLLIN) == EPOLLIN)
 			{
-				/*CHECK IF IT IS THE LISTENER SOCKET*/
+				/*LISTENER SOCKET*/
 				if (_ep_event[i].data.fd == _fd_listener) // request for new connection
 					accept_new_connection();
-				/*FD FROM A EXISTING CONNECTION*/
+				/*CLIENT SOCKET*/
 				else 
 					receive_data(i);
 			}
+			/*CHECK IF EVENT TO WRITE*/
 			else if ((_ep_event[i].events & EPOLLOUT) == EPOLLOUT)
 				response(i);
 		}
@@ -91,7 +92,11 @@ void	WebServ::accept_new_connection()
 	int fd_new;
 	if ((fd_new = accept (_fd_listener, (struct sockaddr *) &_client_saddr, &_addrlen)) == -1)
 		std::cout << "ERROR: accept" << std::endl;
-	// fcntl(fd_new, F_SETFL, O_NONBLOCK);
+
+	int fd_flag = fcntl(fd_new, F_GETFL, 0);
+
+	fcntl(fd_new, F_SETFL, fd_flag | O_NONBLOCK);
+	
 	/*ADD NEW FD EPOOL TO MONNITORING THE EVENTS*/
 	_ev.events = EPOLLIN | EPOLLOUT;
 	_ev.data.fd = fd_new;
@@ -153,12 +158,11 @@ void	WebServ::response(int i)
 {
 	std::map<int, std::string>::iterator	it;
 	it = map_connections.find(_ep_event[i].data.fd);
-	std::cout << "response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.c_str() << "\n";
 	/*PROTECTION FROM CONNECTION HAND-SHAKE*/
 	if (!(*it).second.empty())
 	{
 		int	fd = _ep_event[i].data.fd;
-		std::cout << "inside response fd: " << _ep_event[i].data.fd << " : " << (*it).second.c_str() << "\n";
+		std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.c_str() << "\n";
 		send(_ep_event[i].data.fd, (*it).second.c_str(), (*it).second.size(), 0);
 		/*DELETE FROM EPOLL AND CLOSE FD*/
 		epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev);
@@ -172,6 +176,7 @@ void	WebServ::request_parser(std::string &request)
 	std::fstream			conf_file;
 	std::stringstream		buff;
 
+	std::cout << "request parser\n";
 	if (strncmp("GET / HTTP/1.1", request.c_str(), 14) == 0)
 	{
 		conf_file.open("./srcs/locations/html_get.html",  std::fstream::in);
@@ -183,13 +188,8 @@ void	WebServ::request_parser(std::string &request)
     	request += "Content-Type: text/html\r\n";
     	request += "\r\n";
     	request += buff.str();
+		request += "\r\n";
 		conf_file.close();
-	}
-	else if (strncmp("GET /favicon.ico HTTP/1.1", request.c_str(), strlen("GET /favicon.ico HTTP/1.1")))
-	{
-		request = "HTTP/1.1 404 Not Found";
-		request += "Content-Length: 0";
-
 	}
 	else if (strncmp("POST / HTTP/1.1", request.c_str(), 15) == 0)
 	{
@@ -219,5 +219,11 @@ void	WebServ::request_parser(std::string &request)
     	request += "\r\n";
 		request += buff.str();
 		conf_file.close();
+	}
+	else
+	{
+		request = "HTTP/1.1 404 Not Found\r\n";
+		request += "Content-Length: 0\r\n";
+
 	}
 }
