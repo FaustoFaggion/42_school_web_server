@@ -64,6 +64,7 @@ void	WebServ::run()
 		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  2000)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
 
+
 		std::cout << "nfds: " << _nfds << "\n";
 		/*LOOP INTO EPOLL READY LIST*/
 		for (int i = 0; i < _nfds; i++)
@@ -121,7 +122,11 @@ void	WebServ::accept_new_connection()
 		std::cout << stderr << " Address family is neither AF_INET nor AF_INET6" << std::endl;
 	}
 	/*ADD fd_new TO MAP_CONNECTIONS AND SET TO EMPTY*/
-	map_connections[fd_new] = "";
+	t_client	c;
+	c.fd = fd_new;
+	c.start_connection = time(NULL);
+	c.response = "";
+	map_connections[fd_new] = c;
 }
 
 void	WebServ::receive_data(int i)
@@ -149,15 +154,15 @@ void	WebServ::receive_data(int i)
 	else 
 	{
 		/*CONCAT DATA UNTIL FIND \r \n THAT MEANS THE END OF REQUEST DATA*/
-		map_connections[_ep_event[i].data.fd] += buff;
+		map_connections[_ep_event[i].data.fd].response += buff;
 		/*CHECK IF REQUEST DATA FINISHED*/
-		std::map<int, std::string>::iterator	it;
+		std::map<int, t_client>::iterator	it;
 		it = map_connections.find(_ep_event[i].data.fd);
-		if ((*it).second.find("\r\n\r\n") != std::string::npos)
+		if ((*it).second.response.find("\r\n\r\n") != std::string::npos)
 		{
 			std::cout << "received data fd: " << _ep_event[i].data.fd << "\n";
-			std::cout <<  (*it).second << "\n";
-			request_parser((*it).second);
+			std::cout <<  (*it).second.response << "\n";
+			request_parser((*it).second.response);
 
 			_ev.events = EPOLLOUT;
 			epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
@@ -167,14 +172,14 @@ void	WebServ::receive_data(int i)
 
 void	WebServ::response(int i)
 {
-	std::map<int, std::string>::iterator	it;
+	std::map<int, t_client>::iterator	it;
 	it = map_connections.find(_ep_event[i].data.fd);
 	/*PROTECTION FROM CONNECTION HAND-SHAKE*/
-	if (!(*it).second.empty())
+	if (!(*it).second.response.empty())
 	{
 		int	fd = _ep_event[i].data.fd;
-		std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.c_str() << "\n";
-		send(_ep_event[i].data.fd, (*it).second.c_str(), (*it).second.size(), 0);
+		std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.response.c_str() << "\n";
+		send(_ep_event[i].data.fd, (*it).second.response.c_str(), (*it).second.response.size(), 0);
 		/*DELETE FROM EPOLL AND CLOSE FD*/
 		epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev);
 		close(fd);

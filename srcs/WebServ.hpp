@@ -11,13 +11,19 @@
 #include "FileParser.hpp"
 #include <map>
 
+typedef struct client {
+	int				fd;
+	time_t			start_connection;
+	std::string		response;
+} t_client;
+
 class WebServ
 {
 	private:
 		int							_fd_listener;
 		ListenerSocket				_listener;
 
-		std::map<int, std::string>	map_connections;
+		std::map<int, t_client>	map_connections;
 		int 						_efd;
 		int							_nfds;
 		struct epoll_event			_ev;
