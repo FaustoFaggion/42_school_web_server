@@ -61,25 +61,36 @@ void	WebServ::run()
 	while (1)
 	{
 		/*MONITOR FDS. STILL WAITING UNTIL A EVENT HEAPPENS IN A FD*/
-		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  10000)) == -1) // '-1' to block indefinitely
+		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  2000)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
 
+		std::cout << "nfds: " << _nfds << "\n";
 		/*LOOP INTO EPOLL READY LIST*/
 		for (int i = 0; i < _nfds; i++)
 		{
 			/*CHECK IF EVENT TO READ*/
 			if 	((_ep_event[i].events & EPOLLIN) == EPOLLIN)
 			{
+
 				/*LISTENER SOCKET*/
 				if (_ep_event[i].data.fd == _fd_listener) // request for new connection
+				{
+					std::cout << "accept_new_connection" << "\n";
 					accept_new_connection();
+				}
 				/*CLIENT SOCKET*/
 				else 
+				{
+					std::cout << "receive data" << "\n";
 					receive_data(i);
+				}
 			}
 			/*CHECK IF EVENT TO WRITE*/
 			else if ((_ep_event[i].events & EPOLLOUT) == EPOLLOUT)
+			{
+				std::cout << "response" << "\n";
 				response(i);
+			}
 		}
 	}
 }
@@ -98,7 +109,7 @@ void	WebServ::accept_new_connection()
 	fcntl(fd_new, F_SETFL, fd_flag | O_NONBLOCK);
 	
 	/*ADD NEW FD EPOOL TO MONNITORING THE EVENTS*/
-	_ev.events = EPOLLIN | EPOLLOUT;
+	_ev.events = EPOLLIN;
 	_ev.data.fd = fd_new;
 	
 	std::cout << "new_fd: " << fd_new << "\n";
@@ -148,8 +159,8 @@ void	WebServ::receive_data(int i)
 			std::cout <<  (*it).second << "\n";
 			request_parser((*it).second);
 
-			// _ev.events = EPOLLOUT;
-			// epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
+			_ev.events = EPOLLOUT;
+			epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 		}
 	}
 }
