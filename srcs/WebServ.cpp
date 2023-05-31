@@ -41,6 +41,12 @@ void	WebServ::create_listener_socket()
 	_listener.bind_fd_to_port();
 	_listener.listen_fd();
 	_fd_listener = _listener.get_fd_listener();
+	_ev.data.fd = 0;
+	_ev.data.ptr = NULL;
+	_ev.data.u32 = 0;
+	_ev.data.u64 = 0;
+	for (int i = MAX_CONNECTIONS; i != -1; i--)
+		_ep_event[i].data.fd = 0;
 }
 
 void	WebServ::create_connections()
@@ -63,7 +69,13 @@ void	WebServ::run()
 		/*MONITOR FDS. STILL WAITING UNTIL A EVENT HEAPPENS IN A FD*/
 		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  2000)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
-
+		// int j = 0;
+		// std::cout << "while\n";
+		// while (_ep_event[j].data.fd)
+		// {
+		// 	std::cout << "fd: " <<_ep_event[j].data.fd << "\n";
+		// 	j++;
+		// }
 
 		std::cout << "nfds: " << _nfds << "\n";
 		/*LOOP INTO EPOLL READY LIST*/
