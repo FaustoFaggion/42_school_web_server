@@ -69,15 +69,38 @@ void	WebServ::run()
 		/*MONITOR FDS. STILL WAITING UNTIL A EVENT HEAPPENS IN A FD*/
 		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  2000)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
-		// int j = 0;
-		// std::cout << "while\n";
-		// while (_ep_event[j].data.fd)
-		// {
-		// 	std::cout << "fd: " <<_ep_event[j].data.fd << "\n";
-		// 	j++;
-		// }
-
+		
 		std::cout << "nfds: " << _nfds << "\n";
+		
+		int j = 0;
+		std::cout << "while\n";
+		while (_ep_event[j].data.fd)
+		{
+			double	timeout = difftime(time(NULL), map_connections[_ep_event[j].data.fd].start_connection);
+			std::cout << "start time: " << map_connections[_ep_event[j].data.fd].start_connection << " time" << time(NULL) << " timeout: "<< timeout << " fd: " << _ep_event[j].data.fd << "\n";
+			if (_ep_event[j].data.fd != _fd_listener)
+			{
+				if (timeout > 2.0)
+				{
+					std::cout << "now > 2.0\n";
+					std::cout << "fd: " <<_ep_event[j].data.fd << "\n";
+					int	fd = _ep_event[j].data.fd;
+					
+					std::map<int, t_client>::iterator	it;
+					it = map_connections.find(_ep_event[j].data.fd);
+					request_parser((*it).second.response);
+					response(j);
+
+					/*DELETE FROM EPOLL AND CLOSE FD*/
+					epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev);
+					_ep_event[j].data.fd = 0;
+					close(fd);
+					map_connections.erase(fd);
+				}
+			}
+			j++;
+		}
+
 		/*LOOP INTO EPOLL READY LIST*/
 		for (int i = 0; i < _nfds; i++)
 		{
@@ -122,7 +145,7 @@ void	WebServ::accept_new_connection()
 	fcntl(fd_new, F_SETFL, fd_flag | O_NONBLOCK);
 	
 	/*ADD NEW FD EPOOL TO MONNITORING THE EVENTS*/
-	_ev.events = EPOLLIN;
+	_ev.events = EPOLLIN | EPOLLOUT;
 	_ev.data.fd = fd_new;
 	
 	std::cout << "new_fd: " << fd_new << "\n";
@@ -189,13 +212,11 @@ void	WebServ::response(int i)
 	/*PROTECTION FROM CONNECTION HAND-SHAKE*/
 	if (!(*it).second.response.empty())
 	{
-		int	fd = _ep_event[i].data.fd;
 		std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.response.c_str() << "\n";
 		send(_ep_event[i].data.fd, (*it).second.response.c_str(), (*it).second.response.size(), 0);
 		/*DELETE FROM EPOLL AND CLOSE FD*/
-		epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev);
-		close(fd);
-		map_connections.erase(fd);
+		_ev.events = EPOLLIN;
+		epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 	}
 }
 
