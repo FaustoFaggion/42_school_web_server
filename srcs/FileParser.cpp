@@ -164,7 +164,7 @@ void	FileParser::parse_file(char *file)
 	/*PARSE SERVEER FAMILY AND PORT*/
 	std::string	str;
 
-	while (_server_conf_file.find("listen", 0) != _server_conf_file)
+	while (_server_conf_file.find("listen", 0) != _server_conf_file.npos)
 	{
 		size_t start = _server_conf_file.find("listen", 0);
 		size_t end = _server_conf_file.find("\n", start);
@@ -178,7 +178,7 @@ void	FileParser::parse_file(char *file)
 	
 
 	/*PARSE SERVER_NAME*/
-	while (_server_conf_file.find("server_name", 0) != server_configuration.npos)
+	while (_server_conf_file.find("server_name", 0) != _server_conf_file.npos)
 	{
 		size_t start = _server_conf_file.find("server_name", 0);
 		size_t end = _server_conf_file.find("\n", start);
@@ -186,7 +186,7 @@ void	FileParser::parse_file(char *file)
 		str += '\0';
 		setup_listener(str);
 		_server_conf_file.erase(start, (end- start));
-		std::cout << server_configuration << "\n\n";
+		std::cout << _server_conf_file << "\n\n";
 	}
 
 	// while (!conf_file.eof())
