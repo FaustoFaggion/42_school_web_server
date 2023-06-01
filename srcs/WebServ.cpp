@@ -274,8 +274,18 @@ void	WebServ::request_parser(std::string &request)
 	}
 	else
 	{
+		/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
+		conf_file.open("./srcs/locations/error.html",  std::fstream::in);
+		if (conf_file.fail())
+			std::cout << "Configuration file fail to read" << std::endl;
+		buff << conf_file.rdbuf();
+
+		/*HTTP RESPONSE SYNTAX*/
 		request = "HTTP/1.1 404 Not Found\r\n";
-		request += "Content-Length: 0\r\n";
+		request += "Content-Type: text/html\r\n";
 		request += "Connection: close\r\n";
+		request += "\r\n";
+		request += buff.str();
+		conf_file.close();
 	}
 }
