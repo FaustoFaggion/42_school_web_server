@@ -72,34 +72,8 @@ void	WebServ::run()
 		
 		std::cout << "nfds: " << _nfds << "\n";
 		
-		int j = 0;
-		std::cout << "while\n";
-		while (_ep_event[j].data.fd)
-		{
-			double	timeout = difftime(time(NULL), map_connections[_ep_event[j].data.fd].start_connection);
-			std::cout << "start time: " << map_connections[_ep_event[j].data.fd].start_connection << " time" << time(NULL) << " timeout: "<< timeout << " fd: " << _ep_event[j].data.fd << "\n";
-			if (_ep_event[j].data.fd != _fd_listener)
-			{
-				if (timeout > 2.0)
-				{
-					std::cout << "now > 2.0\n";
-					std::cout << "fd: " <<_ep_event[j].data.fd << "\n";
-					int	fd = _ep_event[j].data.fd;
-					
-					std::map<int, t_client>::iterator	it;
-					it = map_connections.find(_ep_event[j].data.fd);
-					request_parser((*it).second.response);
-					response(j);
-
-					/*DELETE FROM EPOLL AND CLOSE FD*/
-					epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev);
-					_ep_event[j].data.fd = 0;
-					close(fd);
-					map_connections.erase(fd);
-				}
-			}
-			j++;
-		}
+		/*A REQUEST TO SERVER SHOULD NEVER HANG FOREVER.*/
+		delete_timeout_socket();
 
 		/*LOOP INTO EPOLL READY LIST*/
 		for (int i = 0; i < _nfds; i++)
@@ -109,7 +83,7 @@ void	WebServ::run()
 			{
 
 				/*LISTENER SOCKET*/
-				if (_ep_event[i].data.fd == _fd_listener) // request for new connection
+				if (_ep_event[i].data.fd == _fd_listener)
 				{
 					std::cout << "accept_new_connection" << "\n";
 					accept_new_connection();
@@ -131,6 +105,33 @@ void	WebServ::run()
 	}
 }
 
+void	WebServ::delete_timeout_socket()
+{
+	int j = 0;
+	std::cout << "while\n";
+	while (_ep_event[j].data.fd)
+	{
+		double	timeout = difftime(time(NULL), map_connections[_ep_event[j].data.fd].start_connection);
+		std::cout << "start time: " << map_connections[_ep_event[j].data.fd].start_connection << " time" << time(NULL) << " timeout: "<< timeout << " fd: " << _ep_event[j].data.fd << "\n";
+		if (_ep_event[j].data.fd != _fd_listener)
+		{
+			if (timeout > 2.0)
+			{
+				std::cout << "now > 2.0\n";
+				std::cout << "fd: " <<_ep_event[j].data.fd << "\n";
+				int	fd = _ep_event[j].data.fd;
+				
+				/*DELETE FROM EPOLL AND CLOSE FD*/
+				epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev);
+				_ep_event[j].data.fd = 0;
+				close(fd);
+				map_connections.erase(fd);
+			}
+		}
+		j++;
+	}
+};
+
 void	WebServ::accept_new_connection()
 {
 	_addrlen = sizeof (struct sockaddr_storage);
@@ -140,8 +141,8 @@ void	WebServ::accept_new_connection()
 	if ((fd_new = accept (_fd_listener, (struct sockaddr *) &_client_saddr, &_addrlen)) == -1)
 		std::cout << "ERROR: accept" << std::endl;
 
+	/*SET FD SOCKET TO NONBLOCKING*/
 	int fd_flag = fcntl(fd_new, F_GETFL, 0);
-
 	fcntl(fd_new, F_SETFL, fd_flag | O_NONBLOCK);
 	
 	/*ADD NEW FD EPOOL TO MONNITORING THE EVENTS*/
@@ -156,6 +157,7 @@ void	WebServ::accept_new_connection()
 	{
 		std::cout << stderr << " Address family is neither AF_INET nor AF_INET6" << std::endl;
 	}
+
 	/*ADD fd_new TO MAP_CONNECTIONS AND SET TO EMPTY*/
 	t_client	c;
 	c.fd = fd_new;
@@ -170,18 +172,22 @@ void	WebServ::receive_data(int i)
 
 
 	memset (&buff, '\0', sizeof (buff));
+	
 	/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
 	ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
 	if (numbytes == -1)
 		std::cout << "ERROR: recv" << std::endl;
+	
 	/*CONNECTION CLOSED BY THE CLIENT*/
 	else if (numbytes == 0)
 	{
 		std::cout << stderr << "Socket " <<
 		_ep_event [i].data.fd << " closed by client" << std::endl;
+	
 		/*DELETE FD FROM EPOLL*/
 		if (epoll_ctl (_efd, EPOLL_CTL_DEL, _ep_event[i].data.fd, &_ev) == -1)
 			std::cout << "ERROR: epoll_ctl" << std::endl;
+	
 		/*CLOSE FD*/
 		if (close (_ep_event [i].data.fd) == -1)
 			std::cout << "ERROR: close by client" << std::endl;
@@ -190,6 +196,7 @@ void	WebServ::receive_data(int i)
 	{
 		/*CONCAT DATA UNTIL FIND \r \n THAT MEANS THE END OF REQUEST DATA*/
 		map_connections[_ep_event[i].data.fd].response += buff;
+	
 		/*CHECK IF REQUEST DATA FINISHED*/
 		std::map<int, t_client>::iterator	it;
 		it = map_connections.find(_ep_event[i].data.fd);
@@ -199,6 +206,7 @@ void	WebServ::receive_data(int i)
 			std::cout <<  (*it).second.response << "\n";
 			request_parser((*it).second.response);
 
+			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
 			_ev.events = EPOLLOUT;
 			epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 		}
@@ -214,7 +222,8 @@ void	WebServ::response(int i)
 	{
 		std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.response.c_str() << "\n";
 		send(_ep_event[i].data.fd, (*it).second.response.c_str(), (*it).second.response.size(), 0);
-		/*DELETE FROM EPOLL AND CLOSE FD*/
+		
+		/*SET FD SOCKET TO READ AGAIN*/
 		_ev.events = EPOLLIN;
 		epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 	}

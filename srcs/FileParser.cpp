@@ -124,15 +124,11 @@ void	FileParser::parse_file(char *file)
 	conf_file.open(file,  std::fstream::in);
 	if (conf_file.fail())
 		std::cout << "Configuration file fail to read" << std::endl;
-	while (1)
+	while (!conf_file.eof())
 	{
 		std::getline(conf_file, buff,'\n');
 		cleanSpaces(buff);
 		setup_listener(buff);
-		// std::cout << buff << std::endl;
-		if (conf_file.eof())
-			break ;
-
 	}
 
 }

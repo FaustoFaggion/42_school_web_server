@@ -44,6 +44,7 @@ class WebServ
 		void	create_connections();
 		void	run();
 		
+		void	delete_timeout_socket();
 		void	accept_new_connection();
 		void	receive_data(int i);
 		void	response(int i);
