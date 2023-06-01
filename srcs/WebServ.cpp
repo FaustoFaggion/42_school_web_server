@@ -11,7 +11,12 @@ WebServ::WebServ(FileParser file)
 	_listener.set_type(file.get_type());
 	_listener.set_port(file.get_port());
 	_listener.set_flag(file.get_flag());
-	_listener.set_worker_connections(file.get_worker_connections());
+	_listener.set_worker_connections(MAX_CONNECTIONS);
+
+	std::cout << "domain: " << _listener.get_domain() << "\n";
+	std::cout << "flag: " << _listener.get_flag() << "\n";
+	std::cout << "type: " << _listener.get_type() << "\n";
+	std::cout << "port: " << _listener.get_port() << "\n";
 }
 
 WebServ::~WebServ()
@@ -47,6 +52,7 @@ void	WebServ::create_listener_socket()
 	_ev.data.u64 = 0;
 	for (int i = MAX_CONNECTIONS; i != -1; i--)
 		_ep_event[i].data.fd = 0;
+
 }
 
 void	WebServ::create_connections()
@@ -120,7 +126,7 @@ void	WebServ::delete_timeout_socket()
 				std::cout << "now > 2.0\n";
 				std::cout << "fd: " <<_ep_event[j].data.fd << "\n";
 				int	fd = _ep_event[j].data.fd;
-				
+
 				/*DELETE FROM EPOLL AND CLOSE FD*/
 				epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev);
 				_ep_event[j].data.fd = 0;

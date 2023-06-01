@@ -18,6 +18,7 @@ struct listener_socket {
 class FileParser {
 
 	private:
+		std::string							_server_conf_file;
 		listener_socket						_listener;
 		std::map<std::string, std::string>	_path;
 

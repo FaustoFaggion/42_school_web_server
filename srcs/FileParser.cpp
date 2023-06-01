@@ -83,8 +83,10 @@ void	FileParser::setup_listener(std::string buff)
 		std::string	server_name;
 		int i = 12;
 
+		std::cout << "buff_size: " << buff.size() << "\n";
 		while (buff.at(i) != '\0')
 		{
+			std::cout << "\n" << i << "\n";
 			server_name += buff.at(i);
 			i++;
 		}
@@ -124,11 +126,74 @@ void	FileParser::parse_file(char *file)
 	conf_file.open(file,  std::fstream::in);
 	if (conf_file.fail())
 		std::cout << "Configuration file fail to read" << std::endl;
+	
+	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING IN A MAP*/
+	int i = 0;
+
 	while (!conf_file.eof())
 	{
+		
 		std::getline(conf_file, buff,'\n');
-		cleanSpaces(buff);
-		setup_listener(buff);
+		if (buff.find("server", 0) != buff.npos)
+		{
+			i += 1;
+			while (!conf_file.eof() && i != 0)
+			{	
+				std::getline(conf_file, buff,'\n');
+				if (buff.find("{", 0) != buff.npos)
+					i+= 1;
+				if (buff.find("}", 0) != buff.npos)
+					i-= 1;
+				if (i == 0)
+					break ;
+				_server_conf_file += "\n";
+				_server_conf_file += buff;
+			}
+		}
 	}
+	
+	/*ERASE COMMENTS*/
+	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
+	{
+		size_t start = _server_conf_file.find("#", 0);
+		size_t end = _server_conf_file.find("\n", start);
+		_server_conf_file.erase(start, (end- start));
+	}
+	std::cout << _server_conf_file << "\n\n";
+	
+	/*PARSE SERVEER FAMILY AND PORT*/
+	std::string	str;
+
+	while (_server_conf_file.find("listen", 0) != _server_conf_file)
+	{
+		size_t start = _server_conf_file.find("listen", 0);
+		size_t end = _server_conf_file.find("\n", start);
+		std::string str = _server_conf_file.substr(start, (end - start));
+		str.append("\0");
+		std::cout << str << "\n";
+		setup_listener(str);
+		_server_conf_file.erase(start, (end- start));
+		std::cout << _server_conf_file << "\n\n";
+	}
+	
+
+	/*PARSE SERVER_NAME*/
+	while (_server_conf_file.find("server_name", 0) != server_configuration.npos)
+	{
+		size_t start = _server_conf_file.find("server_name", 0);
+		size_t end = _server_conf_file.find("\n", start);
+		std::string str = _server_conf_file.substr(start, (end - start));
+		str += '\0';
+		setup_listener(str);
+		_server_conf_file.erase(start, (end- start));
+		std::cout << server_configuration << "\n\n";
+	}
+
+	// while (!conf_file.eof())
+	// {
+	// 	std::getline(conf_file, buff,'\n');
+	// 	cleanSpaces(buff);
+	// 	setup_listener(buff);
+	// }
 
 }
