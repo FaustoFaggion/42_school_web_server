@@ -243,7 +243,7 @@ void	WebServ::request_parser(std::string &request)
 	std::cout << "request parser\n";
 	if (strncmp("GET / HTTP/1.1", request.c_str(), 14) == 0)
 	{
-		conf_file.open("./srcs/locations/html_get.html",  std::fstream::in);
+		conf_file.open("./locations/html_get.html",  std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();
@@ -258,7 +258,7 @@ void	WebServ::request_parser(std::string &request)
 	}
 	else if (strncmp("POST / HTTP/1.1", request.c_str(), 15) == 0)
 	{
-		conf_file.open("./srcs/locations/html_post.html",  std::fstream::in);
+		conf_file.open("./locations/html_post.html",  std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();
@@ -274,7 +274,7 @@ void	WebServ::request_parser(std::string &request)
 	{
 		/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
 
-		conf_file.open("./srcs/locations/html_del.html",  std::fstream::in);
+		conf_file.open("./locations/html_del.html",  std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();
@@ -290,7 +290,7 @@ void	WebServ::request_parser(std::string &request)
 	else
 	{
 		/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
-		conf_file.open("./srcs/locations/error.html",  std::fstream::in);
+		conf_file.open("./locations/error.html",  std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();

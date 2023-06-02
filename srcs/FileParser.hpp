@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <algorithm>
+#include <vector>
 #include <map>
 
 struct listener_socket {
@@ -27,18 +28,24 @@ class FileParser {
 		FileParser(char *file);
 		~FileParser();
 
-		int			get_domain() const;
-		std::string	get_port() const;
-		int			get_flag() const;
-		int			get_worker_processes() const;
-		int			get_type() const;
+		int									get_domain() const;
+		std::string							get_port() const;
+		int									get_flag() const;
+		int									get_worker_processes() const;
+		int									get_type() const;
+		std::map<std::string, std::string>	getPath() const;
 
+		void								parse_configuration_file(char *file);
+		void								parse_listener();
+		void								parse_locations();
 
-		void		parse_file(char *file);
-		void		setup_listener(std::string buff);
-		void		setup_location(std::string str);
+		void								setup_listener(std::string buff);
+		void								setup_location(std::string str);
 
-
+		void								file_to_string(char *file, std::string &buff);
+		std::string							str_substring(std::string &str, std::string find, int init, char finish);
+		void								chk_simple_directive(std::string &str);
+		std::string							get_simple_directive_value(std::string &str, char finish);
 };
 
 #endif

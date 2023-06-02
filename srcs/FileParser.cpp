@@ -16,7 +16,7 @@ FileParser::FileParser(char * file)
 	_listener._flag = 0;
 	_listener._port = "";
 	_listener._worker_processes = 0;
-	parse_file(file);
+	parse_configuration_file(file);
 }
 
 FileParser::~FileParser()
@@ -49,9 +49,13 @@ int			FileParser::get_type() const
 	return (_listener._type);
 }
 
+std::map<std::string, std::string>	FileParser::getPath() const
+{
+	return (_path);
+}
+
 void	FileParser::setup_listener(std::string buff)
 {
-	
 	if (strncmp("listen [::]", buff.c_str(), 11) == 0)
 	{
 		if (_listener._domain == AF_INET)
@@ -130,167 +134,207 @@ void		setup_location(std::string str)
 	(void)str;
 }
 
-void	FileParser::parse_file(char *file)
+void		FileParser::file_to_string(char *file, std::string &response)
 {
-	std::fstream	conf_file;
+	std::fstream	open_file;
 	std::string		buff;
 
-	conf_file.open(file,  std::fstream::in);
-	if (conf_file.fail())
+	open_file.open(file,  std::fstream::in);
+	if (open_file.fail())
 		std::cout << "Configuration file fail to read" << std::endl;
-	
-	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
-	int i = 0;
 
-	while (!conf_file.eof())
+	while (!open_file.eof())
 	{
-		
-		std::getline(conf_file, buff,'\n');
-		if (buff.find("server", 0) != buff.npos)
-		{
-			i += 1;
-			while (!conf_file.eof() && i != 0)
-			{	
-				std::getline(conf_file, buff,'\n');
-				if (buff.find("{", 0) != buff.npos)
-					i+= 1;
-				if (buff.find("}", 0) != buff.npos)
-					i-= 1;
-				if (i == 0)
-					break ;
-				_server_conf_file += "\n";
-				_server_conf_file += buff;
-			}
-		}
+		std::getline(open_file, buff,'\n');
+		response += buff;
+		response += "\n";
 	}
+	response += '\0';
+}
+
+std::string	FileParser::str_substring(std::string &str, std::string find, int init, char finish)
+{
+	std::string	response;
+	if (str.find(find, init) != str.npos)
+	{
+		size_t start = str.find(find, 0);
+		size_t end = str.find(finish, start);
+		
+		std::string tmp = str.substr(start, (end - start));
+		response = tmp;
+		response += '\0';
+		str.erase(start, (end- start));
+	}
+	return (response);
+}
+
+void	FileParser::chk_simple_directive(std::string &str)
+{
+
+	size_t end = str.find(";", 0);
+	if (end == str.npos)
+	{
+		std::cout << "ERROR:root missing ';'" << std::endl;
+		exit(2);
+	}
+	str = str.substr(0, end);
+	str += '\0';
+}
+
+std::string	FileParser::get_simple_directive_value(std::string &str, char finish)
+{
+	std::string	response;
+	int			i;
+	
+	i = 0;
+	while (!isspace(str.at(i)))
+		i++;
+	while (isspace(str.at(i)))
+		i++;
+	while (str.at(i) != finish)
+	{
+		response += str.at(i);
+		i++;
+	}
+	response += '\0';
+	return (response);
+}
+
+void	FileParser::parse_listener()
+{
+	// /*PARSE SERVEER FAMILY AND PORT*/
+	std::string	ltn;
+	while (_server_conf_file.find("listen", 0) != _server_conf_file.npos)
+	{
+		ltn = str_substring(_server_conf_file, "listen", 0, '\n');
+		chk_simple_directive(ltn);
+		setup_listener(ltn);
+	}
+	std::cout << "PARSE FAMILY AND PORT \n" << _server_conf_file << "\n\n";
+
+	// // /*PARSE SERVER_NAME*/
+
+	std::string	sn;;
+	while (_server_conf_file.find("server_name", 0) != _server_conf_file.npos)
+	{
+		sn = str_substring(_server_conf_file, "server_name", 0, '\n');
+		chk_simple_directive(sn);
+		setup_listener(sn);
+	}
+
+	std::cout << "PARSE SERVER_NAME \n" << _server_conf_file << "\n\n";
+
+	// // /*PARSE WORKER_PROCESSES*/
+	std::string	wp;;
+	while (_server_conf_file.find("worker_processes", 0) != _server_conf_file.npos)
+	{
+		wp = str_substring(_server_conf_file, "worker_processes", 0, '\n');
+		chk_simple_directive(wp);
+		setup_listener(wp);
+	}
+
+	std::cout << "PARSE WORKER_PROCESSES \n" << _server_conf_file << "\n\n";
+
+}
+
+void	FileParser::parse_locations()
+{
+	// /*PARSE ROOT*/
+	std::string	root_directive;
+	std::string	root_request_path;
+	while (_server_conf_file.find("root", 0) != _server_conf_file.npos)
+	{
+		root_directive = str_substring(_server_conf_file, "root", 0, '\n');
+		chk_simple_directive(root_directive);
+		root_request_path = get_simple_directive_value(root_directive, '\0');
+		
+		std::cout << _server_conf_file << "\n\n";
+
+		if (access(root_request_path.c_str(), F_OK) != 0)
+		{
+			std::cout << "Path " << root_request_path << " do not exist!" << std::endl;
+		}
+		_path["/"] = root_request_path;
+
+		std::cout << "root: " << _path["/"] << std::endl;
+	}
+
+	/*PARSE LOCATIONS*/
+	std::string	location;
+	std::string	request_path;
+	std::string	server_path;
+
+	while (_server_conf_file.find("location", 0) != _server_conf_file.npos)
+	{
+		location = str_substring(_server_conf_file, "location", 0, '}');
+		request_path = str_substring(location, "location", 0, '\n');
+		request_path = get_simple_directive_value(request_path, ' ');
+		
+		std::cout << "request_path: " << request_path << std::endl;
+	
+		server_path = str_substring(location, "root", 0, '\n');
+
+		size_t start = location.find("root", 0);
+		size_t end = location.find("\n", start);
+		/*NO ROOT DIRECTIVE INSIDE LOCATION BLOCK*/
+		if (start == location.npos)
+		{
+			if (_path["/"] == "")
+			{
+				std::cout << "ERROR: root not defined" << std::endl;
+				exit(2);
+			}
+			server_path = _path["/"] + request_path;
+		}
+	// 	/*THERE IS A ROOT DIRECTIVE INSIDE LOCATION BLOCK*/
+		else
+		{
+			std::string	root_directive = location.substr(start, (end - start));
+			root_directive += '\0';
+			server_path = get_simple_directive_value(root_directive, ' ');
+		
+			server_path += request_path;
+		}
+		/*REWRITE THE PATH CORRECTILY IF '//' IS FIND*/
+		size_t pos = server_path.find("//");
+		if (pos != server_path.npos)
+		{
+			server_path.replace(pos, 1, "");
+		}
+
+		/*INSERT LOCATION PATH INTO THE _PATH MAP*/
+		_path[request_path] = server_path;
+
+		/*PRINT*/
+		std::map<std::string, std::string>::iterator	it;
+		it = _path.begin();
+		for (; it != _path.end(); it++)
+			std::cout << "location: " << (*it).first << " : " << (*it).second << std::endl;
+	}
+}
+
+void	FileParser::parse_configuration_file(char *file)
+{
+	std::string	configuration_file;
+
+	file_to_string(file, configuration_file);
+
+	std::cout << configuration_file << std::endl;
+	
+	// /*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
+	// while()
+	_server_conf_file = str_substring(configuration_file, "server", 0, '\0');
+	
+	std::cout << _server_conf_file << std::endl;
 	
 	/*ERASE COMMENTS*/
 	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
-	{
-		size_t start = _server_conf_file.find("#", 0);
-		size_t end = _server_conf_file.find("\n", start);
-		_server_conf_file.erase(start, (end- start));
-	}
-	std::cout << _server_conf_file << "\n\n";
+		str_substring(_server_conf_file, "#", 0, '\n');
 	
-	/*PARSE SERVEER FAMILY AND PORT*/
-	std::string	str;
-
-	while (_server_conf_file.find("listen", 0) != _server_conf_file.npos)
-	{
-		size_t start = _server_conf_file.find("listen", 0);
-		size_t end = _server_conf_file.find("\n", start);
-		std::string str = _server_conf_file.substr(start, (end - start));
-		
-		end = _server_conf_file.find(";", start);
-		if (end == _server_conf_file.npos)
-		{
-			std::cout << "ERROR:listen missing ';'" << std::endl;
-			exit(2);
-		}
-		
-		str = _server_conf_file.substr(start, (end - start));
-		str += '\0';
-		std::cout << str << "\n";
-		setup_listener(str);
-		_server_conf_file.erase(start, (end- start) + 1);
-		std::cout << _server_conf_file << "\n\n";
-	}
+	std::cout << "ERASE COMMENTS \n" << _server_conf_file << "\n\n";
 	
-
-	/*PARSE SERVER_NAME*/
-	while (_server_conf_file.find("server_name", 0) != _server_conf_file.npos)
-	{
-		size_t start = _server_conf_file.find("server_name", 0);
-		size_t end = _server_conf_file.find("\n", start);
-		std::string str = _server_conf_file.substr(start, (end - start));
-		
-		end = _server_conf_file.find(";", start);
-		if (end == _server_conf_file.npos)
-		{
-			std::cout << "ERROR: server_name missing ';'" << std::endl;
-			exit(2);
-		}
-		
-		str = _server_conf_file.substr(start, (end - start));
-		str += '\0';
-		setup_listener(str);
-		_server_conf_file.erase(start, (end- start) + 1);
-		std::cout << _server_conf_file << "\n\n";
-	}
-
-	/*PARSE WORKER_PROCESSES*/
-	while (_server_conf_file.find("worker_processes", 0) != _server_conf_file.npos)
-	{
-		size_t start = _server_conf_file.find("worker_processes", 0);
-		size_t end = _server_conf_file.find("\n", start);
-		std::string str = _server_conf_file.substr(start, (end - start));
-
-		end = _server_conf_file.find(";", start);
-		if (end == _server_conf_file.npos)
-		{
-			std::cout << "ERROR: worker_processes missing ';'" << std::endl;
-			exit(2);
-		}
-		
-		str = _server_conf_file.substr(start, (end - start));
-		str += '\0';
-		setup_listener(str);
-		_server_conf_file.erase(start, (end- start) + 1);
-		std::cout << _server_conf_file << "\n\n";
-	}
-
-	/*PARSE WORKER_PROCESSES*/
-	while (_server_conf_file.find("root", 0) != _server_conf_file.npos)
-	{
-		size_t start = _server_conf_file.find("root", 0);
-		size_t end = _server_conf_file.find("\n", start);
-		std::string str = _server_conf_file.substr(start, (end - start));
-
-		end = _server_conf_file.find(";", start);
-		if (end == _server_conf_file.npos)
-		{
-			std::cout << "ERROR:root missing ';'" << std::endl;
-			exit(2);
-		}
-		
-		str = _server_conf_file.substr(start, (end - start));
-		str += '\0';
-
-		i = 5;
-		while (isspace(str.at(i)))
-			i++;
-		while (str.at(i) != '\0')
-		{
-			_path["/"] += str.at(i);
-			
-			i++;
-		}
-		_server_conf_file.erase(start, (end- start) + 1);
-		std::cout << "root: " << _path["/"] << "\n\n";
-		std::cout << _server_conf_file << "\n\n";
-
-		if (access(_path["/"].c_str(), F_OK) != 0)
-		{
-			std::cout << "Path " << _path["/"] << " do not exist!" << std::endl;
-		}
-	}
-
-	// while (_server_conf_file.find("location", 0) != _server_conf_file.npos)
-	// {
-	// 	size_t start = _server_conf_file.find("location", 0);
-	// 	size_t end = _server_conf_file.find("}", start);
-	// 	std::string str = _server_conf_file.substr(start, (end - start) - 1);
-	// 	std::cout << str << "\n\n";
-
-	// }
-
-
-	// while (!conf_file.eof())
-	// {
-	// 	std::getline(conf_file, buff,'\n');
-	// 	cleanSpaces(buff);
-	// 	setup_listener(buff);
-	// }
-
+	parse_listener();
+	
+	parse_locations();
+	
 }
