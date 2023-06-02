@@ -6,7 +6,7 @@ FileParser::FileParser()
 	_listener._type = 0;
 	_listener._flag = 0;
 	_listener._port = "";
-	_listener._worker_connections = 0;
+	_listener._worker_processes = 0;
 }
 
 FileParser::FileParser(char * file)
@@ -15,7 +15,7 @@ FileParser::FileParser(char * file)
 	_listener._type = 0;
 	_listener._flag = 0;
 	_listener._port = "";
-	_listener._worker_connections = 0;
+	_listener._worker_processes = 0;
 	parse_file(file);
 }
 
@@ -39,9 +39,9 @@ int			FileParser::get_flag() const
 	return (_listener._flag);
 }
 
-int			FileParser::get_worker_connections() const
+int			FileParser::get_worker_processes() const
 {
-	return (_listener._worker_connections);
+	return (_listener._worker_processes);
 }
 
 int			FileParser::get_type() const
@@ -61,7 +61,9 @@ void	FileParser::setup_listener(std::string buff)
 		if (_listener._port == "")
 		{
 			int i = 12;
-			while (isdigit(buff.at(i)) == true)
+			while (isspace(buff.at(i)))
+				i++;
+			while (isdigit(buff.at(i)))
 			{
 				_listener._port += buff.at(i);
 				i++;
@@ -70,9 +72,13 @@ void	FileParser::setup_listener(std::string buff)
 	}
 	else if (strncmp("listen", buff.c_str(), 6) == 0)
 	{
+		
 		_listener._domain = AF_INET;
+		
 		int i = 7;
-		while (isdigit(buff.at(i)) == true)
+		while (isspace(buff.at(i)))
+			i++;
+		while (isdigit(buff.at(i)))
 		{
 			_listener._port += buff.at(i);
 			i++;
@@ -81,12 +87,12 @@ void	FileParser::setup_listener(std::string buff)
 	else if (strncmp("server_name", buff.c_str(), 11) == 0)
 	{
 		std::string	server_name;
-		int i = 12;
 
-		std::cout << "buff_size: " << buff.size() << "\n";
+		int i = 12;
+		while (isspace(buff.at(i)))
+			i++;
 		while (buff.at(i) != '\0')
 		{
-			std::cout << "\n" << i << "\n";
 			server_name += buff.at(i);
 			i++;
 		}
@@ -94,10 +100,11 @@ void	FileParser::setup_listener(std::string buff)
 			_listener._flag = AI_PASSIVE;
 
 	}
-	else if (strncmp("worker_connections", buff.c_str(), 18) == 0)
+	else if (strncmp("worker_processes", buff.c_str(), 18) == 0)
 	{
-		int i = 18;
 		std::string	tmp;
+		
+		int i = 19;
 		while (isspace(buff.at(i)))
 			i++;
 		while (isdigit(buff.at(i)))
@@ -105,7 +112,7 @@ void	FileParser::setup_listener(std::string buff)
 			tmp += buff.at(i);
 			i++;
 		}
-		_listener._worker_connections = atoi(tmp.c_str());
+		_listener._worker_processes = atoi(tmp.c_str());
 	}
 }
 
@@ -127,7 +134,7 @@ void	FileParser::parse_file(char *file)
 	if (conf_file.fail())
 		std::cout << "Configuration file fail to read" << std::endl;
 	
-	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING IN A MAP*/
+	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
 	int i = 0;
 
 	while (!conf_file.eof())
@@ -169,10 +176,19 @@ void	FileParser::parse_file(char *file)
 		size_t start = _server_conf_file.find("listen", 0);
 		size_t end = _server_conf_file.find("\n", start);
 		std::string str = _server_conf_file.substr(start, (end - start));
-		str.append("\0");
+		
+		end = _server_conf_file.find(";", start);
+		if (end == _server_conf_file.npos)
+		{
+			std::cout << "ERROR: missing ';'" << std::endl;
+			exit(2);
+		}
+		
+		str = _server_conf_file.substr(start, (end - start));
+		str += '\0';
 		std::cout << str << "\n";
 		setup_listener(str);
-		_server_conf_file.erase(start, (end- start));
+		_server_conf_file.erase(start, (end- start) + 1);
 		std::cout << _server_conf_file << "\n\n";
 	}
 	
@@ -183,11 +199,49 @@ void	FileParser::parse_file(char *file)
 		size_t start = _server_conf_file.find("server_name", 0);
 		size_t end = _server_conf_file.find("\n", start);
 		std::string str = _server_conf_file.substr(start, (end - start));
+		
+		end = _server_conf_file.find(";", start);
+		if (end == _server_conf_file.npos)
+		{
+			std::cout << "ERROR: " << std::endl;
+			exit(2);
+		}
+		
+		str = _server_conf_file.substr(start, (end - start));
 		str += '\0';
 		setup_listener(str);
-		_server_conf_file.erase(start, (end- start));
+		_server_conf_file.erase(start, (end- start) + 1);
 		std::cout << _server_conf_file << "\n\n";
 	}
+
+	/*PARSE WORKER_PROCESSES*/
+	while (_server_conf_file.find("worker_processes", 0) != _server_conf_file.npos)
+	{
+		size_t start = _server_conf_file.find("worker_processes", 0);
+		size_t end = _server_conf_file.find("\n", start);
+		std::string str = _server_conf_file.substr(start, (end - start));
+
+		end = _server_conf_file.find(";", start);
+		if (end == _server_conf_file.npos)
+		{
+			std::cout << "ERROR: " << std::endl;
+			exit(2);
+		}
+		
+		str = _server_conf_file.substr(start, (end - start));
+		str += '\0';
+		setup_listener(str);
+		_server_conf_file.erase(start, (end- start) + 1);
+		std::cout << _server_conf_file << "\n\n";
+	}
+
+	// while (_server_conf_file.find("location", 0) != _server_conf_file.npos)
+	// {
+	// 	size_t start = _server_conf_file.find("location", 0);
+	// 	size_t end = _server_conf_file.find("}", start);
+	// 	std::string str = _server_conf_file.substr(start, (end - start));
+	// }
+
 
 	// while (!conf_file.eof())
 	// {

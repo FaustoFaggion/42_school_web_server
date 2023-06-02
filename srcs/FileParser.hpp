@@ -12,7 +12,7 @@ struct listener_socket {
 	std::string		_port;
 	int				_flag;
 	int				_type;
-	int				_worker_connections;
+	int				_worker_processes;
 };
 
 class FileParser {
@@ -30,7 +30,7 @@ class FileParser {
 		int			get_domain() const;
 		std::string	get_port() const;
 		int			get_flag() const;
-		int			get_worker_connections() const;
+		int			get_worker_processes() const;
 		int			get_type() const;
 
 

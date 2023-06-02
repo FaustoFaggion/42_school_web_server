@@ -121,9 +121,9 @@ void	WebServ::delete_timeout_socket()
 		std::cout << "start time: " << map_connections[_ep_event[j].data.fd].start_connection << " time" << time(NULL) << " timeout: "<< timeout << " fd: " << _ep_event[j].data.fd << "\n";
 		if (_ep_event[j].data.fd != _fd_listener)
 		{
-			if (timeout > 2.0)
+			if (timeout > 0.0)
 			{
-				std::cout << "now > 2.0\n";
+				std::cout << "now > 0.0\n";
 				std::cout << "fd: " <<_ep_event[j].data.fd << "\n";
 				int	fd = _ep_event[j].data.fd;
 
