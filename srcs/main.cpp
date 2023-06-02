@@ -13,15 +13,15 @@ int	main(int argc, char *argv[])
 	
 	FileParser	conf_file(argv[1]);
 
-	WebServ		server(conf_file);
+	// WebServ		server(conf_file);
 
-	server.setup_server(SOCK_STREAM);
+	// server.setup_server(SOCK_STREAM);
 
-	server.create_listener_socket();
+	// server.create_listener_socket();
 
-	server.create_connections();
+	// server.create_connections();
 
-	server.run();
+	// server.run();
 
 	return (0);
 }

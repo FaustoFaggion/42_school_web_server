@@ -3,6 +3,7 @@
 
 #include "main.hpp"
 #include <stdio.h>
+#include <unistd.h>
 #include <fstream>
 #include <sstream>
 #include <algorithm>

@@ -125,6 +125,11 @@ void	cleanSpaces(std::string& str) {
 	str += '\0';
 }
 
+void		setup_location(std::string str)
+{
+	(void)str;
+}
+
 void	FileParser::parse_file(char *file)
 {
 	std::fstream	conf_file;
@@ -180,7 +185,7 @@ void	FileParser::parse_file(char *file)
 		end = _server_conf_file.find(";", start);
 		if (end == _server_conf_file.npos)
 		{
-			std::cout << "ERROR: missing ';'" << std::endl;
+			std::cout << "ERROR:listen missing ';'" << std::endl;
 			exit(2);
 		}
 		
@@ -203,7 +208,7 @@ void	FileParser::parse_file(char *file)
 		end = _server_conf_file.find(";", start);
 		if (end == _server_conf_file.npos)
 		{
-			std::cout << "ERROR: " << std::endl;
+			std::cout << "ERROR: server_name missing ';'" << std::endl;
 			exit(2);
 		}
 		
@@ -224,7 +229,7 @@ void	FileParser::parse_file(char *file)
 		end = _server_conf_file.find(";", start);
 		if (end == _server_conf_file.npos)
 		{
-			std::cout << "ERROR: " << std::endl;
+			std::cout << "ERROR: worker_processes missing ';'" << std::endl;
 			exit(2);
 		}
 		
@@ -235,11 +240,49 @@ void	FileParser::parse_file(char *file)
 		std::cout << _server_conf_file << "\n\n";
 	}
 
+	/*PARSE WORKER_PROCESSES*/
+	while (_server_conf_file.find("root", 0) != _server_conf_file.npos)
+	{
+		size_t start = _server_conf_file.find("root", 0);
+		size_t end = _server_conf_file.find("\n", start);
+		std::string str = _server_conf_file.substr(start, (end - start));
+
+		end = _server_conf_file.find(";", start);
+		if (end == _server_conf_file.npos)
+		{
+			std::cout << "ERROR:root missing ';'" << std::endl;
+			exit(2);
+		}
+		
+		str = _server_conf_file.substr(start, (end - start));
+		str += '\0';
+
+		i = 5;
+		while (isspace(str.at(i)))
+			i++;
+		while (str.at(i) != '\0')
+		{
+			_path["/"] += str.at(i);
+			
+			i++;
+		}
+		_server_conf_file.erase(start, (end- start) + 1);
+		std::cout << "root: " << _path["/"] << "\n\n";
+		std::cout << _server_conf_file << "\n\n";
+
+		if (access(_path["/"].c_str(), F_OK) != 0)
+		{
+			std::cout << "Path " << _path["/"] << " do not exist!" << std::endl;
+		}
+	}
+
 	// while (_server_conf_file.find("location", 0) != _server_conf_file.npos)
 	// {
 	// 	size_t start = _server_conf_file.find("location", 0);
 	// 	size_t end = _server_conf_file.find("}", start);
-	// 	std::string str = _server_conf_file.substr(start, (end - start));
+	// 	std::string str = _server_conf_file.substr(start, (end - start) - 1);
+	// 	std::cout << str << "\n\n";
+
 	// }
 
 

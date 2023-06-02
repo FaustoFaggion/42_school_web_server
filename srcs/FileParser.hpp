@@ -34,8 +34,9 @@ class FileParser {
 		int			get_type() const;
 
 
-		void	parse_file(char *file);
-		void	setup_listener(std::string buff);
+		void		parse_file(char *file);
+		void		setup_listener(std::string buff);
+		void		setup_location(std::string str);
 
 
 };
