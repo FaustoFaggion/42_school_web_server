@@ -41,7 +41,6 @@ class FileParser {
 		void								parse_locations();
 
 		void								setup_listener(std::string buff);
-		void								setup_location(std::string str);
 
 		void								file_to_string(char *file, std::string &buff);
 		std::string							str_substring(std::string &str, std::string find, int init, char finish);

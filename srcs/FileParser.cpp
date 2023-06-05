@@ -56,7 +56,7 @@ std::map<std::string, std::string>	FileParser::getPath() const
 
 void	FileParser::setup_listener(std::string buff)
 {
-	if (strncmp("listen [::]", buff.c_str(), 11) == 0)
+	if (buff.compare(0, 11, "listen [::]") == 0)
 	{
 		if (_listener._domain == AF_INET)
 			_listener._domain = AF_UNSPEC;
@@ -74,7 +74,7 @@ void	FileParser::setup_listener(std::string buff)
 			}
 		}
 	}
-	else if (strncmp("listen", buff.c_str(), 6) == 0)
+	else if (buff.compare(0, 6, "listen") == 0)
 	{
 		
 		_listener._domain = AF_INET;
@@ -88,7 +88,7 @@ void	FileParser::setup_listener(std::string buff)
 			i++;
 		}
 	}
-	else if (strncmp("server_name", buff.c_str(), 11) == 0)
+	else if (buff.compare(0, 11, "server_name") == 0)
 	{
 		std::string	server_name;
 
@@ -104,7 +104,7 @@ void	FileParser::setup_listener(std::string buff)
 			_listener._flag = AI_PASSIVE;
 
 	}
-	else if (strncmp("worker_processes", buff.c_str(), 18) == 0)
+	else if (buff.compare(0, 11, "worker_processes") == 0)
 	{
 		std::string	tmp;
 		
@@ -126,11 +126,6 @@ void	cleanSpaces(std::string& str) {
 
     // Remove trailing spaces
     str.erase(std::find_if(str.rbegin(), str.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), str.end());
-}
-
-void		setup_location(std::string str)
-{
-	(void)str;
 }
 
 void		FileParser::file_to_string(char *file, std::string &response)
@@ -232,60 +227,73 @@ void	FileParser::parse_locations()
 {
 	// /*PARSE ROOT*/
 	std::string	root_directive;
-	std::string	root_request_path;
-	while (_server_conf_file.find("root", 0) != _server_conf_file.npos)
+	std::string	root_path;
+	int			not_root_path;
+	
+	if (_server_conf_file.find("location ", 0) == _server_conf_file.npos)
+	{
+		std::cout << "No location defined in seerver configuration file!!\n";
+		exit(1);
+	}
+	size_t end = _server_conf_file.find("location ", 0);
+	size_t start = _server_conf_file.find("root", 0);
+	if (start < end)
 	{
 		root_directive = str_substring(_server_conf_file, "root", 0, '\n');
 		chk_simple_directive(root_directive);
-		root_request_path = get_simple_directive_value(root_directive);
+		root_path = get_simple_directive_value(root_directive);
 		
 		std::cout << _server_conf_file << "\n\n";
 
-		if (access(root_request_path.c_str(), F_OK) != 0)
+		if (access(root_path.c_str(), F_OK) != 0)
 		{
-			std::cout << "Path " << root_request_path << " do not exist!" << std::endl;
+			std::cout << "Path " << root_path << " do not exist!" << std::endl;
 		}
-		_path["/"] = root_request_path;
+		_path["/"] = root_path;
 
 		std::cout << "root: " << _path["/"] << std::endl;
+		not_root_path = 0;
 	}
+	else
+		not_root_path = 1;
 
 	/*PARSE LOCATIONS*/
 	std::string	location;
 	std::string	request_path;
 	std::string	server_path;
 
-	while (_server_conf_file.find("location", 0) != _server_conf_file.npos)
+	while (_server_conf_file.find("location ", 0) != _server_conf_file.npos)
 	{
-		location = str_substring(_server_conf_file, "location", 0, '}');
-		request_path = str_substring(location, "location", 0, '\n');
+		location = str_substring(_server_conf_file, "location ", 0, '}');
+		request_path = str_substring(location, "location ", 0, '\n');
 		request_path = get_simple_directive_value(request_path);
 		
 		std::cout << "request_path: " << request_path << std::endl;
-	
-		server_path = str_substring(location, "root", 0, '\n');
 
-		size_t start = location.find("root", 0);
-		size_t end = location.find("\n", start);
-		/*NO ROOT DIRECTIVE INSIDE LOCATION BLOCK*/
-		if (start == location.npos)
+		/*NO SIMPLE DIRECTIVE DEFINING ROOT*/
+		if (not_root_path == 1)
 		{
-			if (_path["/"] == "")
+			if (location.find("root", 0) == location.npos)
 			{
 				std::cout << "ERROR: root not defined" << std::endl;
 				exit(2);
 			}
-			server_path = _path["/"] + request_path;
+			root_directive = str_substring(location, "root", 0, '\n');
+			chk_simple_directive(root_directive);
+			root_path = get_simple_directive_value(root_directive);
+			if (access(server_path.c_str(), F_OK) != 0)
+			{
+				std::cout << "Path " << root_path << " do not exist!" << std::endl;
+			}
+			_path["/"] = root_path;
+
+			std::cout << "root: " << _path["/"] << std::endl;
 		}
-	// 	/*THERE IS A ROOT DIRECTIVE INSIDE LOCATION BLOCK*/
+	// 	/*THERE IS A SIMPLE DIRECTIVE DEFINING ROOT*/
 		else
-		{
-			std::string	root_directive = location.substr(start, (end - start));
-			root_directive += '\0';
-			server_path = get_simple_directive_value(root_directive);
-		
-			server_path += request_path;
-		}
+			server_path = _path["/"];
+
+		server_path = root_path + request_path;
 		/*REWRITE THE PATH CORRECTILY IF '//' IS FIND*/
 		size_t pos = server_path.find("//");
 		if (pos != server_path.npos)
