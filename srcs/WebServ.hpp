@@ -23,6 +23,7 @@ class WebServ
 	private:
 		int							_fd_listener;
 		ListenerSocket				_listener;
+		std::map<std::string, std::string>	locations;
 
 		std::map<int, t_client>	map_connections;
 		int 						_efd;

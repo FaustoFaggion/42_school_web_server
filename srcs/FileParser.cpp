@@ -305,12 +305,12 @@ void	FileParser::parse_locations()
 		/*INSERT LOCATION PATH INTO THE _PATH MAP*/
 		_path[request_path] = server_path;
 
+	}
 		/*PRINT*/
 		std::map<std::string, std::string>::iterator	it;
 		it = _path.begin();
 		for (; it != _path.end(); it++)
 			std::cout << "location: " << (*it).first << " : " << (*it).second << std::endl;
-	}
 }
 
 void	FileParser::parse_configuration_file(char *file)

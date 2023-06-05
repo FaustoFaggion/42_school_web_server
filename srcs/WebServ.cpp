@@ -12,11 +12,12 @@ WebServ::WebServ(FileParser file)
 	_listener.set_port(file.get_port());
 	_listener.set_flag(file.get_flag());
 	_listener.set_worker_connections(MAX_CONNECTIONS);
-
 	std::cout << "domain: " << _listener.get_domain() << "\n";
 	std::cout << "flag: " << _listener.get_flag() << "\n";
 	std::cout << "type: " << _listener.get_type() << "\n";
 	std::cout << "port: " << _listener.get_port() << "\n";
+	
+	locations = file.getPath();
 }
 
 WebServ::~WebServ()
@@ -235,26 +236,96 @@ void	WebServ::response(int i)
 	}
 }
 
+void	clean(std::string& str) {
+    // Remove leading spaces
+    str.erase(str.begin(), std::find_if(str.begin(), str.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
+
+    // Remove trailing spaces
+    str.erase(std::find_if(str.rbegin(), str.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), str.end());
+	str += '\0';
+}
+
 void	WebServ::request_parser(std::string &request)
 {
 	std::fstream			conf_file;
 	std::stringstream		buff;
+	std::string 			html;
 
-	std::cout << "request parser\n";
-	if (strncmp("GET / HTTP/1.1", request.c_str(), 14) == 0)
+
+	// Find the end of the request line
+   		size_t requestLineEnd = request.find("\r\n");
+
+    	// Extract the request line
+    	std::string requestLine = request.substr(0, requestLineEnd);
+
+    	// Parse the request line
+    	std::istringstream iss(requestLine);
+    	std::string method, path, protocol;
+    	iss >> method >> path >> protocol;
+		html = locations[path] + "/index.html";
+		// clean(html);
+
+    	std::cout << "Method: " << method << std::endl;
+    	std::cout << "Path: " << path << std::endl;
+    	std::cout << "Protocol: " << protocol << std::endl;
+		std::cout << "html: " << html << " &html: " << &html << std::endl;
+		std::cout << "html.c_str(): " << html.c_str() << "\n";
+
+	if (strcmp(method.c_str(), "GET") == 0)
 	{
-		conf_file.open("./locations/html_get.html",  std::fstream::in);
-		if (conf_file.fail())
-			std::cout << "Configuration file fail to read" << std::endl;
-		buff << conf_file.rdbuf();
+		// std::string path = request.substr(4, (request.find("HTTP", 0) - ));
+		// clean(path);
+		// std::cout << "find: " << request.find("HTTP", 0) << "\n\n";
+		// std::cout << "path: " << path << "\n\n";
+		// std::cout << "locations:\n";
+		for (std::map<std::string, std::string>::iterator it = locations.begin(); it != locations.end(); it++)
+		{
+			std::cout << (*it).first << " : " << (*it).second << "\n";
+			// if ((*it).first == path)
+		// 		html = (*it).second + "/index.html";
+		}
+		// // std::cout << "location[path]: " << locations[path.c_str()] << "\n\n";
+		// // std::string html = locations[path.c_str()] + "/index.html";
+		// clean(html);
+		// std::cout << "html: " << html << "\n\n";
 
-		request = "HTTP/1.1 200 OK\r\n";
-    	request += "Content-Type: text/html\r\n";
-		request += "Connection: close\r\n";
-    	request += "\r\n";
-    	request += buff.str();
-		request += "\r\n";
-		conf_file.close();
+		std::string tmp = locations[path.c_str()];
+		std::cout << "tmp: " << tmp << "\n";
+		if (tmp == "")
+		{
+			std::cout << "NOT OK" << "\n\n";
+			/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
+			conf_file.open("./locations/test/error.html",  std::fstream::in);
+			if (conf_file.fail())
+				std::cout << "Configuration file fail to read" << std::endl;
+			buff << conf_file.rdbuf();
+
+			/*HTTP RESPONSE SYNTAX*/
+			request = "HTTP/1.1 404 Not Found\r\n";
+			request += "Content-Type: text/html\r\n";
+			request += "Connection: close\r\n";
+			request += "\r\n";
+			request += buff.str();
+			conf_file.close();
+		}
+		else
+		{
+			std::cout << "OK" << "\n\n";
+			conf_file.open(html.c_str() , std::fstream::in);
+			if (conf_file.fail())
+				std::cout << "Configuration file fail to read" << std::endl;
+			buff << conf_file.rdbuf();
+			
+			std::cout <<"BUFF\n" << buff.str() << "\n";
+			
+			request = "HTTP/1.1 200 OK\r\n";
+    		request += "Content-Type: text/html\r\n";
+			request += "Connection: close\r\n";
+    		request += "\r\n";
+    		request += buff.str();
+			request += "\r\n";
+			conf_file.close();
+		}
 	}
 	else if (strncmp("POST / HTTP/1.1", request.c_str(), 15) == 0)
 	{
@@ -262,7 +333,6 @@ void	WebServ::request_parser(std::string &request)
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();
-
 		request = "HTTP/1.1 200 OK\r\n";
     	request += "Content-Type: text/html\r\n";
     	request += "Connection: close\r\n";
@@ -290,7 +360,7 @@ void	WebServ::request_parser(std::string &request)
 	else
 	{
 		/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
-		conf_file.open("./locations/error.html",  std::fstream::in);
+		conf_file.open("./locations/test/error.html",  std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();
