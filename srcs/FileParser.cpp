@@ -275,7 +275,7 @@ void	FileParser::parse_locations()
 		
 		std::cout << "request_path: " << request_path << std::endl;
 
-		/*DEFINE ROOT DIRECTIVE IN NOT DEFINED*/
+		/*DEFINE ROOT DIRECTIVE IF NOT DEFINED*/
 		if (not_root_path == 1)
 		{
 			if (location.find("root", 0) == location.npos)
@@ -314,7 +314,7 @@ void	FileParser::parse_configuration_file(char *file)
 
 	std::cout << configuration_file << std::endl;
 	
-	// /*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
+	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
 	
 	// Falta parsear arquivos com mais de um servidor.
 	size_t	start;

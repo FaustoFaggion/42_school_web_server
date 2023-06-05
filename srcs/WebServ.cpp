@@ -313,8 +313,15 @@ void	WebServ::request_parser(std::string &request)
 			std::cout << "OK" << "\n\n";
 			conf_file.open(html.c_str() , std::fstream::in);
 			if (conf_file.fail())
+			{
 				std::cout << "Configuration file fail to read" << std::endl;
-			buff << conf_file.rdbuf();
+				conf_file.open("./locations/test/error.html",  std::fstream::in);
+				if (conf_file.fail())
+					std::cout << "Configuration file fail to read" << std::endl;
+				buff << conf_file.rdbuf();
+			}
+			else
+				buff << conf_file.rdbuf();
 			
 			std::cout <<"BUFF\n" << buff.str() << "\n";
 			
