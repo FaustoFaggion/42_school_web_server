@@ -4,6 +4,7 @@
 #include "main.hpp"
 #include <stdio.h>
 #include <fstream>
+#include <sstream>
 #include <algorithm>
 #include <vector>
 #include <map>
@@ -45,7 +46,7 @@ class FileParser {
 		void								file_to_string(char *file, std::string &buff);
 		std::string							str_substring(std::string &str, std::string find, int init, char finish);
 		void								chk_simple_directive(std::string &str);
-		std::string							get_simple_directive_value(std::string &str, char finish);
+		std::string							get_simple_directive_value(std::string &str);
 };
 
 #endif

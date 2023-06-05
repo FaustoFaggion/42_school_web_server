@@ -64,10 +64,10 @@ void	FileParser::setup_listener(std::string buff)
 			_listener._domain = AF_INET6;
 		if (_listener._port == "")
 		{
-			int i = 12;
-			while (isspace(buff.at(i)))
+			size_t i = 12;
+			while (i < buff.size() && isspace(buff.at(i)))
 				i++;
-			while (isdigit(buff.at(i)))
+			while (i < buff.size() && isdigit(buff.at(i)))
 			{
 				_listener._port += buff.at(i);
 				i++;
@@ -79,10 +79,10 @@ void	FileParser::setup_listener(std::string buff)
 		
 		_listener._domain = AF_INET;
 		
-		int i = 7;
-		while (isspace(buff.at(i)))
+		size_t i = 7;
+		while (i < buff.size() && (buff.at(i)))
 			i++;
-		while (isdigit(buff.at(i)))
+		while (i < buff.size() && isdigit(buff.at(i)))
 		{
 			_listener._port += buff.at(i);
 			i++;
@@ -92,10 +92,10 @@ void	FileParser::setup_listener(std::string buff)
 	{
 		std::string	server_name;
 
-		int i = 12;
-		while (isspace(buff.at(i)))
+		size_t i = 12;
+		while (i < buff.size() && isspace(buff.at(i)))
 			i++;
-		while (buff.at(i) != '\0')
+		while (i < buff.size())
 		{
 			server_name += buff.at(i);
 			i++;
@@ -108,10 +108,10 @@ void	FileParser::setup_listener(std::string buff)
 	{
 		std::string	tmp;
 		
-		int i = 19;
-		while (isspace(buff.at(i)))
+		size_t i = 19;
+		while (i < buff.size() && isspace(buff.at(i)))
 			i++;
-		while (isdigit(buff.at(i)))
+		while (i < buff.size() && isdigit(buff.at(i)))
 		{
 			tmp += buff.at(i);
 			i++;
@@ -126,7 +126,6 @@ void	cleanSpaces(std::string& str) {
 
     // Remove trailing spaces
     str.erase(std::find_if(str.rbegin(), str.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), str.end());
-	str += '\0';
 }
 
 void		setup_location(std::string str)
@@ -149,20 +148,17 @@ void		FileParser::file_to_string(char *file, std::string &response)
 		response += buff;
 		response += "\n";
 	}
-	response += '\0';
 }
 
 std::string	FileParser::str_substring(std::string &str, std::string find, int init, char finish)
 {
-	std::string	response;
+	std::string	response = "";
 	if (str.find(find, init) != str.npos)
 	{
 		size_t start = str.find(find, 0);
 		size_t end = str.find(finish, start);
 		
-		std::string tmp = str.substr(start, (end - start));
-		response = tmp;
-		response += '\0';
+		response = str.substr(start, (end - start));
 		str.erase(start, (end- start));
 	}
 	return (response);
@@ -178,25 +174,20 @@ void	FileParser::chk_simple_directive(std::string &str)
 		exit(2);
 	}
 	str = str.substr(0, end);
-	str += '\0';
 }
 
-std::string	FileParser::get_simple_directive_value(std::string &str, char finish)
+std::string	FileParser::get_simple_directive_value(std::string &str)
 {
 	std::string	response;
-	int			i;
+	// int			i;
 	
-	i = 0;
-	while (!isspace(str.at(i)))
-		i++;
-	while (isspace(str.at(i)))
-		i++;
-	while (str.at(i) != finish)
-	{
-		response += str.at(i);
-		i++;
-	}
-	response += '\0';
+		std::istringstream iss(str);
+    	std::string tmp1, tmp2;
+    	iss >> tmp1 >> response >> tmp2;
+
+		std::cout << "tmp1: " << tmp1 << "\n";
+		std::cout << "tmp2: " << tmp2 << "\n";
+		std::cout << "response: " << response << "\n";
 	return (response);
 }
 
@@ -246,7 +237,7 @@ void	FileParser::parse_locations()
 	{
 		root_directive = str_substring(_server_conf_file, "root", 0, '\n');
 		chk_simple_directive(root_directive);
-		root_request_path = get_simple_directive_value(root_directive, '\0');
+		root_request_path = get_simple_directive_value(root_directive);
 		
 		std::cout << _server_conf_file << "\n\n";
 
@@ -268,7 +259,7 @@ void	FileParser::parse_locations()
 	{
 		location = str_substring(_server_conf_file, "location", 0, '}');
 		request_path = str_substring(location, "location", 0, '\n');
-		request_path = get_simple_directive_value(request_path, ' ');
+		request_path = get_simple_directive_value(request_path);
 		
 		std::cout << "request_path: " << request_path << std::endl;
 	
@@ -291,7 +282,7 @@ void	FileParser::parse_locations()
 		{
 			std::string	root_directive = location.substr(start, (end - start));
 			root_directive += '\0';
-			server_path = get_simple_directive_value(root_directive, ' ');
+			server_path = get_simple_directive_value(root_directive);
 		
 			server_path += request_path;
 		}
@@ -307,10 +298,10 @@ void	FileParser::parse_locations()
 
 	}
 		/*PRINT*/
-		std::map<std::string, std::string>::iterator	it;
-		it = _path.begin();
-		for (; it != _path.end(); it++)
-			std::cout << "location: " << (*it).first << " : " << (*it).second << std::endl;
+		// std::map<std::string, std::string>::iterator	it;
+		// it = _path.begin();
+		// for (; it != _path.end(); it++)
+		// 	std::cout << "location: " << (*it).first << " : " << (*it).second << std::endl;
 }
 
 void	FileParser::parse_configuration_file(char *file)
@@ -322,10 +313,13 @@ void	FileParser::parse_configuration_file(char *file)
 	std::cout << configuration_file << std::endl;
 	
 	// /*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
-	// while()
-	_server_conf_file = str_substring(configuration_file, "server", 0, '\0');
 	
-	std::cout << _server_conf_file << std::endl;
+	// Falta parsear arquivos com mais de um servidor.
+	size_t	start;
+	size_t	end;
+	start = configuration_file.find("server", 0);
+	end = configuration_file.find_last_of("}", start);
+	_server_conf_file = configuration_file.substr(start, (end - start));
 	
 	/*ERASE COMMENTS*/
 	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
