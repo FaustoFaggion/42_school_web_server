@@ -225,19 +225,23 @@ void	FileParser::parse_listener()
 
 void	FileParser::parse_locations()
 {
-	// /*PARSE ROOT*/
 	std::string	root_directive;
 	std::string	root_path;
 	int			not_root_path;
 	
 	if (_server_conf_file.find("location ", 0) == _server_conf_file.npos)
 	{
-		std::cout << "No location defined in seerver configuration file!!\n";
+		std::cout << "No location defined in server configuration file!!\n";
 		exit(1);
 	}
+	/*IS THERE A SIMPLE DIRECTIVE DEFINIG ROOT?*/
 	size_t end = _server_conf_file.find("location ", 0);
 	size_t start = _server_conf_file.find("root", 0);
-	if (start < end)
+	/*NO*/
+	if (start > end)
+		not_root_path = 1;
+	/*YES*/
+	else
 	{
 		root_directive = str_substring(_server_conf_file, "root", 0, '\n');
 		chk_simple_directive(root_directive);
@@ -254,8 +258,6 @@ void	FileParser::parse_locations()
 		std::cout << "root: " << _path["/"] << std::endl;
 		not_root_path = 0;
 	}
-	else
-		not_root_path = 1;
 
 	/*PARSE LOCATIONS*/
 	std::string	location;
@@ -270,7 +272,7 @@ void	FileParser::parse_locations()
 		
 		std::cout << "request_path: " << request_path << std::endl;
 
-		/*NO SIMPLE DIRECTIVE DEFINING ROOT*/
+		/*DEFINE ROOT DIRECTIVE IN NOT DEFINED*/
 		if (not_root_path == 1)
 		{
 			if (location.find("root", 0) == location.npos)
@@ -281,7 +283,7 @@ void	FileParser::parse_locations()
 			root_directive = str_substring(location, "root", 0, '\n');
 			chk_simple_directive(root_directive);
 			root_path = get_simple_directive_value(root_directive);
-			if (access(server_path.c_str(), F_OK) != 0)
+			if (access(root_path.c_str(), F_OK) != 0)
 			{
 				std::cout << "Path " << root_path << " do not exist!" << std::endl;
 			}
@@ -289,11 +291,9 @@ void	FileParser::parse_locations()
 
 			std::cout << "root: " << _path["/"] << std::endl;
 		}
-	// 	/*THERE IS A SIMPLE DIRECTIVE DEFINING ROOT*/
-		else
-			server_path = _path["/"];
 
 		server_path = root_path + request_path;
+		
 		/*REWRITE THE PATH CORRECTILY IF '//' IS FIND*/
 		size_t pos = server_path.find("//");
 		if (pos != server_path.npos)
@@ -306,10 +306,10 @@ void	FileParser::parse_locations()
 
 	}
 		/*PRINT*/
-		// std::map<std::string, std::string>::iterator	it;
-		// it = _path.begin();
-		// for (; it != _path.end(); it++)
-		// 	std::cout << "location: " << (*it).first << " : " << (*it).second << std::endl;
+		std::map<std::string, std::string>::iterator	it;
+		it = _path.begin();
+		for (; it != _path.end(); it++)
+			std::cout << "location: " << (*it).first << " : " << (*it).second << std::endl;
 }
 
 void	FileParser::parse_configuration_file(char *file)
