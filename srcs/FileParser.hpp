@@ -39,6 +39,7 @@ class FileParser {
 		void								parse_configuration_file(char *file);
 		void								parse_listener();
 		void								parse_locations();
+		void								parse_root(std::string &str, std::string &root_path);
 
 		void								setup_listener(std::string buff);
 

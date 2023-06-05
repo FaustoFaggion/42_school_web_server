@@ -64,8 +64,8 @@ void	FileParser::setup_listener(std::string buff)
 			_listener._domain = AF_INET6;
 		if (_listener._port == "")
 		{
-			size_t i = 12;
-			while (i < buff.size() && isspace(buff.at(i)))
+			size_t i = 0;
+			while (i < buff.size() && !isdigit(buff.at(i)))
 				i++;
 			while (i < buff.size() && isdigit(buff.at(i)))
 			{
@@ -79,8 +79,8 @@ void	FileParser::setup_listener(std::string buff)
 		
 		_listener._domain = AF_INET;
 		
-		size_t i = 7;
-		while (i < buff.size() && (buff.at(i)))
+		size_t i = 0;
+		while (i < buff.size() && !isdigit(buff.at(i)))
 			i++;
 		while (i < buff.size() && isdigit(buff.at(i)))
 		{
@@ -223,11 +223,29 @@ void	FileParser::parse_listener()
 
 }
 
-void	FileParser::parse_locations()
+void	FileParser::parse_root(std::string &str, std::string &root_path)
 {
 	std::string	root_directive;
-	std::string	root_path;
-	int			not_root_path;
+	
+	root_directive = str_substring(str, "root", 0, '\n');
+	chk_simple_directive(root_directive);
+	root_path = get_simple_directive_value(root_directive);
+	
+	std::cout << _server_conf_file << "\n\n";
+
+	if (access(root_path.c_str(), F_OK) != 0)
+	{
+		std::cout << "Path " << root_path << " do not exist!" << std::endl;
+	}
+	_path["/"] = root_path;
+	std::cout << "root: " << _path["/"] << std::endl;
+
+}
+
+void	FileParser::parse_locations()
+{
+	std::string	root_path = "";
+	int			not_root_path = 0;
 	
 	if (_server_conf_file.find("location ", 0) == _server_conf_file.npos)
 	{
@@ -242,22 +260,7 @@ void	FileParser::parse_locations()
 		not_root_path = 1;
 	/*YES*/
 	else
-	{
-		root_directive = str_substring(_server_conf_file, "root", 0, '\n');
-		chk_simple_directive(root_directive);
-		root_path = get_simple_directive_value(root_directive);
-		
-		std::cout << _server_conf_file << "\n\n";
-
-		if (access(root_path.c_str(), F_OK) != 0)
-		{
-			std::cout << "Path " << root_path << " do not exist!" << std::endl;
-		}
-		_path["/"] = root_path;
-
-		std::cout << "root: " << _path["/"] << std::endl;
-		not_root_path = 0;
-	}
+		parse_root(_server_conf_file, root_path);
 
 	/*PARSE LOCATIONS*/
 	std::string	location;
@@ -280,16 +283,7 @@ void	FileParser::parse_locations()
 				std::cout << "ERROR: root not defined" << std::endl;
 				exit(2);
 			}
-			root_directive = str_substring(location, "root", 0, '\n');
-			chk_simple_directive(root_directive);
-			root_path = get_simple_directive_value(root_directive);
-			if (access(root_path.c_str(), F_OK) != 0)
-			{
-				std::cout << "Path " << root_path << " do not exist!" << std::endl;
-			}
-			_path["/"] = root_path;
-
-			std::cout << "root: " << _path["/"] << std::endl;
+			parse_root(location, root_path);
 		}
 
 		server_path = root_path + request_path;
