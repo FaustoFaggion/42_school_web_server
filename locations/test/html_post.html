@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>VAMO TRICOLOR!!!!</title>
+	<script>
+		window.onload = function() {
+			var parans = new URLSearchParams(window.location.search);
+			var message = parans.get("message");
+			if (message){
+				var messageElement = document.getElementById("message");
+				messageElement.textContent = message;
+			}
+		}
+	</script>
+</head>
+<body>
+	<h1>"POST METHOD"</h1>
+	<p id="message"></p>
+</body>
+</html>

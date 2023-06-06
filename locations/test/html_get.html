@@ -7,9 +7,24 @@
 	<title>AGORA VAI RAONIIIIIII</title>
 
 	<link rel="icon" href="favicon.ico" type="image/x-icon">
+	<script>
+		function openPage()
+		{	
+			var message = document.getElementById('text').value;
+			var url = "html_post.html?message=" + encodeURIComponent(message);
+			window.location.href = url;
+			alert("opa");
+		}
+	</script>
 </head>
 <body>
 	<h1>"GET METHOD"</h1>
+	<form>
+		<p>Texto</p>
+		<input type="text" id="text">
+		<button onclick="openPage()">Open</button>
+	</form>
+
 </body>
 </html>
 </html>
