@@ -9,6 +9,9 @@
 #include <vector>
 #include <map>
 
+#define SIMPLE_DIRECTIVE	0
+#define BLOCK_DIRECTIVE		1
+
 struct listener_socket {
 	int				_domain;
 	std::string		_port;
@@ -39,7 +42,7 @@ class FileParser {
 		void								parse_configuration_file(char *file);
 		void								parse_listener();
 		void								parse_locations();
-		void								parse_root(std::string &str, std::string &root_path);
+		void								parse_path(std::string &str, std::string find, std::string &root_path, int flag);
 
 		void								setup_listener(std::string buff);
 

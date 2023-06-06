@@ -273,22 +273,11 @@ void	WebServ::request_parser(std::string &request)
 
 	if (strcmp(method.c_str(), "GET") == 0)
 	{
-		// std::string path = request.substr(4, (request.find("HTTP", 0) - ));
-		// clean(path);
-		// std::cout << "find: " << request.find("HTTP", 0) << "\n\n";
-		// std::cout << "path: " << path << "\n\n";
-		// std::cout << "locations:\n";
 		for (std::map<std::string, std::string>::iterator it = locations.begin(); it != locations.end(); it++)
 		{
 			std::cout << (*it).first << " : " << (*it).second << "\n";
-			// if ((*it).first == path)
-		// 		html = (*it).second + "/index.html";
 		}
-		// // std::cout << "location[path]: " << locations[path.c_str()] << "\n\n";
-		// // std::string html = locations[path.c_str()] + "/index.html";
-		// clean(html);
-		// std::cout << "html: " << html << "\n\n";
-
+		
 		std::string tmp = locations[path.c_str()];
 		std::cout << "tmp: " << tmp << "\n";
 		if (tmp == "")
@@ -336,15 +325,15 @@ void	WebServ::request_parser(std::string &request)
 	}
 	else if (strncmp("POST / HTTP/1.1", request.c_str(), 15) == 0)
 	{
-		conf_file.open("./locations/html_post.html",  std::fstream::in);
+		conf_file.open("./locations/html_post.html", std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();
 		request = "HTTP/1.1 200 OK\r\n";
-    	request += "Content-Type: text/html\r\n";
-    	request += "Connection: close\r\n";
+		request += "Content-Type: text/html\r\n";
+		request += "Connection: close\r\n";
 		request += "\r\n";
-    	request += buff.str();
+		request += buff.str();
 		conf_file.close();
 	}
 	else if (strncmp("DELETE / HTTP/1.1", request.c_str(), 17) == 0)
