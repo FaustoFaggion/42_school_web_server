@@ -259,10 +259,16 @@ std::string	WebServ::looking_for_path(std::string path)
 		return (html);
 	}
 	/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
-	size_t	s = 0;
+	size_t		s = 0;
+	std::string	comp;
+	if (*(path.end() - 1) != '/')
+		comp = path + "/";
+	else
+		comp = path;
+
 	for(std::map<std::string, std::string>::iterator it = locations.begin(); it != locations.end(); it++)
 	{
-		if ((*it).first.compare(0, path.size(), path) == 0)
+		if ((*it).first.compare(0, comp.size(), comp) == 0)
 		{
 			if ((*it).first.size() > s)
 			{
