@@ -246,8 +246,68 @@ void	clean(std::string& str) {
 }
 
 
-/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
-/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
+
+std::string	WebServ::looking_for_path(std::string path)
+{
+	std::string	html;
+
+	/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
+	if(locations.find(path) != locations.end())
+	{
+		html = locations[path] + "/index.html";
+		std::cout << "find path\n" << html << "\n";
+		return (html);
+	}
+	/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
+	size_t	s = 0;
+	for(std::map<std::string, std::string>::iterator it = locations.begin(); it != locations.end(); it++)
+	{
+		if ((*it).first.compare(0, path.size(), path) == 0)
+		{
+			if ((*it).first.size() > s)
+			{
+				html = (*it).second;
+				html += "/index.html";
+				s = (*it).first.size();
+			}
+		}
+	}
+	/*IF PATH MATCH, RETURN HTML STRING*/
+	if (s > 0)
+	{
+		std::cout << "find alternative path\n" << html << "\n";
+		return (html);
+	}
+	
+	/*CHECK FOR FILE IN THE END OF THE PATH REQUEST*/
+	if (path.find(".", 0) == path.npos)
+	{
+		html == path;
+		std::cout << "path not found" << html << "\n";
+		return (html);
+	}
+	
+	/*REMOVE FILE FROM PATH TO LOOKING FOR INTO THE LOCATIONS MAP*/
+	size_t start = path.find_last_of("/", path.size());
+	std::cout << "start: " << start << std::endl;
+	size_t end = path.size();
+	std::cout << "end: " << end << std::endl;
+	std::string	request_path = path.substr(0, start);
+	std::cout << "request_path: " << request_path << std::endl;
+	std::string file = path.substr(start, (end - start));
+	std::cout << "file: " << file << std::endl;
+	if(locations.find(request_path) != locations.end())
+	{
+		html = locations[request_path] + file;
+		std::cout << "find path with file: " << html << "\n";
+	}
+	else
+	{
+		html = path;
+		std::cout << "path not found with file: " << html << "\n";
+	}
+	return (html);
+}
 
 void	WebServ::request_parser(std::string &request)
 {
@@ -257,23 +317,23 @@ void	WebServ::request_parser(std::string &request)
 
 
 	// Find the end of the request line
-   		size_t requestLineEnd = request.find("\r\n");
+   	size_t requestLineEnd = request.find("\r\n");
 
-    	// Extract the request line
-    	std::string requestLine = request.substr(0, requestLineEnd);
+    // Extract the request line
+    std::string requestLine = request.substr(0, requestLineEnd);
 
-    	// Parse the request line
-    	std::istringstream iss(requestLine);
-    	std::string method, path, protocol;
-    	iss >> method >> path >> protocol;
-		html = locations[path] + "/index.html";
-		// clean(html);
+    // Parse the request line
+    std::istringstream iss(requestLine);
+    std::string method, path, protocol;
+    iss >> method >> path >> protocol;
 
-    	std::cout << "Method: " << method << std::endl;
-    	std::cout << "Path: " << path << std::endl;
-    	std::cout << "Protocol: " << protocol << std::endl;
-		std::cout << "html: " << html << " &html: " << &html << std::endl;
-		std::cout << "html.c_str(): " << html.c_str() << "\n";
+	html = looking_for_path(path);
+
+	std::cout << "Method: " << method << std::endl;
+	std::cout << "Path: " << path << std::endl;
+	std::cout << "Protocol: " << protocol << std::endl;
+	std::cout << "html: " << html << " &html: " << &html << std::endl;
+	std::cout << "html.c_str(): " << html.c_str() << "\n";
 
 	if (strcmp(method.c_str(), "GET") == 0)
 	{
@@ -281,51 +341,28 @@ void	WebServ::request_parser(std::string &request)
 		{
 			std::cout << (*it).first << " : " << (*it).second << "\n";
 		}
-		
-		std::string tmp = locations[path.c_str()];
-		std::cout << "tmp: " << tmp << "\n";
-		if (tmp == "")
+		std::cout << "OK" << "\n\n";
+		conf_file.open(html.c_str() , std::fstream::in);
+		if (conf_file.fail())
 		{
-			std::cout << "NOT OK" << "\n\n";
-			/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
+			std::cout << "Configuration file fail to read" << std::endl;
 			conf_file.open("./locations/test/error.html",  std::fstream::in);
 			if (conf_file.fail())
 				std::cout << "Configuration file fail to read" << std::endl;
 			buff << conf_file.rdbuf();
-
-			/*HTTP RESPONSE SYNTAX*/
-			request = "HTTP/1.1 404 Not Found\r\n";
-			request += "Content-Type: text/html\r\n";
-			request += "Connection: close\r\n";
-			request += "\r\n";
-			request += buff.str();
-			conf_file.close();
 		}
 		else
-		{
-			std::cout << "OK" << "\n\n";
-			conf_file.open(html.c_str() , std::fstream::in);
-			if (conf_file.fail())
-			{
-				std::cout << "Configuration file fail to read" << std::endl;
-				conf_file.open("./locations/test/error.html",  std::fstream::in);
-				if (conf_file.fail())
-					std::cout << "Configuration file fail to read" << std::endl;
-				buff << conf_file.rdbuf();
-			}
-			else
-				buff << conf_file.rdbuf();
-			
-			std::cout <<"BUFF\n" << buff.str() << "\n";
-			
-			request = "HTTP/1.1 200 OK\r\n";
-    		request += "Content-Type: text/html\r\n";
-			request += "Connection: close\r\n";
-    		request += "\r\n";
-    		request += buff.str();
-			request += "\r\n";
-			conf_file.close();
-		}
+			buff << conf_file.rdbuf();
+		
+		std::cout <<"BUFF\n" << buff.str() << "\n";
+		
+		request = "HTTP/1.1 200 OK\r\n";
+    	request += "Content-Type: text/html\r\n";
+		request += "Connection: close\r\n";
+    	request += "\r\n";
+    	request += buff.str();
+		request += "\r\n";
+		conf_file.close();
 	}
 	else if (strncmp("POST / HTTP/1.1", request.c_str(), 15) == 0)
 	{

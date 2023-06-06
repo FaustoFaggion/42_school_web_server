@@ -51,7 +51,8 @@ class WebServ
 		void	receive_data(int i);
 		void	response(int i);
 
-		void	request_parser(std::string &file);
+		void			request_parser(std::string &file);
+		std::string		looking_for_path(std::string path);
 };
 
 #endif
