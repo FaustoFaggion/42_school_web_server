@@ -265,6 +265,7 @@ void	FileParser::parse_path(std::string &str, std::string find, std::string &pat
 		_path["/"] = root_path;
 		std::cout << "root: " << _path["/"] << std::endl;
 		/*CHECK DUPLICATED DIRECTIVE*/
+		/*IF THERE ARE IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
 		while (1)
 		{
 			size_t end = _server_conf_file.find("location ", 0);
@@ -281,13 +282,6 @@ void	FileParser::parse_path(std::string &str, std::string find, std::string &pat
 	return (true);
  }
 
-/*ROOT INSIDE LOCATION BLOCK TAKES PRECEDENCE OVER SIMPLE ROOT DIRECTIVE*/
-/*IF TWO IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
-
-
-/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
-/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
-
 void	FileParser::parse_locations(bool simple_root_directive)
 {	
 	std::string	root_path;
@@ -300,13 +294,14 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		location = str_substring(_server_conf_file, "location ", 0, '}');
 		parse_path(location, "location ", request_path, BLOCK_DIRECTIVE);
 
-		/*DEFINE ROOT DIRECTIVE IF NOT DEFINED*/
+		/*ROOT INSIDE LOCATION BLOCK TAKES PRECEDENCE OVER SIMPLE ROOT DIRECTIVE*/
 		if (location.find("root", 0) != location.npos)
 		{
 			parse_path(location, "root", root_path, SIMPLE_DIRECTIVE);
 		}
 		else
 		{
+			/*IF ROOT NOT DEFINED*/
 			if (simple_root_directive == false)
 			{
 				std::cout << "ERROR: root not defined" << std::endl;
@@ -327,6 +322,7 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		_path[request_path] = server_path;
 
 		/*CHECK DUPLICATED DIRECTIVE*/
+		/*IF THERE ARE IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
 		std::string	duplicate = "location " + request_path + " ";
 		while (_server_conf_file.find(duplicate, 0) != _server_conf_file.npos)
 		{

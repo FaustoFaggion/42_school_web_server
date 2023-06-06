@@ -245,6 +245,10 @@ void	clean(std::string& str) {
 	str += '\0';
 }
 
+
+/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
+/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
+
 void	WebServ::request_parser(std::string &request)
 {
 	std::fstream			conf_file;
