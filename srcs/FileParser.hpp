@@ -41,9 +41,9 @@ class FileParser {
 
 		void								parse_configuration_file(char *file);
 		void								parse_listener();
-		void								parse_locations();
+		void								parse_locations(bool simple_root_directive);
 		void								parse_path(std::string &str, std::string find, std::string &root_path, int flag);
-
+		bool									parse_simple_root_directive();
 		void								setup_listener(std::string buff);
 
 		void								file_to_string(char *file, std::string &buff);

@@ -240,48 +240,37 @@ void	FileParser::parse_path(std::string &str, std::string find, std::string &pat
 	// 	std::cout << "Path " << path << " do not exist!" << std::endl;
 	// }
 }
-/*ROOT INSIDE LOCATION BLOCK TAKES PRECEDENCE OVER SIMPLE ROOT DIRECTIVE*/
-/*IF TWO IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
 
+ bool	FileParser::parse_simple_root_directive()
+ {
+	std::string	root_path;
 
-/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
-/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
-
-void	FileParser::parse_locations()
-{
-
-	std::string	root_path = "";
-	int			not_root_path = 0;
-	
+	/*CHECK FOR LOCATION BLOCK DIRECTIVES*/
 	if (_server_conf_file.find("location ", 0) == _server_conf_file.npos)
 	{
 		std::cout << "No location defined in server configuration file!!\n";
 		exit(1);
 	}
-	
-	/*IS THERE A SIMPLE DIRECTIVE DEFINIG ROOT?*/
-	int flag = 0;
-	while(1)
+
+	/*IS THERE A ROOT SIMPLE DIRECTIVE?*/
+	size_t end = _server_conf_file.find("location ", 0);
+	size_t start = _server_conf_file.find("root", 0);
+	/*NO*/
+	if (start > end)
+		return (false);
+	/*YES*/
+	else
 	{
-		size_t end = _server_conf_file.find("location ", 0);
-		size_t start = _server_conf_file.find("root", 0);
-		/*NO*/
-		if (start > end)
+		parse_path(_server_conf_file, "root", root_path, SIMPLE_DIRECTIVE);
+		_path["/"] = root_path;
+		std::cout << "root: " << _path["/"] << std::endl;
+		/*CHECK DUPLICATED DIRECTIVE*/
+		while (1)
 		{
-			if (flag == 0)
-				not_root_path = 1;
-			break ;
-		}
-		/*YES*/
-		else
-		{
-			if (flag == 0)
-			{
-				parse_path(_server_conf_file, "root", root_path, SIMPLE_DIRECTIVE);
-				_path["/"] = root_path;
-				std::cout << "root: " << _path["/"] << std::endl;
-				flag++;
-			}
+			size_t end = _server_conf_file.find("location ", 0);
+			size_t start = _server_conf_file.find("root", 0);
+			if (start > end)
+				break ;
 			else
 			{
 				std::string tmp = str_substring(_server_conf_file, "root", 0, '\n');
@@ -289,7 +278,19 @@ void	FileParser::parse_locations()
 			}
 		}
 	}
-	/*PARSE LOCATIONS*/
+	return (true);
+ }
+
+/*ROOT INSIDE LOCATION BLOCK TAKES PRECEDENCE OVER SIMPLE ROOT DIRECTIVE*/
+/*IF TWO IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
+
+
+/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
+/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
+
+void	FileParser::parse_locations(bool simple_root_directive)
+{	
+	std::string	root_path;
 	std::string	location;
 	std::string	request_path;
 	std::string	server_path;
@@ -306,7 +307,7 @@ void	FileParser::parse_locations()
 		}
 		else
 		{
-			if (not_root_path == 1)
+			if (simple_root_directive == false)
 			{
 				std::cout << "ERROR: root not defined" << std::endl;
 				exit(2);
@@ -325,6 +326,7 @@ void	FileParser::parse_locations()
 		/*INSERT LOCATION PATH INTO THE _PATH MAP*/
 		_path[request_path] = server_path;
 
+		/*CHECK DUPLICATED DIRECTIVE*/
 		std::string	duplicate = "location " + request_path + " ";
 		while (_server_conf_file.find(duplicate, 0) != _server_conf_file.npos)
 		{
@@ -363,6 +365,12 @@ void	FileParser::parse_configuration_file(char *file)
 	
 	parse_listener();
 	
-	parse_locations();
+	/*PARSE ROOT SIMPLE DIRECTIVE*/
+	bool	simple_root_directive;
+
+	simple_root_directive = parse_simple_root_directive();
+	
+	/*PARSE LOCATIONS*/
+	parse_locations(simple_root_directive);
 	
 }
