@@ -333,6 +333,16 @@ void	WebServ::request_parser(std::string &request)
     std::string method, path, protocol;
     iss >> method >> path >> protocol;
 
+
+	//Raoni passou por aqui
+	size_t pos = path.find("?");
+	if (pos != path.npos)
+	{
+		std::string tmp = path.substr(0, pos);
+		path.clear();
+		path = tmp;
+		std::cout << path << " aqui" << std::endl;
+	}
 	html = looking_for_path(path);
 
 	std::cout << "Method: " << method << std::endl;

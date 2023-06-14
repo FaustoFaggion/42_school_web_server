@@ -26,6 +26,7 @@ class FileParser {
 		std::string							_server_conf_file;
 		listener_socket						_listener;
 		std::map<std::string, std::string>	_path;
+		std::vector<std::string> 			_index;
 
 	public:
 		FileParser();
@@ -38,6 +39,7 @@ class FileParser {
 		int									get_worker_processes() const;
 		int									get_type() const;
 		std::map<std::string, std::string>	getPath() const;
+		std::vector<std::string> 			getIndex() const;
 
 		void								parse_configuration_file(char *file);
 		void								parse_listener();
@@ -45,6 +47,7 @@ class FileParser {
 		void								parse_path(std::string &str, std::string find, std::string &root_path, int flag);
 		bool									parse_simple_root_directive();
 		void								setup_listener(std::string buff);
+		void								parse_index();
 
 		void								file_to_string(char *file, std::string &buff);
 		std::string							str_substring(std::string &str, std::string find, int init, char finish);

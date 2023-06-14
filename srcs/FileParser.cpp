@@ -54,6 +54,11 @@ std::map<std::string, std::string>	FileParser::getPath() const
 	return (_path);
 }
 
+std::vector<std::string> FileParser::getIndex() const
+{
+	return (_index);
+}
+
 void	FileParser::setup_listener(std::string buff)
 {
 	if (buff.compare(0, 11, "listen [::]") == 0)
@@ -336,6 +341,42 @@ void	FileParser::parse_locations(bool simple_root_directive)
 			std::cout << "location: " << (*it).first << " : " << (*it).second << std::endl;
 }
 
+//Raoni passou por aqui
+void	FileParser::parse_index()
+{
+	std::string index_tmp;
+	size_t pos = _server_conf_file.find("index", 0);
+
+	if (pos == std::string::npos)
+	{
+		std::cout << "ERROR: index not defined" << std::endl;
+		exit(2);
+	}
+	else
+	{
+		int j = 0;
+
+		index_tmp = str_substring(_server_conf_file, "index", 0, '\n');
+		for (size_t i = 6; i < index_tmp.size(); i++)
+		{
+			if (index_tmp.at(i) == ';' || isspace(index_tmp.at(i)) != 0)
+			{
+				_index.push_back(index_tmp.substr(j, (i - j)));
+				j = 0;
+			}
+			else
+			{
+				if (j == 0)
+					j = i;
+			}
+		}
+	}
+	for (std::vector<std::string>::iterator it = _index.begin(); it != _index.end(); it++)
+	{
+		std::cout << (*it).c_str() << std::endl;
+	}
+}
+
 void	FileParser::parse_configuration_file(char *file)
 {
 	std::string	configuration_file;
@@ -368,5 +409,7 @@ void	FileParser::parse_configuration_file(char *file)
 	
 	/*PARSE LOCATIONS*/
 	parse_locations(simple_root_directive);
-	
+
+	/*PARSE INDEX*/
+	parse_index();
 }
