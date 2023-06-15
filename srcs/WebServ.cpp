@@ -18,6 +18,7 @@ WebServ::WebServ(FileParser file)
 	std::cout << "port: " << _listener.get_port() << "\n";
 	
 	locations = file.getPath();
+	_indexes = file.getIndex();
 }
 
 WebServ::~WebServ()
@@ -176,7 +177,7 @@ void	WebServ::accept_new_connection()
 void	WebServ::receive_data(int i)
 {
 	char	buff[2048];
-
+                                         
 
 	memset (&buff, '\0', sizeof (buff));
 	
@@ -254,7 +255,7 @@ std::string	WebServ::looking_for_path(std::string path)
 	/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
 	if(locations.find(path) != locations.end())
 	{
-		html = locations[path] + "/index.html";
+		html = locations[path] + "/" + _indexes.at(2);
 		std::cout << "find path\n" << html << "\n";
 		return (html);
 	}
@@ -334,14 +335,13 @@ void	WebServ::request_parser(std::string &request)
     iss >> method >> path >> protocol;
 
 
-	//Raoni passou por aqui
+	//Raoni passou por aqui PARSE UNTIL GET PATH BEFORE ? SIGN
 	size_t pos = path.find("?");
 	if (pos != path.npos)
 	{
 		std::string tmp = path.substr(0, pos);
-		path.clear();
 		path = tmp;
-		std::cout << path << " aqui" << std::endl;
+
 	}
 	html = looking_for_path(path);
 

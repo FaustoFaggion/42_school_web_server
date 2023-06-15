@@ -341,7 +341,7 @@ void	FileParser::parse_locations(bool simple_root_directive)
 			std::cout << "location: " << (*it).first << " : " << (*it).second << std::endl;
 }
 
-//Raoni passou por aqui
+//Raoni passou por aqui GET INDEX FILES TO INCLUDE IN A VECTOR
 void	FileParser::parse_index()
 {
 	std::string index_tmp;
@@ -364,10 +364,9 @@ void	FileParser::parse_index()
 				_index.push_back(index_tmp.substr(j, (i - j)));
 				j = 0;
 			}
-			else
+			else if (j == 0)
 			{
-				if (j == 0)
-					j = i;
+				j = i;
 			}
 		}
 	}
