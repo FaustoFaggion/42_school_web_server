@@ -8,6 +8,8 @@
 #include <sstream>
 #include <algorithm>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <dirent.h>
 #include "ListenerSocket.hpp"
 #include "FileParser.hpp"
 #include <map>

@@ -12,10 +12,6 @@ WebServ::WebServ(FileParser file)
 	_listener.set_port(file.get_port());
 	_listener.set_flag(file.get_flag());
 	_listener.set_worker_connections(MAX_CONNECTIONS);
-	std::cout << "domain: " << _listener.get_domain() << "\n";
-	std::cout << "flag: " << _listener.get_flag() << "\n";
-	std::cout << "type: " << _listener.get_type() << "\n";
-	std::cout << "port: " << _listener.get_port() << "\n";
 	
 	locations = file.getPath();
 	_indexes = file.getIndex();
@@ -78,8 +74,6 @@ void	WebServ::run()
 		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  2000)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
 		
-		std::cout << "nfds: " << _nfds << "\n";
-		
 		/*A REQUEST TO SERVER SHOULD NEVER HANG FOREVER.*/
 		delete_timeout_socket();
 
@@ -116,17 +110,14 @@ void	WebServ::run()
 void	WebServ::delete_timeout_socket()
 {
 	int j = 0;
-	std::cout << "while\n";
+
 	while (_ep_event[j].data.fd)
 	{
 		double	timeout = difftime(time(NULL), map_connections[_ep_event[j].data.fd].start_connection);
-		std::cout << "start time: " << map_connections[_ep_event[j].data.fd].start_connection << " time" << time(NULL) << " timeout: "<< timeout << " fd: " << _ep_event[j].data.fd << "\n";
 		if (_ep_event[j].data.fd != _fd_listener)
 		{
 			if (timeout > 0.0)
 			{
-				std::cout << "now > 0.0\n";
-				std::cout << "fd: " <<_ep_event[j].data.fd << "\n";
 				int	fd = _ep_event[j].data.fd;
 
 				/*DELETE FROM EPOLL AND CLOSE FD*/
@@ -246,8 +237,6 @@ void	clean(std::string& str) {
 	str += '\0';
 }
 
-
-
 std::string	WebServ::looking_for_path(std::string path)
 {
 	std::string	html;
@@ -255,10 +244,19 @@ std::string	WebServ::looking_for_path(std::string path)
 	/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
 	if(locations.find(path) != locations.end())
 	{
-		html = locations[path] + "/" + _indexes.at(2);
+
+		html = locations[path] + "/" + _indexes.at(0);
+		size_t i = 1;
+		while (i < _indexes.size() && access(html.c_str(), F_OK) != 0)
+		{
+			html = locations[path] + "/" + _indexes.at(i);
+			i++;
+		}
+	
 		std::cout << "find path\n" << html << "\n";
 		return (html);
 	}
+
 	/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
 	size_t		s = 0;
 	std::string	comp;
@@ -299,13 +297,13 @@ std::string	WebServ::looking_for_path(std::string path)
 	std::cout << "start: " << start << std::endl;
 	size_t end = path.size();
 	std::cout << "end: " << end << std::endl;
-	std::string	request_path = path.substr(0, start);
+	std::string	request_path = path.substr(0, start + 1);
 	std::cout << "request_path: " << request_path << std::endl;
-	std::string file = path.substr(start, (end - start));
+	std::string file = path.substr(start + 1, (end - (start + 1)));
 	std::cout << "file: " << file << std::endl;
 	if(locations.find(request_path) != locations.end())
 	{
-		html = locations[request_path] + file;
+		html = locations[request_path] + "/" + file;
 		std::cout << "find path with file: " << html << "\n";
 	}
 	else
@@ -334,7 +332,6 @@ void	WebServ::request_parser(std::string &request)
     std::string method, path, protocol;
     iss >> method >> path >> protocol;
 
-
 	//Raoni passou por aqui PARSE UNTIL GET PATH BEFORE ? SIGN
 	size_t pos = path.find("?");
 	if (pos != path.npos)
@@ -351,7 +348,7 @@ void	WebServ::request_parser(std::string &request)
 	std::cout << "html: " << html << " &html: " << &html << std::endl;
 	std::cout << "html.c_str(): " << html.c_str() << "\n";
 
-	if (strcmp(method.c_str(), "GET") == 0)
+	if (method.compare("GET") == 0)
 	{
 		for (std::map<std::string, std::string>::iterator it = locations.begin(); it != locations.end(); it++)
 		{
@@ -380,9 +377,9 @@ void	WebServ::request_parser(std::string &request)
 		request += "\r\n";
 		conf_file.close();
 	}
-	else if (strncmp("POST / HTTP/1.1", request.c_str(), 15) == 0)
+	else if (method.compare("POST") == 0)
 	{
-		conf_file.open("./locations/html_post.html", std::fstream::in);
+		conf_file.open(html.c_str() , std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();
@@ -393,11 +390,11 @@ void	WebServ::request_parser(std::string &request)
 		request += buff.str();
 		conf_file.close();
 	}
-	else if (strncmp("DELETE / HTTP/1.1", request.c_str(), 17) == 0)
+	else if (method.compare("DELETE") == 0)
 	{
 		/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
 
-		conf_file.open("./locations/html_del.html",  std::fstream::in);
+		conf_file.open(html.c_str() ,  std::fstream::in);
 		if (conf_file.fail())
 			std::cout << "Configuration file fail to read" << std::endl;
 		buff << conf_file.rdbuf();
