@@ -271,12 +271,20 @@ std::string	WebServ::looking_for_path(std::string path)
 		{
 			if ((*it).first.size() > s)
 			{
-				html = (*it).second;
-				html += "/index.html";
+
+				html = locations[(*it).first] + "/" + _indexes.at(0);
+				size_t i = 1;
+				while (i < _indexes.size() && access(html.c_str(), F_OK) != 0)
+				{	
+					std::cout << "f a path: " << html << "\n";
+					html = locations[(*it).first] + "/" + _indexes.at(i);
+					i++;
+				}
 				s = (*it).first.size();
 			}
 		}
 	}
+
 	/*IF PATH MATCH, RETURN HTML STRING*/
 	if (s > 0)
 	{
@@ -297,9 +305,9 @@ std::string	WebServ::looking_for_path(std::string path)
 	std::cout << "start: " << start << std::endl;
 	size_t end = path.size();
 	std::cout << "end: " << end << std::endl;
-	std::string	request_path = path.substr(0, start + 1);
+	std::string	request_path = path.substr(0, start);
 	std::cout << "request_path: " << request_path << std::endl;
-	std::string file = path.substr(start + 1, (end - (start + 1)));
+	std::string file = path.substr(start, (end - (start)));
 	std::cout << "file: " << file << std::endl;
 	if(locations.find(request_path) != locations.end())
 	{
@@ -311,6 +319,12 @@ std::string	WebServ::looking_for_path(std::string path)
 		html = path;
 		std::cout << "path not found with file: " << html << "\n";
 	}
+
+	/*REWRITE THE PATH CORRECTILY IF '//' IS FIND*/
+		size_t pos = html.find("//");
+		if (pos != html.npos)
+			html.replace(pos, 1, "");
+
 	return (html);
 }
 

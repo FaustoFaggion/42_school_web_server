@@ -225,8 +225,7 @@ void	FileParser::parse_path(std::string &str, std::string find, std::string &pat
 	if (flag == SIMPLE_DIRECTIVE)
 		chk_simple_directive(simple_directive);
 	path = get_simple_directive_value(simple_directive);
-	if (path.at(path.size() - 1) != '/')
-		path += "/";
+	std::cout << "parse_path Path: " << path << std::endl;
 	if (access(path.c_str(), F_OK) != 0)
 	{
 		std::cout << "Path " << path << " do not exist!" << std::endl;
