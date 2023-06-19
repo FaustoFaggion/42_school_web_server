@@ -13,8 +13,15 @@ WebServ::WebServ(FileParser file)
 	_listener.set_flag(file.get_flag());
 	_listener.set_worker_connections(MAX_CONNECTIONS);
 	
+	_dir_list = file.getDirList();
 	locations = file.getPath();
 	_indexes = file.getIndex();
+
+	std::cout << "_dir_list: "<< "\n";
+	for (std::vector<std::string>::iterator it = _dir_list.begin(); it != _dir_list.end(); it++)
+	{
+		std::cout << (*it).c_str() << "\n";
+	}
 }
 
 WebServ::~WebServ()

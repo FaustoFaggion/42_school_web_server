@@ -27,7 +27,7 @@ class FileParser {
 		listener_socket						_listener;
 		std::map<std::string, std::string>	_path;
 		std::vector<std::string> 			_index;
-
+		std::vector<std::string> 			_dir_list;
 	public:
 		FileParser();
 		FileParser(char *file);
@@ -40,6 +40,7 @@ class FileParser {
 		int									get_type() const;
 		std::map<std::string, std::string>	getPath() const;
 		std::vector<std::string> 			getIndex() const;
+		std::vector<std::string> 			getDirList() const;
 
 		void								parse_configuration_file(char *file);
 		void								parse_listener();

@@ -54,9 +54,14 @@ std::map<std::string, std::string>	FileParser::getPath() const
 	return (_path);
 }
 
-std::vector<std::string> FileParser::getIndex() const
+std::vector<std::string>	FileParser::getIndex() const
 {
 	return (_index);
+}
+
+std::vector<std::string>	FileParser::getDirList() const
+{
+	return (_dir_list);
 }
 
 void	FileParser::setup_listener(std::string buff)
@@ -225,11 +230,10 @@ void	FileParser::parse_path(std::string &str, std::string find, std::string &pat
 	if (flag == SIMPLE_DIRECTIVE)
 		chk_simple_directive(simple_directive);
 	path = get_simple_directive_value(simple_directive);
-	std::cout << "parse_path Path: " << path << std::endl;
-	if (access(path.c_str(), F_OK) != 0)
-	{
-		std::cout << "Path " << path << " do not exist!" << std::endl;
-	}
+	// if (access(path.c_str(), F_OK) != 0)
+	// {
+	// 	std::cout << "Path " << path << " do not exist!" << std::endl;
+	// }
 }
 
  bool	FileParser::parse_simple_root_directive()
@@ -254,7 +258,7 @@ void	FileParser::parse_path(std::string &str, std::string find, std::string &pat
 	{
 		parse_path(_server_conf_file, "root", root_path, SIMPLE_DIRECTIVE);
 		_path["/"] = root_path;
-		std::cout << "root: " << _path["/"] << std::endl;
+
 		/*CHECK DUPLICATED DIRECTIVE*/
 		/*IF THERE ARE IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
 		while (1)
@@ -266,6 +270,12 @@ void	FileParser::parse_path(std::string &str, std::string find, std::string &pat
 			else
 				std::string tmp = str_substring(_server_conf_file, "root", 0, '\n');
 		}
+	}
+	/*IF DIRECTORY DO NOT EXIST EXIT PROGRAM*/
+	if (access(root_path.c_str(), F_OK) != 0)
+	{
+		std::cout << "Path " << root_path << " do not exist!" << std::endl;
+		exit(2);
 	}
 	return (true);
  }
@@ -302,9 +312,27 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		if (pos != server_path.npos)
 			server_path.replace(pos, 1, "");
 
+		/*IF DIRECTORY DO NOT EXIST EXIT PROGRAM*/
+		if (access(server_path.c_str(), F_OK) != 0)
+		{
+			std::cout << "Path " << server_path << " do not exist!" << std::endl;
+			exit(2);
+		}
+
 		/*INSERT LOCATION PATH INTO THE _PATH MAP*/
 		_path[request_path] = server_path;
 
+		/*CHECK AUTOINDEX ON TO LIST DIRECTORY*/
+		if (location.find("autoindex", 0) != location.npos)
+		{
+			std::string dir = str_substring(location, "autoindex", 0, '\n');
+			if (dir.find("on", 0) != dir.npos)
+			{
+				_dir_list.push_back(request_path);
+			}
+		}
+		
+		
 		/*CHECK DUPLICATED DIRECTIVE*/
 		/*IF THERE ARE IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
 		std::string	duplicate = "location " + request_path + " ";
@@ -314,6 +342,7 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		/*PRINT*/
 		std::map<std::string, std::string>::iterator	it;
 		it = _path.begin();
+		std::cout << "Print Locations:\n";
 		for (; it != _path.end(); it++)
 			std::cout << "location: " << (*it).first << " : " << (*it).second << std::endl;
 }

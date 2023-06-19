@@ -27,6 +27,7 @@ class WebServ
 		ListenerSocket				_listener;
 		std::map<std::string, std::string>	locations;
 		std::vector<std::string>	_indexes;
+		std::vector<std::string>	_dir_list;
 
 		std::map<int, t_client>	map_connections;
 		int 						_efd;
