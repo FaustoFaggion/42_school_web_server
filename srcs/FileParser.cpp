@@ -49,7 +49,7 @@ int			FileParser::get_type() const
 	return (_listener._type);
 }
 
-std::map<std::string, std::string>	FileParser::getPath() const
+std::map<std::string, directive>	FileParser::getPath() const
 {
 	return (_path);
 }
@@ -59,7 +59,7 @@ std::vector<std::string>	FileParser::getIndex() const
 	return (_index);
 }
 
-std::vector<std::string>	FileParser::getDirList() const
+std::map<std::string, std::string>	FileParser::getDirList() const
 {
 	return (_dir_list);
 }
@@ -257,7 +257,8 @@ void	FileParser::parse_path(std::string &str, std::string find, std::string &pat
 	else
 	{
 		parse_path(_server_conf_file, "root", root_path, SIMPLE_DIRECTIVE);
-		_path["/"] = root_path;
+		_path["/"]._server_path = root_path;
+		_path["/"]._autoindex = false;
 
 		/*CHECK DUPLICATED DIRECTIVE*/
 		/*IF THERE ARE IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
@@ -279,6 +280,47 @@ void	FileParser::parse_path(std::string &str, std::string find, std::string &pat
 	}
 	return (true);
  }
+
+/*GET INDEX FILES TO INCLUDE IN A VECTOR*/
+void	FileParser::parse_index(std::vector<std::string> &idx, std::string &str)
+{
+	std::string index_tmp;
+	size_t pos = str.find("index", 0);
+
+	if (pos == index_tmp.npos)
+		return;
+
+	int j = 0;
+	index_tmp = str_substring(str, "index", 0, '\n');
+	for (size_t i = 6; i < index_tmp.size(); i++)
+	{
+		if (index_tmp.at(i) == ';' || isspace(index_tmp.at(i)) != 0)
+		{
+			idx.push_back(index_tmp.substr(j, (i - j)));
+			j = 0;
+		}
+		else if (j == 0)
+		{
+			j = i;
+		}
+	}
+	/*CHECK DUPLICATED DIRECTIVE*/
+	/*IF THERE ARE IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
+	while (1)
+	{
+		size_t end = str.find("location ", 0);
+		size_t start = str.find("index", 0);
+		if (start >= end)
+			break ;
+		else
+			std::string tmp = str_substring(str, "index", 0, '\n');
+	}
+
+	for (std::vector<std::string>::iterator it = idx.begin(); it != idx.end(); it++)
+	{
+		std::cout << (*it).c_str() << std::endl;
+	}
+}
 
 void	FileParser::parse_locations(bool simple_root_directive)
 {	
@@ -320,19 +362,28 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		}
 
 		/*INSERT LOCATION PATH INTO THE _PATH MAP*/
-		_path[request_path] = server_path;
+		_path[request_path]._server_path = server_path;
 
-		/*CHECK AUTOINDEX ON TO LIST DIRECTORY*/
+		/*CHECK AUTOINDEX TO LIST DIRECTORY*/
+		_path[request_path]._autoindex = false;
 		if (location.find("autoindex", 0) != location.npos)
 		{
 			std::string dir = str_substring(location, "autoindex", 0, '\n');
 			if (dir.find("on", 0) != dir.npos)
-			{
-				_dir_list.push_back(request_path);
-			}
+				_path[request_path]._autoindex = true;
 		}
-		
-		
+
+		/*CHECK INDEX DIRECTIVE*/
+		if (location.find("index", 0) != location.npos)
+		{
+			std::string	idx;
+			idx = str_substring(location, "index", 0, '\n');
+			std::cout << "location: " << location << "  idx: " << idx << "\n";
+			parse_index(_path[request_path]._index_block, idx);
+		}
+		else
+			_path[request_path]._index_block = _index;
+
 		/*CHECK DUPLICATED DIRECTIVE*/
 		/*IF THERE ARE IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
 		std::string	duplicate = "location " + request_path + " ";
@@ -340,55 +391,19 @@ void	FileParser::parse_locations(bool simple_root_directive)
 			location = str_substring(_server_conf_file, duplicate, 0, '}');
 	}
 		/*PRINT*/
-		std::map<std::string, std::string>::iterator	it;
+		std::map<std::string, directive>::iterator	it;
 		it = _path.begin();
 		std::cout << "Print Locations:\n";
 		for (; it != _path.end(); it++)
-			std::cout << "location: " << (*it).first << " : " << (*it).second << std::endl;
+		{
+			std::cout << "location: " << (*it).first << "\n";
+			std::cout << "	server_path: " << (*it).second._server_path << std::endl;
+			std::cout << "	autoindex: " << (*it).second._autoindex << std::endl;
+			for (std::vector<std::string>::iterator it2 = (*it).second._index_block.begin(); it2 != (*it).second._index_block.end(); it2++)
+				std::cout << "	indexblock: " << *it2 << std::endl;
+		}
 }
 
-//Raoni passou por aqui GET INDEX FILES TO INCLUDE IN A VECTOR
-void	FileParser::parse_index()
-{
-	std::string index_tmp;
-	size_t pos = _server_conf_file.find("index", 0);
-
-	if (pos == index_tmp.npos)
-	{
-		std::cout << "ERROR: index not defined" << std::endl;
-		exit(2);
-	}
-
-	int j = 0;
-	index_tmp = str_substring(_server_conf_file, "index", 0, '\n');
-	for (size_t i = 6; i < index_tmp.size(); i++)
-	{
-		if (index_tmp.at(i) == ';' || isspace(index_tmp.at(i)) != 0)
-		{
-			_index.push_back(index_tmp.substr(j, (i - j)));
-			j = 0;
-		}
-		else if (j == 0)
-		{
-			j = i;
-		}
-	}
-	/*CHECK DUPLICATED DIRECTIVE*/
-	/*IF THERE ARE IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
-	while (1)
-	{
-		size_t end = _server_conf_file.find("location ", 0);
-		size_t start = _server_conf_file.find("index", 0);
-		if (start >= end)
-			break ;
-		else
-			std::string tmp = str_substring(_server_conf_file, "index", 0, '\n');
-	}
-	for (std::vector<std::string>::iterator it = _index.begin(); it != _index.end(); it++)
-	{
-		std::cout << (*it).c_str() << std::endl;
-	}
-}
 
 void	FileParser::parse_configuration_file(char *file)
 {
@@ -397,7 +412,6 @@ void	FileParser::parse_configuration_file(char *file)
 	file_to_string(file, configuration_file);
 	
 	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
-	
 	// Falta parsear arquivos com mais de um servidor.
 	size_t	start;
 	size_t	end;
@@ -417,7 +431,8 @@ void	FileParser::parse_configuration_file(char *file)
 	simple_root_directive = parse_simple_root_directive();
 	
 	/*PARSE INDEX*/
-	parse_index();
+
+	parse_index(_index, _server_conf_file);
 	
 	/*PARSE LOCATIONS*/
 	parse_locations(simple_root_directive);

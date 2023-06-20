@@ -23,13 +23,13 @@ typedef struct client {
 class WebServ
 {
 	private:
-		int							_fd_listener;
-		ListenerSocket				_listener;
-		std::map<std::string, std::string>	locations;
-		std::vector<std::string>	_indexes;
-		std::vector<std::string>	_dir_list;
+		int										_fd_listener;
+		ListenerSocket							_listener;
+		std::map<std::string, directive>		locations;
+		std::vector<std::string>				_indexes;
+		std::map<std::string, std::string>		_dir_list;
 
-		std::map<int, t_client>	map_connections;
+		std::map<int, t_client>		map_connections;
 		int 						_efd;
 		int							_nfds;
 		struct epoll_event			_ev;
@@ -57,6 +57,7 @@ class WebServ
 
 		void			request_parser(std::string &file);
 		std::string		looking_for_path(std::string path);
+		void			chk_indexies(std::string path, std::string &html);
 };
 
 #endif

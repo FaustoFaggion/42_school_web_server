@@ -14,7 +14,14 @@
 #include <netinet/in.h>	// For sockaddr_in
 
 #include <sys/epoll.h>
+#include <vector>
 
 #define MAX_CONNECTIONS		10
+
+struct directive {
+	bool						_autoindex;
+	std::vector<std::string>	_index_block;
+	std::string					_server_path;
+};
 
 #endif
