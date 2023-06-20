@@ -247,7 +247,18 @@ void	clean(std::string& str) {
 void	WebServ::chk_indexies(std::string path, std::string &html)
 {
 	bool	flag = false;
-		size_t i = 0;
+	size_t	i = 0;
+		
+	while (flag == false && i < locations[path]._index_block.size())
+	{
+		html = locations[path]._server_path + "/" + locations[path]._index_block.at(i);
+		if(access(html.c_str(), F_OK) == 0)
+			flag = true;
+		i++;
+	}
+	i = 0;
+	if (flag == false)
+	{
 		while (flag == false && i < _indexes.size())
 		{
 			html = locations[path]._server_path + "/" + _indexes.at(i);
@@ -255,19 +266,10 @@ void	WebServ::chk_indexies(std::string path, std::string &html)
 				flag = true;
 			i++;
 		}
-		i = 0;
-		if (flag == false)
-		{
-			while (flag == false && i < locations[path]._index_block.size())
-			{
-				html = locations[path]._server_path + "/" + locations[path]._index_block.at(i);
-				if(access(html.c_str(), F_OK) == 0)
-					flag = true;
-				i++;
-			}
-		}
-		std::cout << "find path\n" << html << "\n";
+	}
+	std::cout << "find path\n" << html << "\n";
 }
+
 std::string	WebServ::looking_for_path(std::string path)
 {
 	std::string	html = "";
