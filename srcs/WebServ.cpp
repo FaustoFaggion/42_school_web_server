@@ -12,16 +12,10 @@ WebServ::WebServ(FileParser file)
 	_listener.set_port(file.get_port());
 	_listener.set_flag(file.get_flag());
 	_listener.set_worker_connections(MAX_CONNECTIONS);
-	
-	_dir_list = file.getDirList();
+
 	locations = file.getPath();
 	_indexes = file.getIndex();
 
-	std::cout << "_dir_list: "<< "\n";
-	for (std::map<std::string, std::string>::iterator it = _dir_list.begin(); it != _dir_list.end(); it++)
-	{
-		std::cout << (*it).first << " : " << (*it).second << "\n";
-	}
 }
 
 WebServ::~WebServ()
@@ -210,7 +204,7 @@ void	WebServ::receive_data(int i)
 		{
 			std::cout << "received data fd: " << _ep_event[i].data.fd << "\n";
 			std::cout <<  (*it).second.response << "\n";
-			request_parser((*it).second.response);
+			response_parser((*it).second.response);
 
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
 			_ev.events = EPOLLOUT;
@@ -373,13 +367,55 @@ std::string	WebServ::looking_for_path(std::string path)
 	return (html);
 }
 
-void	WebServ::request_parser(std::string &request)
+void	WebServ::diretory_list(std::stringstream &buff, std::string html)
 {
-	std::fstream			conf_file;
-	std::stringstream		buff;
-	std::string 			html;
+	buff << "<html>\n";
+	buff << "<body>\n";
+	buff << "<h1>Directory Listing</h1>\n";
+	buff << "<ul>\n";
+	DIR* dir;
+	struct dirent* entry;
+	dir = opendir(html.c_str());
+	std::cout << "dir: " << dir << "\n";
+	if (dir != NULL)
+	{
+		std::cout << "dentro\n";
+    	while ((entry = readdir(dir)) != NULL)
+		{
+    		std::string filename = entry->d_name;
+    		 std::string link = html + "/" + filename;
+    		buff << "<li><a href=\"" << link << "\">" << filename << "</a></li>\n";
+    	}
+    	closedir(dir);
+	}
+}
 
+void	WebServ::buff_file(std::fstream &conf_file, std::stringstream &buff, std::string html)
+{
+	conf_file.open(html.c_str() , std::fstream::in);
+	if (conf_file.fail())
+	{
+		conf_file.open("./locations/test/error.html",  std::fstream::in);
+		if (conf_file.fail())
+			std::cout << "Configuration file fail to read" << std::endl;
+		buff << conf_file.rdbuf();
+	}
+	else
+		buff << conf_file.rdbuf();
+}
 
+void	WebServ::http_response_syntax(std::string status, std::string &request, std::stringstream &buff)
+{
+	request = status;
+	request += "Content-Type: text/html\r\n";
+	request += "Connection: close\r\n";
+	request += "\r\n";
+	request += buff.str();
+	request += "\r\n";
+}
+
+void	WebServ::request_parser(std::string request, std::string &method, std::string &path, std::string &protocol)
+{
 	// Find the end of the request line
    	size_t requestLineEnd = request.find("\r\n");
 
@@ -388,24 +424,31 @@ void	WebServ::request_parser(std::string &request)
 
     // Parse the request line
     std::istringstream iss(requestLine);
-    std::string method, path, protocol;
     iss >> method >> path >> protocol;
 
-	//Raoni passou por aqui PARSE UNTIL GET PATH BEFORE ? SIGN
+	//PARSE IF POST REQUEST UNTIL GET PATH BEFORE ? SIGN
 	size_t pos = path.find("?");
 	if (pos != path.npos)
 	{
 		std::string tmp = path.substr(0, pos);
 		path = tmp;
-
 	}
+}
+
+void	WebServ::response_parser(std::string &request)
+{
+	std::string method, path, protocol, html;
+	std::fstream			conf_file;
+	std::stringstream		buff;
+
+	request_parser(request, method, path, protocol);
+
 	html = looking_for_path(path);
 
 	for (std::map<std::string, directive>::iterator it = locations.begin(); it != locations.end(); it++)
 	{
 		std::cout << (*it).first << " : " << (*it).second._server_path << "\n";
 	}
-
 	std::cout << "Method: " << method << std::endl;
 	std::cout << "Path: " << path << std::endl;
 	std::cout << "Protocol: " << protocol << std::endl;
@@ -415,112 +458,33 @@ void	WebServ::request_parser(std::string &request)
 	{
 		if (locations[path]._autoindex == true)
 		{
-			std::cout << "path_ok: " << locations[path]._path_ok << "\n";
 			if (locations[path]._path_ok == false)
-			{
-    			buff << "<html>\n";
-    			buff << "<body>\n";
-    			buff << "<h1>Directory Listing</h1>\n";
-    			buff << "<ul>\n";
-    			DIR* dir;
-    			struct dirent* entry;
-    			dir = opendir(html.c_str());
-    			std::cout << "dir: " << dir << "\n";
-				if (dir != NULL)
-				{
-					std::cout << "dentro\n";
-        			while ((entry = readdir(dir)) != NULL)
-					{
-        				std::string filename = entry->d_name;
-        				 std::string link = html + "/" + filename;
-        				buff << "<li><a href=\"" << link << "\">" << filename << "</a></li>\n";
-        			}
-        			closedir(dir);
-				}
-			}
+				diretory_list(buff, html);
 			else
-			{
-				conf_file.open(html.c_str() , std::fstream::in);
-				if (conf_file.fail())
-				{
-					std::cout << "Configuration file fail to read" << std::endl;
-					conf_file.open("./locations/test/error.html",  std::fstream::in);
-					if (conf_file.fail())
-						std::cout << "Configuration file fail to read" << std::endl;
-					buff << conf_file.rdbuf();
-				}
-				else
-					buff << conf_file.rdbuf();
-			}
+				buff_file(conf_file, buff, html);
 		}
 		else
-		{
-			conf_file.open(html.c_str() , std::fstream::in);
-			if (conf_file.fail())
-			{
-				std::cout << "Configuration file fail to read" << std::endl;
-				conf_file.open("./locations/test/error.html",  std::fstream::in);
-				if (conf_file.fail())
-					std::cout << "Configuration file fail to read" << std::endl;
-				buff << conf_file.rdbuf();
-			}
-			else
-				buff << conf_file.rdbuf();
-		}
-		std::cout <<"BUFF\n" << buff.str() << "\n";
+			buff_file(conf_file, buff, html);
 
-		request = "HTTP/1.1 200 OK\r\n";
-    	request += "Content-Type: text/html\r\n";
-		request += "Connection: close\r\n";
-    	request += "\r\n";
-    	request += buff.str();
-		request += "\r\n";
+		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff);
 		conf_file.close();
 	}
 	else if (method.compare("POST") == 0)
 	{
-		conf_file.open(html.c_str() , std::fstream::in);
-		if (conf_file.fail())
-			std::cout << "Configuration file fail to read" << std::endl;
-		buff << conf_file.rdbuf();
-		request = "HTTP/1.1 200 OK\r\n";
-		request += "Content-Type: text/html\r\n";
-		request += "Connection: close\r\n";
-		request += "\r\n";
-		request += buff.str();
+		buff_file(conf_file, buff, html);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff);
 		conf_file.close();
 	}
 	else if (method.compare("DELETE") == 0)
 	{
-		/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
-
-		conf_file.open(html.c_str() ,  std::fstream::in);
-		if (conf_file.fail())
-			std::cout << "Configuration file fail to read" << std::endl;
-		buff << conf_file.rdbuf();
-		
-		/*HTTP RESPONSE SYNTAX*/
-		request = "HTTP/1.1 200 OK\r\n";
-    	request += "Content-Type: text/html\r\n";
-    	request += "Connection: close\r\n";
-		request += "\r\n";
-		request += buff.str();
+		buff_file(conf_file, buff, html);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff);
 		conf_file.close();
 	}
 	else
 	{
-		/*WRITE THE HTML FILE INTO A BUFFER STREAM TO CONCAT INTO THE HTTP RESPONSE*/
-		conf_file.open("./locations/test/error.html",  std::fstream::in);
-		if (conf_file.fail())
-			std::cout << "Configuration file fail to read" << std::endl;
-		buff << conf_file.rdbuf();
-
-		/*HTTP RESPONSE SYNTAX*/
-		request = "HTTP/1.1 404 Not Found\r\n";
-		request += "Content-Type: text/html\r\n";
-		request += "Connection: close\r\n";
-		request += "\r\n";
-		request += buff.str();
+		buff_file(conf_file, buff, "./locations/test/error.html");
+		http_response_syntax("HTTP/1.1 404 Not Found\r\n", request, buff);
 		conf_file.close();
 	}
 }

@@ -59,11 +59,6 @@ std::vector<std::string>	FileParser::getIndex() const
 	return (_index);
 }
 
-std::map<std::string, std::string>	FileParser::getDirList() const
-{
-	return (_dir_list);
-}
-
 void	FileParser::setup_listener(std::string buff)
 {
 	if (buff.compare(0, 11, "listen [::]") == 0)
