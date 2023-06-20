@@ -401,14 +401,15 @@ void	WebServ::request_parser(std::string &request)
 	}
 	html = looking_for_path(path);
 
+	for (std::map<std::string, directive>::iterator it = locations.begin(); it != locations.end(); it++)
+	{
+		std::cout << (*it).first << " : " << (*it).second._server_path << "\n";
+	}
+
 	std::cout << "Method: " << method << std::endl;
 	std::cout << "Path: " << path << std::endl;
 	std::cout << "Protocol: " << protocol << std::endl;
 	std::cout << "html: " << html << std::endl;
-	for (std::map<std::string, directive>::iterator it = locations.begin(); it != locations.end(); it++)
-	{
-		std::cout << (*it).first << " - " << (*it).first.size() << " : " << (*it).second._server_path << "\n";
-	}
 
 	if (method.compare("GET") == 0)
 	{
