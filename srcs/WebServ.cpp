@@ -253,7 +253,11 @@ void	WebServ::chk_indexies(std::string path, std::string &html)
 	{
 		html = locations[path]._server_path + "/" + locations[path]._index_block.at(i);
 		if(access(html.c_str(), F_OK) == 0)
+		{
 			flag = true;
+			locations[path]._path_ok = true;
+			std::cout << "1 -path_ok = " << locations[path]._path_ok << "\n";
+		}
 		i++;
 	}
 	i = 0;
@@ -263,11 +267,22 @@ void	WebServ::chk_indexies(std::string path, std::string &html)
 		{
 			html = locations[path]._server_path + "/" + _indexes.at(i);
 			if(access(html.c_str(), F_OK) == 0)
+			{
 				flag = true;
+				locations[path]._path_ok = true;
+				std::cout << "2 -path_ok = " << locations[path]._path_ok << "\n";
+			}
 			i++;
 		}
 	}
-	std::cout << "find path\n" << html << "\n";
+	if (flag == false)
+	{
+		locations[path]._path_ok = false;
+		html = locations[path]._server_path;
+		std::cout << "3 -path_ok = " << locations[path]._path_ok << "\n";
+	}
+
+	std::cout << "find path: " << html << "\n";
 }
 
 std::string	WebServ::looking_for_path(std::string path)
@@ -277,7 +292,10 @@ std::string	WebServ::looking_for_path(std::string path)
 	/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
 	if(locations.find(path) != locations.end())
 	{
+		std::cout << "1- path: " << path << "\n";
 		chk_indexies(path, html);
+		if (locations[path]._path_ok == true)
+			return(html);
 	}
 
 	/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
@@ -318,7 +336,8 @@ std::string	WebServ::looking_for_path(std::string path)
 	/*CHECK FOR FILE IN THE END OF THE PATH REQUEST*/
 	if (path.find(".", 0) == path.npos)
 	{
-		html == path;
+		html = locations[path]._server_path;
+		locations[path]._path_ok = false;
 		std::cout << "path not found" << html << "\n";
 		return (html);
 	}
@@ -333,18 +352,16 @@ std::string	WebServ::looking_for_path(std::string path)
 	std::string file = path.substr(start, (end - (start)));
 	std::cout << "file: " << file << std::endl;
 
-	for (std::map<std::string, directive>::iterator it = locations.begin(); it != locations.end(); it++)
-	{
-		std::cout << (*it).first << " - " << (*it).first.size() << " : " << (*it).second._server_path << "\n";
-	}
 	if(locations.find(request_path) != locations.end())
 	{
 		html = locations[request_path]._server_path + "/" + file;
+		locations[request_path]._path_ok = true;
 		std::cout << "find path with file: " << request_path << " : " << request_path.size() <<"\n";
 	}
 	else
 	{
-		html = path;
+		html = locations[request_path]._server_path;
+		locations[request_path]._path_ok = false;
 		std::cout << "path not found with file: " << request_path << " : " << request_path.size() << "\n";
 	}
 
@@ -395,26 +412,44 @@ void	WebServ::request_parser(std::string &request)
 
 	if (method.compare("GET") == 0)
 	{
-		if (_dir_list[path] == "on")
+		if (locations[path]._autoindex == true)
 		{
-    		buff << "<html>\n";
-    		buff << "<body>\n";
-    		buff << "<h1>Directory Listing</h1>\n";
-    		buff << "<ul>\n";
-    		DIR* dir;
-    		struct dirent* entry;
-    		dir = opendir(html.c_str());
-    		std::cout << "dir: " << dir << "\n";
-			if (dir != NULL)
+			std::cout << "path_ok: " << locations[path]._path_ok << "\n";
+			if (locations[path]._path_ok == false)
 			{
-				std::cout << "dentro\n";
-        		while ((entry = readdir(dir)) != NULL)
+    			buff << "<html>\n";
+    			buff << "<body>\n";
+    			buff << "<h1>Directory Listing</h1>\n";
+    			buff << "<ul>\n";
+    			DIR* dir;
+    			struct dirent* entry;
+    			dir = opendir(html.c_str());
+    			std::cout << "dir: " << dir << "\n";
+				if (dir != NULL)
 				{
-        			std::string filename = entry->d_name;
-        			 std::string link = html + "/" + filename;
-        			buff << "<li><a href=\"" << link << "\">" << filename << "</a></li>\n";
-        		}
-        		closedir(dir);
+					std::cout << "dentro\n";
+        			while ((entry = readdir(dir)) != NULL)
+					{
+        				std::string filename = entry->d_name;
+        				 std::string link = html + "/" + filename;
+        				buff << "<li><a href=\"" << link << "\">" << filename << "</a></li>\n";
+        			}
+        			closedir(dir);
+				}
+			}
+			else
+			{
+				conf_file.open(html.c_str() , std::fstream::in);
+				if (conf_file.fail())
+				{
+					std::cout << "Configuration file fail to read" << std::endl;
+					conf_file.open("./locations/test/error.html",  std::fstream::in);
+					if (conf_file.fail())
+						std::cout << "Configuration file fail to read" << std::endl;
+					buff << conf_file.rdbuf();
+				}
+				else
+					buff << conf_file.rdbuf();
 			}
 		}
 		else

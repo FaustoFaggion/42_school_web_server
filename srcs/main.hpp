@@ -22,6 +22,7 @@ struct directive {
 	bool						_autoindex;
 	std::vector<std::string>	_index_block;
 	std::string					_server_path;
+	bool						_path_ok;
 };
 
 #endif
