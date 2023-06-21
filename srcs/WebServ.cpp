@@ -367,7 +367,7 @@ std::string	WebServ::looking_for_path(std::string path)
 	return (html);
 }
 
-void	WebServ::diretory_list(std::stringstream &buff, std::string html)
+void	WebServ::diretory_list(std::stringstream &buff, std::string path, std::string html)
 {
 	buff << "<html>\n";
 	buff << "<body>\n";
@@ -375,15 +375,15 @@ void	WebServ::diretory_list(std::stringstream &buff, std::string html)
 	buff << "<ul>\n";
 	DIR* dir;
 	struct dirent* entry;
+	std::cout << "dir_list html: "<< html << "\n";
 	dir = opendir(html.c_str());
 	std::cout << "dir: " << dir << "\n";
 	if (dir != NULL)
 	{
-		std::cout << "dentro\n";
     	while ((entry = readdir(dir)) != NULL)
 		{
     		std::string filename = entry->d_name;
-    		 std::string link = html + "/" + filename;
+    		 std::string link = path + "/" + filename;
     		buff << "<li><a href=\"" << link << "\">" << filename << "</a></li>\n";
     	}
     	closedir(dir);
@@ -459,7 +459,7 @@ void	WebServ::response_parser(std::string &request)
 		if (locations[path]._autoindex == true)
 		{
 			if (locations[path]._path_ok == false)
-				diretory_list(buff, html);
+				diretory_list(buff, path, html);
 			else
 				buff_file(conf_file, buff, html);
 		}
