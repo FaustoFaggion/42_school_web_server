@@ -94,14 +94,14 @@ void	WebServ::run()
 				/*CLIENT SOCKET*/
 				else 
 				{
-					std::cout << "receive data" << "\n";
+					std::cout << "\nRECEIVE_DATA FUNCTION fd: " << _ep_event[i].data.fd << "\n\n";
 					receive_data(i);
 				}
 			}
 			/*CHECK IF EVENT TO WRITE*/
 			else if ((_ep_event[i].events & EPOLLOUT) == EPOLLOUT)
 			{
-				std::cout << "response" << _ep_event[i].data.fd << "\n";
+				std::cout << "\nRESPONSE FUNCTION fd: " << _ep_event[i].data.fd << "\n\n";
 				response(i);
 			}
 		}
@@ -207,7 +207,7 @@ void	WebServ::receive_data(int i)
 		it = map_connections.find(_ep_event[i].data.fd);
 		if ((*it).second.response.find("\r\n\r\n") != std::string::npos)
 		{
-			std::cout << "received data fd: " << _ep_event[i].data.fd << "\n";
+			// std::cout << "received data fd: " << _ep_event[i].data.fd << "\n";
 			std::cout <<  (*it).second.response << "\n";
 			response_parser((*it).second.response);
 
@@ -225,7 +225,7 @@ void	WebServ::response(int i)
 	/*PROTECTION FROM CONNECTION HAND-SHAKE*/
 	if (!(*it).second.response.empty())
 	{
-		std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.response.c_str() << "\n";
+		// std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.response.c_str() << "\n";
 		send(_ep_event[i].data.fd, (*it).second.response.c_str(), (*it).second.response.size(), 0);
 		
 		// /*SET FD SOCKET TO READ AGAIN*/
@@ -425,6 +425,9 @@ void	WebServ::http_response_syntax(std::string status, std::string &request, std
 	request += "\r\n";
 	request += buff.str();
 	request += "\r\n";
+
+	std::cout << "\nRESPONSE SYNTAX\n\n";
+	std::cout << request;
 }
 
 void	WebServ::request_parser(std::string request, std::string &method, std::string &path, std::string &protocol)
@@ -450,6 +453,8 @@ void	WebServ::request_parser(std::string request, std::string &method, std::stri
 
 void	WebServ::response_parser(std::string &request)
 {
+	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
+
 	std::string method, path, protocol, html;
 	std::fstream			conf_file;
 	std::stringstream		buff;
