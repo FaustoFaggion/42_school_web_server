@@ -101,7 +101,7 @@ void	WebServ::run()
 			/*CHECK IF EVENT TO WRITE*/
 			else if ((_ep_event[i].events & EPOLLOUT) == EPOLLOUT)
 			{
-				std::cout << "response" << "\n";
+				std::cout << "response" << _ep_event[i].data.fd << "\n";
 				response(i);
 			}
 		}
@@ -110,6 +110,9 @@ void	WebServ::run()
 
 void	WebServ::delete_timeout_socket()
 {
+
+	std::cout << "\nDELETE_TIMEOUT_SOCKET FUNCTION\n";
+
 	int j = 0;
 
 	while (_ep_event[j].data.fd)
@@ -122,8 +125,9 @@ void	WebServ::delete_timeout_socket()
 				int	fd = _ep_event[j].data.fd;
 
 				/*DELETE FROM EPOLL AND CLOSE FD*/
-				epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev);
-				_ep_event[j].data.fd = 0;
+				if (epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev) == -1)
+					std::cout << "EPOLL_CTL_DEL FAIL fd: " << _ep_event[j].data.fd << "\n";
+				// _ep_event[j].data.fd = 0;
 				close(fd);
 				map_connections.erase(fd);
 			}
@@ -146,7 +150,7 @@ void	WebServ::accept_new_connection()
 	fcntl(fd_new, F_SETFL, fd_flag | O_NONBLOCK);
 	
 	/*ADD NEW FD EPOOL TO MONNITORING THE EVENTS*/
-	_ev.events = EPOLLIN | EPOLLOUT;
+	_ev.events = EPOLLIN | EPOLLHUP | EPOLLONESHOT;
 	_ev.data.fd = fd_new;
 	
 	std::cout << "new_fd: " << fd_new << "\n";
@@ -207,7 +211,7 @@ void	WebServ::receive_data(int i)
 			response_parser((*it).second.response);
 
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
-			_ev.events = EPOLLOUT;
+			_ev.events = EPOLLOUT | EPOLLONESHOT;
 			epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 		}
 	}
@@ -223,7 +227,7 @@ void	WebServ::response(int i)
 		std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.response.c_str() << "\n";
 		send(_ep_event[i].data.fd, (*it).second.response.c_str(), (*it).second.response.size(), 0);
 		
-		/*SET FD SOCKET TO READ AGAIN*/
+		// /*SET FD SOCKET TO READ AGAIN*/
 		_ev.events = EPOLLIN;
 		epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 	}
