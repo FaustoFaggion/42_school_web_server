@@ -35,7 +35,7 @@ void	HttpResponse::chk_indexies(std::string path, std::string &html)
 			flag = true;
 			locations[path]._path_ok = true;
 			std::cout << "1 -path_ok = " << locations[path]._path_ok << "\n";
-			std::cout << "path found: " << html << "\n";
+			std::cout << "index found block directive: " << html << "\n";
 		}
 		i++;
 	}
@@ -50,7 +50,7 @@ void	HttpResponse::chk_indexies(std::string path, std::string &html)
 				flag = true;
 				locations[path]._path_ok = true;
 				std::cout << "2 -path_ok = " << locations[path]._path_ok << "\n";
-				std::cout << "path found: " << html << "\n";
+				std::cout << "index found simple directive: " << html << "\n";
 			}
 			i++;
 		}
@@ -60,7 +60,7 @@ void	HttpResponse::chk_indexies(std::string path, std::string &html)
 		locations[path]._path_ok = false;
 		html = locations[path]._server_path;
 		std::cout << "3 -path_ok = " << locations[path]._path_ok << "\n";
-		std::cout << "path not found: " << html << "\n";
+		std::cout << "index not found: " << html << "\n";
 	}
 
 }
@@ -120,7 +120,7 @@ std::string	HttpResponse::looking_for_path(std::string path)
 	{
 		html = locations[path]._server_path;
 		locations[path]._path_ok = false;
-		std::cout << "2 -path_ok = " << locations[path]._path_ok << "\n";
+		std::cout << "path_ok = " << locations[path]._path_ok << "\n";
 		std::cout << "path on location map not found: " << html << "\n";
 		return (html);
 	}
@@ -138,14 +138,25 @@ std::string	HttpResponse::looking_for_path(std::string path)
 	if(locations.find(request_path) != locations.end())
 	{
 		html = locations[request_path]._server_path + "/" + file;
-		locations[request_path]._path_ok = true;
-		std::cout << "find path on location map and file: " << request_path << " : " << request_path.size() <<"\n";
+		if (access(html.c_str(), F_OK) == 0)
+		{
+			locations[request_path]._path_ok = true;
+			std::cout << "path_ok = " << locations[request_path]._path_ok << "\n";
+			std::cout << "find path on location map and file: " << request_path <<"\n";
+		}
+		else
+		{
+			locations[request_path]._path_ok = false;
+			std::cout << "path_ok = " << locations[request_path]._path_ok << "\n";
+			std::cout << "find path on location map but not file: " << request_path <<"\n";
+		}
 	}
 	else
 	{
 		html = locations[request_path]._server_path;
 		locations[request_path]._path_ok = false;
-		std::cout << "path not found with file: " << request_path << " : " << request_path.size() << "\n";
+		std::cout << "path_ok = " << locations[request_path]._path_ok << "\n";
+		std::cout << "path not found on location map after extract file: " << request_path << "\n";
 	}
 
 	/*REWRITE THE PATH CORRECTILY IF '//' IS FIND*/

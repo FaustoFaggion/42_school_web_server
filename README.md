@@ -49,3 +49,5 @@ TCP RFC793
 A Protocol For Packet Network Intercommunication
 
 	https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=1092259
+
+### CGI (Commom Gateway Interface)
