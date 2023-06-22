@@ -11,6 +11,7 @@ SRC			=	main.cpp\
 				ListenerSocket.cpp\
 				WebServ.cpp\
 				FileParser.cpp\
+				HttpResponse.cpp\
 
 VPATH		=	$(PATH_SRC)\
 				
@@ -21,6 +22,7 @@ HEADER		=	WebServ.hpp\
 				ListenerSocket.hpp\
 				main.hpp\
 				FileParser.hpp\
+				HttpResponse.hpp\
 				
 all:	$(NAME)
 

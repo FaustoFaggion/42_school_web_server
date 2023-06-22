@@ -12,6 +12,7 @@
 #include <dirent.h>
 #include "ListenerSocket.hpp"
 #include "FileParser.hpp"
+#include "HttpResponse.hpp"
 #include <map>
 
 typedef struct client {
@@ -53,14 +54,6 @@ class WebServ
 		void	accept_new_connection();
 		void	receive_data(int i);
 		void	response(int i);
-
-		void			response_parser(std::string &file);
-		void			request_parser(std::string request, std::string &method, std::string &path, std::string &protocol);
-		std::string		looking_for_path(std::string path);
-		void			chk_indexies(std::string path, std::string &html);
-		void			diretory_list(std::stringstream &buff, std::string path, std::string html);
-		void			buff_file(std::fstream &conf_file, std::stringstream &buff, std::string html);
-		void			http_response_syntax(std::string status, std::string &request, std::stringstream &buff);
 };
 
 #endif

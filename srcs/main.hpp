@@ -1,7 +1,10 @@
 #ifndef MAIN_HPP
 #define MAIN_HPP
 
+#include <stdio.h>
 #include <iostream>		// For cout
+#include <fstream>
+#include <sstream>
 #include <string.h>		// For memset
 #include <unistd.h>		// For read
 #include <cstdlib>		// For exit() and EXIT_FAILURE
@@ -14,7 +17,13 @@
 #include <netinet/in.h>	// For sockaddr_in
 
 #include <sys/epoll.h>
+#include <algorithm>
+#include <fcntl.h>
+#include <sys/types.h>
+#include <dirent.h>
+
 #include <vector>
+#include <map>
 
 #define MAX_CONNECTIONS		10
 
