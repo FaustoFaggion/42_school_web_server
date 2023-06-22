@@ -218,26 +218,26 @@ void	HttpResponse::http_response_syntax(std::string status, std::string &request
 	std::cout << request;
 }
 
-void	HttpResponse::request_parser(std::string request, std::string &method, std::string &path, std::string &protocol)
-{
-	// Find the end of the request line
-   	size_t requestLineEnd = request.find("\r\n");
+// void	HttpResponse::request_parser(std::string request)
+// {
+// 	// Find the end of the request line
+//    	size_t requestLineEnd = request.find("\r\n");
 
-    // Extract the request line
-    std::string requestLine = request.substr(0, requestLineEnd);
+//     // Extract the request line
+//     std::string requestLine = request.substr(0, requestLineEnd);
 
-    // Parse the request line
-    std::istringstream iss(requestLine);
-    iss >> method >> path >> protocol;
+//     // Parse the request line
+//     std::istringstream iss(requestLine);
+//     iss >> method >> path >> protocol;
 
-	//PARSE IF POST REQUEST UNTIL GET PATH BEFORE ? SIGN
-	size_t pos = path.find("?");
-	if (pos != path.npos)
-	{
-		std::string tmp = path.substr(0, pos);
-		path = tmp;
-	}
-}
+// 	//PARSE IF POST REQUEST UNTIL GET PATH BEFORE ? SIGN
+// 	size_t pos = path.find("?");
+// 	if (pos != path.npos)
+// 	{
+// 		std::string tmp = path.substr(0, pos);
+// 		path = tmp;
+// 	}
+// }
 
 void	HttpResponse::response_parser(std::string &request)
 {
@@ -247,7 +247,13 @@ void	HttpResponse::response_parser(std::string &request)
 	std::fstream			conf_file;
 	std::stringstream		buff;
 
-	request_parser(request, method, path, protocol);
+	HttpRequest	rqst;
+	rqst.request_parser(request);
+	method = rqst.getMethod();
+	path = rqst.getUrl();
+	protocol = rqst.getProtocol();
+
+	// request_parser(request, method, path, protocol);
 
 	html = looking_for_path(path);
 

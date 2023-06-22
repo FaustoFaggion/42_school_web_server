@@ -12,6 +12,7 @@ SRC			=	main.cpp\
 				WebServ.cpp\
 				FileParser.cpp\
 				HttpResponse.cpp\
+				HttpRequest.cpp\
 
 VPATH		=	$(PATH_SRC)\
 				
@@ -23,7 +24,8 @@ HEADER		=	WebServ.hpp\
 				main.hpp\
 				FileParser.hpp\
 				HttpResponse.hpp\
-				
+				httpRequest.hpp\
+
 all:	$(NAME)
 
 $(PATH_OBJ)%.o:	%.cpp

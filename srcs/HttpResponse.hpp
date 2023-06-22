@@ -2,6 +2,7 @@
 #define HTTP_RESPONSE_HPP
 
 #include "main.hpp"
+#include "HttpRequest.hpp"
 
 class WebServ;
 
@@ -17,7 +18,7 @@ class HttpResponse
 		~HttpResponse();
 		
 		void			response_parser(std::string &request);
-		void			request_parser(std::string request, std::string &method, std::string &path, std::string &protocol);
+		// void			request_parser(std::string request, std::string &method, std::string &path, std::string &protocol);
 		std::string		looking_for_path(std::string path);
 		void			chk_indexies(std::string path, std::string &html);
 		void			diretory_list(std::stringstream &buff, std::string path, std::string html);
