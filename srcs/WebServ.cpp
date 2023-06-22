@@ -111,7 +111,7 @@ void	WebServ::run()
 void	WebServ::delete_timeout_socket()
 {
 
-	std::cout << "\nDELETE_TIMEOUT_SOCKET FUNCTION\n";
+	// std::cout << "\nDELETE_TIMEOUT_SOCKET FUNCTION\n";
 
 	int j = 0;
 
@@ -125,8 +125,9 @@ void	WebServ::delete_timeout_socket()
 				int	fd = _ep_event[j].data.fd;
 
 				/*DELETE FROM EPOLL AND CLOSE FD*/
-				if (epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev) == -1)
-					std::cout << "EPOLL_CTL_DEL FAIL fd: " << _ep_event[j].data.fd << "\n";
+				epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev);
+				// if (epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev) == -1)
+				// 	std::cout << "EPOLL_CTL_DEL FAIL fd: " << _ep_event[j].data.fd << "\n";
 				// _ep_event[j].data.fd = 0;
 				close(fd);
 				map_connections.erase(fd);
@@ -244,6 +245,8 @@ void	clean(std::string& str) {
 
 void	WebServ::chk_indexies(std::string path, std::string &html)
 {
+	std::cout << "\nCHK_INDEXIES FUNCTION\n";
+
 	bool	flag = false;
 	size_t	i = 0;
 		
@@ -255,6 +258,7 @@ void	WebServ::chk_indexies(std::string path, std::string &html)
 			flag = true;
 			locations[path]._path_ok = true;
 			std::cout << "1 -path_ok = " << locations[path]._path_ok << "\n";
+			std::cout << "path found: " << html << "\n";
 		}
 		i++;
 	}
@@ -269,6 +273,7 @@ void	WebServ::chk_indexies(std::string path, std::string &html)
 				flag = true;
 				locations[path]._path_ok = true;
 				std::cout << "2 -path_ok = " << locations[path]._path_ok << "\n";
+				std::cout << "path found: " << html << "\n";
 			}
 			i++;
 		}
@@ -278,19 +283,21 @@ void	WebServ::chk_indexies(std::string path, std::string &html)
 		locations[path]._path_ok = false;
 		html = locations[path]._server_path;
 		std::cout << "3 -path_ok = " << locations[path]._path_ok << "\n";
+		std::cout << "path not found: " << html << "\n";
 	}
 
-	std::cout << "find path: " << html << "\n";
 }
 
 std::string	WebServ::looking_for_path(std::string path)
 {
+	std::cout << "\nLOOKING_FOR_PATH FUNCTION\n";
+	
 	std::string	html = "";
 
 	/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
 	if(locations.find(path) != locations.end())
 	{
-		std::cout << "1- path: " << path << "\n";
+		std::cout << "path on location map found: " << path << "\n";
 		chk_indexies(path, html);
 		if (locations[path]._path_ok == true)
 			return(html);
@@ -336,7 +343,8 @@ std::string	WebServ::looking_for_path(std::string path)
 	{
 		html = locations[path]._server_path;
 		locations[path]._path_ok = false;
-		std::cout << "path not found" << html << "\n";
+		std::cout << "2 -path_ok = " << locations[path]._path_ok << "\n";
+		std::cout << "path on location map not found: " << html << "\n";
 		return (html);
 	}
 	
@@ -354,7 +362,7 @@ std::string	WebServ::looking_for_path(std::string path)
 	{
 		html = locations[request_path]._server_path + "/" + file;
 		locations[request_path]._path_ok = true;
-		std::cout << "find path with file: " << request_path << " : " << request_path.size() <<"\n";
+		std::cout << "find path on location map and file: " << request_path << " : " << request_path.size() <<"\n";
 	}
 	else
 	{
@@ -373,15 +381,16 @@ std::string	WebServ::looking_for_path(std::string path)
 
 void	WebServ::diretory_list(std::stringstream &buff, std::string path, std::string html)
 {
+	std::cout << "DIRETORY_LIST FUNCTION: " << "\n";
+	
 	buff << "<html>\n";
 	buff << "<body>\n";
 	buff << "<h1>Directory Listing</h1>\n";
 	buff << "<ul>\n";
 	DIR* dir;
 	struct dirent* entry;
-	std::cout << "dir_list html: "<< html << "\n";
+	std::cout << "html: "<< html << "\n";
 	dir = opendir(html.c_str());
-	std::cout << "dir: " << dir << "\n";
 	if (dir != NULL)
 	{
     	while ((entry = readdir(dir)) != NULL)
@@ -449,26 +458,33 @@ void	WebServ::response_parser(std::string &request)
 
 	html = looking_for_path(path);
 
+	std::cout << "\n";
 	for (std::map<std::string, directive>::iterator it = locations.begin(); it != locations.end(); it++)
 	{
 		std::cout << (*it).first << " : " << (*it).second._server_path << "\n";
 	}
+	std::cout << "\n";
 	std::cout << "Method: " << method << std::endl;
 	std::cout << "Path: " << path << std::endl;
 	std::cout << "Protocol: " << protocol << std::endl;
 	std::cout << "html: " << html << std::endl;
+	std::cout << "\n";
 
 	if (method.compare("GET") == 0)
 	{
 		if (locations[path]._autoindex == true)
 		{
+			std::cout << "autoindex on\n";
 			if (locations[path]._path_ok == false)
 				diretory_list(buff, path, html);
 			else
 				buff_file(conf_file, buff, html);
 		}
 		else
+		{
+			std::cout << "autoindex off\n";
 			buff_file(conf_file, buff, html);
+		}
 
 		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff);
 		conf_file.close();
