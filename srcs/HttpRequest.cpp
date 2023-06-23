@@ -25,6 +25,11 @@ std::string		HttpRequest::getProtocol() const
 	return(_server_protocol);
 }
 
+std::string		HttpRequest::getContentType() const
+{
+	return (_content_type);
+}
+
 std::string	parse_line(std::string &request, std::string start, std::string end)
 {
 	size_t		requestLineEnd;
@@ -105,9 +110,18 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 	requestLine = parse_line(request, "Host: ", "\r\n");
 	if (requestLine != "")
 	{
-		size_t pos = requestLine.find(": ");
-		requestLine.replace(0, pos + 2, "HTTP_HOST=");
-		_cgi_envs.push_back(requestLine);
+		std::string	tmp1, tmp2;
+
+		std::istringstream	iss0(requestLine);
+		getline(iss0, tmp, ' ');
+		getline(iss0, tmp, ' ');
+		std::istringstream	iss1(tmp);
+		getline(iss1, tmp1, ':');
+		tmp2 = "SERVER_NAME=" + tmp1;
+		_cgi_envs.push_back(tmp2);
+		getline(iss1, tmp1, ':');
+		tmp2 = "SERVER_PORT=" + tmp1;
+		_cgi_envs.push_back(tmp2);
 	}
 
 	/*HTTP_USER_AGENT*/
@@ -123,7 +137,7 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 	size_t	end = request.find("\r\n");
 	requestLine = request.substr(0, end);
 	{
-		std::string	method, url, protocol, tmp0, tmp1;
+		std::string	method, url, protocol, tmp0, tmp1, tmp2;
 		std::istringstream iss0(requestLine);
 
 		iss0 >> method >> url >> protocol;
@@ -134,12 +148,13 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 			std::istringstream iss0(_url);
 			getline(iss0, _url, '?');
 			getline(iss0, tmp0, '?');
-			getline(iss0, tmp1, '=');
-			tmp0 = "PATH_INFO=" + tmp1;
-			_cgi_envs.push_back(tmp0);
-			getline(iss0, tmp1, '=');
-			tmp0 = "QUERY_STRING=" + tmp1;
-			_cgi_envs.push_back(tmp0);
+			std::istringstream iss1(tmp0);
+			getline(iss1, tmp1, '=');
+			tmp2 = "PATH_INFO=" + tmp1;
+			_cgi_envs.push_back(tmp2);
+			getline(iss1, tmp1, '=');
+			tmp2 = "QUERY_STRING=" + tmp2;
+			_cgi_envs.push_back(tmp2);
 
 		}
 		tmp0 = "REQUEST_METHOD=" + method;
@@ -173,5 +188,21 @@ void		HttpRequest::request_parser(std::string request)
 		getline(iss0, _url, '?');
 	}
 
+	/*CONTENT_TYPE*/
+	pos = request.find("Content-Type: ");
+	if (pos != request.npos)
+	{
+		requestLine = parse_line(request, "Content-Type: ", "\r\n");
+		std::cout << "request_line: " << requestLine << "\n";
+		std::istringstream iss0(requestLine);
+		getline(iss0, tmp, ' ');
+		std::cout << "tmp: " << tmp << "\n";
+		getline(iss0, tmp, ' ');
+		std::cout << "tmp: " << tmp << "\n";
+		std::istringstream iss1(tmp);
+		getline(iss1, _content_type, ';');
+		_content_type += "\r\n";
+	}
+	std::cout << "content_type: " << _content_type << "\n";
 	cgi_envs_parser(request);
 }

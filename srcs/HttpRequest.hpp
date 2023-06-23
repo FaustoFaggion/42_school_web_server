@@ -9,6 +9,7 @@ class HttpRequest
 		std::string					_request_method;
 		std::string					_url;
 		std::string					_server_protocol;
+		std::string					_content_type;
 
 		std::vector<std::string>	_cgi_envs;
 		
@@ -23,6 +24,7 @@ class HttpRequest
 		std::string		getMethod() const;
 		std::string		getUrl() const;
 		std::string		getProtocol() const;
+		std::string		getContentType() const;
 
 };
 

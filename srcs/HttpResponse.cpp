@@ -205,10 +205,10 @@ void	HttpResponse::buff_file(std::fstream &conf_file, std::stringstream &buff, s
 		buff << conf_file.rdbuf();
 }
 
-void	HttpResponse::http_response_syntax(std::string status, std::string &request, std::stringstream &buff)
+void	HttpResponse::http_response_syntax(std::string status, std::string &request, std::stringstream &buff, std::string content_type)
 {
 	request = status;
-	request += "Content-Type: text/html\r\n";
+	request += content_type;
 	request += "Connection: close\r\n";
 	request += "\r\n";
 	request += buff.str();
@@ -222,7 +222,7 @@ void	HttpResponse::response_parser(std::string &request)
 {
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	std::string method, path, protocol, html;
+	std::string method, path, protocol, html, content_type;
 	std::fstream			conf_file;
 	std::stringstream		buff;
 
@@ -231,6 +231,8 @@ void	HttpResponse::response_parser(std::string &request)
 	method = rqst.getMethod();
 	path = rqst.getUrl();
 	protocol = rqst.getProtocol();
+	content_type = rqst.getContentType();
+
 
 	// request_parser(request, method, path, protocol);
 
@@ -264,25 +266,25 @@ void	HttpResponse::response_parser(std::string &request)
 			buff_file(conf_file, buff, html);
 		}
 
-		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
 		conf_file.close();
 	}
 	else if (method.compare("POST") == 0)
 	{
 		buff_file(conf_file, buff, html);
-		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
 		conf_file.close();
 	}
 	else if (method.compare("DELETE") == 0)
 	{
 		buff_file(conf_file, buff, html);
-		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
 		conf_file.close();
 	}
 	else
 	{
 		buff_file(conf_file, buff, "./locations/test/error.html");
-		http_response_syntax("HTTP/1.1 404 Not Found\r\n", request, buff);
+		http_response_syntax("HTTP/1.1 404 Not Found\r\n", request, buff, content_type);
 		conf_file.close();
 	}
 }
