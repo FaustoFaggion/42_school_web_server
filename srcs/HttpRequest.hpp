@@ -6,9 +6,13 @@
 class HttpRequest 
 {
 	private:
-		std::string		_method;
+		std::string		_request_method;
 		std::string		_url;
-		std::string		_protocol;
+		std::string		_server_protocol;
+		std::string		_server_name;
+		std::string		_path_info;
+		std::string		_query_string;
+		std::string		_server_port;
 		
 	public:
 		HttpRequest();
@@ -19,6 +23,7 @@ class HttpRequest
 		std::string		getMethod() const;
 		std::string		getUrl() const;
 		std::string		getProtocol() const;
+		std::string		getServer_name() const;
 
 };
 

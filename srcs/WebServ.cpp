@@ -231,8 +231,9 @@ void	WebServ::response(int i)
 		// std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.response.c_str() << "\n";
 		send(_ep_event[i].data.fd, (*it).second.response.c_str(), (*it).second.response.size(), 0);
 		
-		// /*SET FD SOCKET TO READ AGAIN*/
-		_ev.events = EPOLLIN;
+		
+		/*If keep-alive SET FD SOCKET TO READ AGAIN*/
+		_ev.events = EPOLLIN | EPOLLHUP | EPOLLONESHOT;
 		epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 	}
 }

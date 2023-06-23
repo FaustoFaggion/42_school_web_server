@@ -218,27 +218,6 @@ void	HttpResponse::http_response_syntax(std::string status, std::string &request
 	std::cout << request;
 }
 
-// void	HttpResponse::request_parser(std::string request)
-// {
-// 	// Find the end of the request line
-//    	size_t requestLineEnd = request.find("\r\n");
-
-//     // Extract the request line
-//     std::string requestLine = request.substr(0, requestLineEnd);
-
-//     // Parse the request line
-//     std::istringstream iss(requestLine);
-//     iss >> method >> path >> protocol;
-
-// 	//PARSE IF POST REQUEST UNTIL GET PATH BEFORE ? SIGN
-// 	size_t pos = path.find("?");
-// 	if (pos != path.npos)
-// 	{
-// 		std::string tmp = path.substr(0, pos);
-// 		path = tmp;
-// 	}
-// }
-
 void	HttpResponse::response_parser(std::string &request)
 {
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
