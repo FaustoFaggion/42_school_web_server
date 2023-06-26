@@ -10,6 +10,7 @@ PATH_OBJ	=	./obj/
 SRC			=	main.cpp\
 				ListenerSocket.cpp\
 				WebServ.cpp\
+				Parser.cpp\
 				FileParser.cpp\
 				HttpResponse.cpp\
 				HttpRequest.cpp\
@@ -22,6 +23,7 @@ OBJ			=	$(SRC:%.cpp=$(PATH_OBJ)%.o)
 HEADER		=	WebServ.hpp\
 				ListenerSocket.hpp\
 				main.hpp\
+				Parser.hpp\
 				FileParser.hpp\
 				HttpResponse.hpp\
 				httpRequest.hpp\

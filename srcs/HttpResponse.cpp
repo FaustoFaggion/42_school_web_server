@@ -235,11 +235,17 @@ void	HttpResponse::exec_cgi(std::string &html, std::stringstream &buff)
 
 	int				fd[2];
 	int				pid;
-	char			*arg2[2];
+	char			*arg2[3];
 	char			c[2048];
+	std::string		tmp;
 
-	arg2[0] = (char *)html.c_str();
-	arg2[1] = NULL;
+	// html.erase(0, 1);
+	// tmp = "/home/fausto/42SP/webserv_git" + html;
+	// // std:: cout << "tmp cgi: " << tmp << "\n";
+
+	arg2[0] = (char *)"/usr/bin/php-cgi7.4";
+	arg2[1] = (char *)html.c_str();
+	arg2[2] = NULL;
 
 	if (pipe(fd) == -1)
 		exit(write(1, "pipe error\n", 11));
@@ -251,9 +257,9 @@ void	HttpResponse::exec_cgi(std::string &html, std::stringstream &buff)
 		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[1]);
-		if (execve("/usr/bin/php-cgi-7.4", arg2, NULL) == -1)
+		if (execve(arg2[0], arg2, NULL) == -1)
 		{
-			write(2, "error execve\n", 13);
+			write(2, strerror(errno), strlen(strerror(errno)));
 			exit(1);
 		}
 	}
@@ -266,6 +272,7 @@ void	HttpResponse::exec_cgi(std::string &html, std::stringstream &buff)
 	close(fd[1]);
 
 }
+
 void	HttpResponse::response_parser(std::string &request)
 {
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
@@ -316,8 +323,7 @@ void	HttpResponse::response_parser(std::string &request)
 
 		if (locations[path]._cgi == true)
 			exec_cgi(html, buff);
-		else
-			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
 		conf_file.close();
 	}
 	else if (method.compare("POST") == 0)
