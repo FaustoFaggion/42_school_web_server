@@ -77,7 +77,10 @@ std::string	HttpResponse::looking_for_path(std::string &path)
 		std::cout << "path on location map found: " << path << "\n";
 		chk_indexies(path, html);
 		if (locations[path]._path_ok == true)
+		{
+			locations[path]._cgi = false;
 			return(html);
+		}
 	}
 
 	/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
@@ -122,6 +125,7 @@ std::string	HttpResponse::looking_for_path(std::string &path)
 		locations[path]._path_ok = false;
 		std::cout << "path_ok = " << locations[path]._path_ok << "\n";
 		std::cout << "path on location map not found: " << html << "\n";
+		locations[path]._cgi = false;
 		return (html);
 	}
 	
@@ -144,12 +148,17 @@ std::string	HttpResponse::looking_for_path(std::string &path)
 			locations[request_path]._path_ok = true;
 			std::cout << "path_ok = " << locations[request_path]._path_ok << "\n";
 			std::cout << "find path on location map and file: " << request_path <<"\n";
+			if (file.find(".php") != file.npos)
+				locations[path]._cgi = true;
+			else
+				locations[path]._cgi = false;
 		}
 		else
 		{
 			locations[request_path]._path_ok = false;
 			std::cout << "path_ok = " << locations[request_path]._path_ok << "\n";
 			std::cout << "find path on location map but not file: " << request_path <<"\n";
+			locations[path]._cgi = false;
 		}
 	}
 	else
@@ -158,6 +167,7 @@ std::string	HttpResponse::looking_for_path(std::string &path)
 		locations[request_path]._path_ok = false;
 		std::cout << "path_ok = " << locations[request_path]._path_ok << "\n";
 		std::cout << "path not found on location map after extract file: " << request_path << "\n";
+		locations[path]._cgi = false;
 	}
 
 	/*REWRITE THE PATH CORRECTILY IF '//' IS FIND*/
@@ -219,6 +229,43 @@ void	HttpResponse::http_response_syntax(std::string status, std::string &request
 	std::cout << request;
 }
 
+void	HttpResponse::exec_cgi(std::string &html, std::stringstream &buff)
+{
+	std::cout << "\nEXEC_CGI FUNCTION\n";
+
+	int				fd[2];
+	int				pid;
+	char			*arg2[2];
+	char			c[2048];
+
+	arg2[0] = (char *)html.c_str();
+	arg2[1] = NULL;
+
+	if (pipe(fd) == -1)
+		exit(write(1, "pipe error\n", 11));
+	pid = fork();
+	if (pid < 0)
+		exit(write(1, "fork error\n", 11));
+	if (pid == 0)
+	{
+		close(fd[0]);
+		dup2(fd[1], STDOUT_FILENO);
+		close(fd[1]);
+		if (execve("/usr/bin/php-cgi-7.4", arg2, NULL) == -1)
+		{
+			write(2, "error execve\n", 13);
+			exit(1);
+		}
+	}
+	waitpid(pid, NULL, 0);
+	dup2(fd[0], STDIN_FILENO);
+
+	read (fd[0], c, 2048);
+	buff << c;
+	close(fd[0]);
+	close(fd[1]);
+
+}
 void	HttpResponse::response_parser(std::string &request)
 {
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
@@ -267,7 +314,10 @@ void	HttpResponse::response_parser(std::string &request)
 			buff_file(conf_file, buff, html);
 		}
 
-		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
+		if (locations[path]._cgi == true)
+			exec_cgi(html, buff);
+		else
+			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
 		conf_file.close();
 	}
 	else if (method.compare("POST") == 0)

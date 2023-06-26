@@ -25,6 +25,8 @@
 #include <vector>
 #include <map>
 
+# include <sys/wait.h>
+
 #define MAX_CONNECTIONS		10
 
 struct directive {
@@ -32,6 +34,7 @@ struct directive {
 	std::vector<std::string>	_index_block;
 	std::string					_server_path;
 	bool						_path_ok;
+	bool						_cgi;
 };
 
 #endif
