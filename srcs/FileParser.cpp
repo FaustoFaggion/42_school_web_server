@@ -319,6 +319,8 @@ void	FileParser::parse_index(std::vector<std::string> &idx, std::string &str)
 
 void	FileParser::parse_locations(bool simple_root_directive)
 {	
+	std::cout << "\nPARSE_LOCATIONS FUNCTION\n";
+	
 	std::string	root_path;
 	std::string	location;
 	std::string	request_path;
@@ -363,8 +365,8 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		_path[request_path]._autoindex = false;
 		if (location.find("autoindex", 0) != location.npos)
 		{
-			std::string dir = str_substring(location, "autoindex", 0, '\n');
-			if (dir.find("on", 0) != dir.npos)
+			std::string auto_idx = str_substring(location, "autoindex", 0, '\n');
+			if (auto_idx.find("on", 0) != auto_idx.npos)
 				_path[request_path]._autoindex = true;
 		}
 

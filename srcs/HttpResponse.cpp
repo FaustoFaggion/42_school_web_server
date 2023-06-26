@@ -65,7 +65,7 @@ void	HttpResponse::chk_indexies(std::string path, std::string &html)
 
 }
 
-std::string	HttpResponse::looking_for_path(std::string path)
+std::string	HttpResponse::looking_for_path(std::string &path)
 {
 	std::cout << "\nLOOKING_FOR_PATH FUNCTION\n";
 	
@@ -138,6 +138,7 @@ std::string	HttpResponse::looking_for_path(std::string path)
 	if(locations.find(request_path) != locations.end())
 	{
 		html = locations[request_path]._server_path + "/" + file;
+		path = request_path;
 		if (access(html.c_str(), F_OK) == 0)
 		{
 			locations[request_path]._path_ok = true;
@@ -153,7 +154,7 @@ std::string	HttpResponse::looking_for_path(std::string path)
 	}
 	else
 	{
-		html = locations[request_path]._server_path;
+		// html = locations[request_path]._server_path;
 		locations[request_path]._path_ok = false;
 		std::cout << "path_ok = " << locations[request_path]._path_ok << "\n";
 		std::cout << "path not found on location map after extract file: " << request_path << "\n";
