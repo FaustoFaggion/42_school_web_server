@@ -350,7 +350,10 @@ void	HttpResponse::response_parser(std::string &request)
 		}
 
 		if (locations[path]._cgi == true)
+		{
 			exec_cgi(html, request, envp_cgi);
+			std::cout << "cgi request:\n" << request << "\n\n";
+		}
 		else
 			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
 		conf_file.close();

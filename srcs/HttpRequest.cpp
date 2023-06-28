@@ -202,32 +202,24 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 		std::cout << *(_cgi_envs.end() - 1) << "\n";
 	}
 
-	// requestLine = parse_line(request, "Origin: ", "\r\n");
-	// if (requestLine != "")
-	// {
-	// 	key = "REMOTE_HOST";
-	// 	std::istringstream iss(requestLine);
-	// 	getline(iss, value, ' ');
-	// 	getline(iss, value, ' ');
-	// 	setenv(key.c_str(), value.c_str(), 1);
-	// }
-	// else
-	// 	setenv(key.c_str(), "NULL", 1);
+	requestLine = parse_line(request, "Origin: ", "\r\n");
+	if (requestLine != "")
+	{
+		std::istringstream iss(requestLine);
+		getline(iss, value, ' ');
+		getline(iss, value, ' ');
+		key = "REMOTE_HOST=" + value;
+		_cgi_envs.push_back(key);
+	}
+	else
+		_cgi_envs.push_back("REMOTE_HOST=NULL");
 
 	// /*ERROR: No input file specified*/
 	// setenv("SCRIPT_NAME", "./php-cgi/test2.php", 1);
 	// setenv("SCRIPT_FILENAME", "/test2.php", 1);
 
 	// setenv("REMOTE_ADDR", "127.0.0.1", 1);
-	
-	
-	/*Declaration of the environment variable array*/
-	// extern char** environ; 
-    /*Iterate over the environment variables until a null pointer is encountered*/
-    // for (int i = 0; environ[i] != NULL; i++) {
-    //     std::cout << environ[i] << std::endl;
-	// 	_cgi_envs.push_back(environ[i]);
-    // }
+
 }
 
 void		HttpRequest::request_parser(std::string request)

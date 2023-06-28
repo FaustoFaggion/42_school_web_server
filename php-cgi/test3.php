@@ -3,6 +3,15 @@
 echo "HELLO WORD\n";
 
 var_dump($_ENV);
+echo "<br>";
+echo "<hr>";
+parse_str($_SERVER['QUERY_STRING'], $queryParams);
+// Accessing individual parameters
+$username = $queryParams['username'];
+$password = $queryParams['password'];
+
+echo "Bem vindo " . $username . "!!!" . "<br>"; 
+echo "Seu password é: " . $password . "." . "<br>";
 
 echo "<br>";
 echo "<hr>";
