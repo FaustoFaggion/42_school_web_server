@@ -106,7 +106,7 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*GATWAY_INTERFACE*/ //?????????????????????????????????
-	// _cgi_envs.push_back("GATWAY_INTERFACE=CGI/1.1");
+	_cgi_envs.push_back("GATWAY_INTERFACE=CGI/7.4");
 		
 	/*HTTP_ACCEPT*/
 	key = "Accept: ";
