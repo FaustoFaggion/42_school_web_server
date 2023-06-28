@@ -137,9 +137,9 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 		std::cout << *(_cgi_envs.end() - 1) << "\n";
 		std::istringstream	iss1(tmp0);
 		getline(iss1, tmp1, ':');
-		value = "SERVER_NAME=" + tmp1;
+		// value = "SERVER_NAME=localhost";
 		// _cgi_envs.push_back(value);
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
+		// std::cout << *(_cgi_envs.end() - 1) << "\n";
 		getline(iss1, tmp1, ':');
 		value = "SERVER_PORT=" + tmp1;
 		_cgi_envs.push_back(value);
@@ -150,8 +150,8 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 		std::cout << "requestline == vazio\n";
 		_cgi_envs.push_back("HTTP_HOST=NULL");
 		std::cout << *(_cgi_envs.end() - 1) << "\n";
-		_cgi_envs.push_back("SERVER_NAME=NULL");
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
+		// _cgi_envs.push_back("SERVER_NAME=NULL");
+		// std::cout << *(_cgi_envs.end() - 1) << "\n";
 		_cgi_envs.push_back("SERVER_PORT=NULL");
 		std::cout << *(_cgi_envs.end() - 1) << "\n";
 	}
@@ -165,23 +165,24 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 	size_t	end = request.find("\r\n");
 	requestLine = request.substr(0, end);
 	{
-		std::string	method, url, protocol, tmp0, tmp1, tmp2;
+		std::string	mthd, addr, prtl, tmp0, tmp1, tmp2;
+		std::cout << "requestLine: " << requestLine << "\n";
 		std::istringstream iss0(requestLine);
-
-		iss0 >> method >> url >> protocol;
-		size_t pos = _url.find("?");
-		if (pos != _url.npos)
+		iss0 >> mthd >> addr >> prtl;
+		std::cout << "_URL: " << addr << "\n";
+		size_t pos = addr.find("?");
+		if (pos != addr.npos)
 		{
-			
-			std::istringstream iss0(_url);
-			getline(iss0, _url, '?');
-			size_t start =_url.find("/");
-			value = _url.substr(start, (_url.size() - start));
-//			key = "PATH_INFO=" + value;
+			size_t start = addr.find("/");
+			size_t end = addr.find("?");
+			value = addr.substr(start, (end - start));
+			key = "PATH_INFO=" + value;
 			_cgi_envs.push_back(key);
 			std::cout << *(_cgi_envs.end() - 1) << "\n";
-			getline(iss0, value, '?');
-//			key = "QUERY_STRING=" + value;
+			std::istringstream iss2(addr);
+			getline(iss2, tmp0, '?');
+			getline(iss2, tmp0, '?');
+			key = "QUERY_STRING=" + tmp0;
 			_cgi_envs.push_back(key);
 			std::cout << *(_cgi_envs.end() - 1) << "\n";
 		}
@@ -190,13 +191,15 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 			size_t start =_url.find("/");
 			value = _url.substr(start, (_url.size() - start));
 			key = "PATH_INFO=" + value;
-//			_cgi_envs.push_back(key);
+			_cgi_envs.push_back(key);
 			std::cout << *(_cgi_envs.end() - 1) << "\n";
 		}
-		// key = "REQUEST_METHOD";
-		// // setenv(key.c_str(), method.c_str(), 1);
-		// key = "SERVER_PROTOCOL";
-		// setenv(key.c_str(), protocol.c_str(), 1); // HTTP or HTTPS
+		// key = "REQUEST_METHOD=" + mthd;
+		// _cgi_envs.push_back(key);
+		// std::cout << *(_cgi_envs.end() - 1) << "\n";
+		key = "SERVER_PROTOCOL=" + prtl;
+		_cgi_envs.push_back(key);
+		std::cout << *(_cgi_envs.end() - 1) << "\n";
 	}
 
 	// requestLine = parse_line(request, "Origin: ", "\r\n");

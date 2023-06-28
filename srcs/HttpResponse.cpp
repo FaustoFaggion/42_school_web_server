@@ -308,7 +308,7 @@ void	HttpResponse::response_parser(std::string &request)
     /*Iterate over the environment variables until a null pointer is encountered*/
 	_envp = rqst.getCgiEnvs();
 	for (int i = 0; environ[i] != NULL; i++) {
-		std::cout << environ[i] << std::endl;
+		// std::cout << environ[i] << std::endl;
 		_envp.push_back(environ[i]);
 	}
 	char *envp_cgi[_envp.size() + 1];
