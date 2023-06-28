@@ -76,10 +76,12 @@ void	HttpRequest::add_cgi_envs(std::string request, std::string str, std::string
 void	HttpRequest::cgi_envs_parser(std::string request)
 {
 	std::cout << "\nCGI_ENVS_PARSER FUNCTION\n\n";
+	(void)request;
 
 	std::string		requestLine;
 	std::string		key;
 	std::string		value;
+	std::string		saved;
 
 	std::cout << request << "\n";
 	std::cout << "enviroment variables\n" << "\n";
@@ -101,13 +103,23 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*CONTENT_TYPE*/
-	key = "Content-Type: ";
-	add_cgi_envs(request, key, "CONTENT_TYPE=", key.size(), ' ');
+	requestLine = parse_line(request, "Content-Type: ", "\r\n");
+	if (requestLine != "")
+	{
+		std::string			tmp0, tmp1;
+		std::istringstream	iss2(requestLine);
+		getline(iss2, tmp0, ' ');
+		getline(iss2, tmp0, ' ');
+		std::istringstream	iss3(tmp0);
+		getline(iss3, tmp1, ';');
+		value = "CONTENT_TYPE=" + tmp1;
+		_cgi_envs.push_back(value);	
+	}
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*GATWAY_INTERFACE*/ //?????????????????????????????????
 	_cgi_envs.push_back("GATWAY_INTERFACE=CGI/7.4");
-		
+
 	/*HTTP_ACCEPT*/
 	key = "Accept: ";
 	add_cgi_envs(request, key, "HTTP_ACCEPT=", key.size(), ' ');
@@ -125,7 +137,6 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 
 	/*HTTP_HOST, SERVER_NAME, SERVER_PORT*/
 	requestLine = parse_line(request, "Host: ", "\r\n");
-	std::cout << "requestline: " << requestLine << "\n";
 	if (requestLine != "")
 	{
 		std::string		tmp0, tmp1;
@@ -177,6 +188,7 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 			size_t end = addr.find("?");
 			value = addr.substr(start, (end - start));
 			key = "PATH_INFO=" + value;
+			saved = value;
 			_cgi_envs.push_back(key);
 			std::cout << *(_cgi_envs.end() - 1) << "\n";
 			std::istringstream iss2(addr);
@@ -214,9 +226,13 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 	else
 		_cgi_envs.push_back("REMOTE_HOST=NULL");
 
-	// /*ERROR: No input file specified*/
-	// setenv("SCRIPT_NAME", "./php-cgi/test2.php", 1);
-	// setenv("SCRIPT_FILENAME", "/test2.php", 1);
+	/*SCRIPT_NAME*/
+	// key = "SCRIPT_NAME=./php-cgi" + saved;
+	// _cgi_envs.push_back(key);
+	
+	/*SCRIPT_FILENAME*/
+	// key = "SCRIPT_FILENAME=" + saved;
+	// _cgi_envs.push_back(key);
 
 	// setenv("REMOTE_ADDR", "127.0.0.1", 1);
 

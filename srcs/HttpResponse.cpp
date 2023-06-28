@@ -138,6 +138,8 @@ std::string	HttpResponse::looking_for_path(std::string &path)
 	size_t end = path.size();
 	std::cout << "end: " << end << std::endl;
 	std::string	request_path = path.substr(0, start);
+	if (request_path == "")
+		request_path = "/";
 	std::cout << "request_path: " << request_path << std::endl;
 	std::string file = path.substr(start, (end - (start)));
 	std::cout << "file: " << file << std::endl;
