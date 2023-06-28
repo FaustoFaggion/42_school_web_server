@@ -36,6 +36,8 @@ void	HttpResponse::chk_indexies(std::string path, std::string &html)
 			locations[path]._path_ok = true;
 			std::cout << "1 -path_ok = " << locations[path]._path_ok << "\n";
 			std::cout << "index found block directive: " << html << "\n";
+			if (locations[path]._index_block.at(i).find(".php"))
+				locations[path]._cgi = true;
 		}
 		i++;
 	}
@@ -51,6 +53,9 @@ void	HttpResponse::chk_indexies(std::string path, std::string &html)
 				locations[path]._path_ok = true;
 				std::cout << "2 -path_ok = " << locations[path]._path_ok << "\n";
 				std::cout << "index found simple directive: " << html << "\n";
+				if (_indexes.at(i).find(".php") != _indexes.at(i).npos)
+					locations[path]._cgi = true;
+
 			}
 			i++;
 		}
@@ -61,6 +66,7 @@ void	HttpResponse::chk_indexies(std::string path, std::string &html)
 		html = locations[path]._server_path;
 		std::cout << "3 -path_ok = " << locations[path]._path_ok << "\n";
 		std::cout << "index not found: " << html << "\n";
+		locations[path]._cgi = false;
 	}
 
 }
@@ -77,10 +83,7 @@ std::string	HttpResponse::looking_for_path(std::string &path)
 		std::cout << "path on location map found: " << path << "\n";
 		chk_indexies(path, html);
 		if (locations[path]._path_ok == true)
-		{
-			locations[path]._cgi = false;
 			return(html);
-		}
 	}
 
 	/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
@@ -141,7 +144,11 @@ std::string	HttpResponse::looking_for_path(std::string &path)
 
 	if(locations.find(request_path) != locations.end())
 	{
-		html = locations[request_path]._server_path + "/" + file;
+		if (file.find(".php") != file.npos)
+			html = "php-cgi" + file;
+		else
+			html = locations[request_path]._server_path + file;
+		std::cout << "html: " << html << "\n";
 		path = request_path;
 		if (access(html.c_str(), F_OK) == 0)
 		{
@@ -229,20 +236,15 @@ void	HttpResponse::http_response_syntax(std::string status, std::string &request
 	std::cout << request;
 }
 
-void	HttpResponse::exec_cgi(std::string &html, std::stringstream &buff)
+void	HttpResponse::exec_cgi(std::string &html, std::string &request, char *envp_cgi[])
 {
-	std::cout << "\nEXEC_CGI FUNCTION\n";
+	std::cout << "\nEXEC_CGI FUNCTION" << envp_cgi[0] << html << "\n\n";
 
 	int				fd[2];
 	int				pid;
 	char			*arg2[3];
-	char			c[2048];
-	std::string		tmp;
-
-	// html.erase(0, 1);
-	// tmp = "/home/fausto/42SP/webserv_git" + html;
-	// // std:: cout << "tmp cgi: " << tmp << "\n";
-
+	static char		c[4096 * 4];
+	
 	arg2[0] = (char *)"/usr/bin/php-cgi7.4";
 	arg2[1] = (char *)html.c_str();
 	arg2[2] = NULL;
@@ -254,22 +256,32 @@ void	HttpResponse::exec_cgi(std::string &html, std::stringstream &buff)
 		exit(write(1, "fork error\n", 11));
 	if (pid == 0)
 	{
+
+		// for (std::vector<std::string>::iterator it = _envp.begin(); it != _envp.end(); it++)
+		// {
+		// 	std::cout << *it << std::endl;
+		// }
 		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[1]);
-		if (execve(arg2[0], arg2, NULL) == -1)
+		if (execve(arg2[0], arg2, envp_cgi) == -1)
 		{
 			write(2, strerror(errno), strlen(strerror(errno)));
 			exit(1);
 		}
 	}
 	waitpid(pid, NULL, 0);
-	dup2(fd[0], STDIN_FILENO);
-
-	read (fd[0], c, 2048);
-	buff << c;
-	close(fd[0]);
 	close(fd[1]);
+	dup2(fd[0], STDIN_FILENO);
+	request = "HTTP/1.1 200 OK\r\n";
+	std::cout << "enter while\n";
+	while (read(fd[0], c, (4096 * 4)) != 0)
+	{
+		request += c;
+	}
+	std::cout << "out while\n";
+	// std::cout << "request: " << request << "\n";
+	close(fd[0]);
 
 }
 
@@ -288,8 +300,24 @@ void	HttpResponse::response_parser(std::string &request)
 	protocol = rqst.getProtocol();
 	content_type = rqst.getContentType();
 
+	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	// request_parser(request, method, path, protocol);
+	/*CREATE ENVP_CGI ARRAY*/
+	/*Declaration of the environment variable array*/
+	extern char** environ; 
+    /*Iterate over the environment variables until a null pointer is encountered*/
+	_envp = rqst.getCgiEnvs();
+	for (int i = 0; environ[i] != NULL; i++) {
+		std::cout << environ[i] << std::endl;
+		_envp.push_back(environ[i]);
+	}
+	char *envp_cgi[_envp.size() + 1];
+	size_t i = 0;
+	while (i < _envp.size()) {
+		envp_cgi[i] = (char *)_envp.at(i).c_str();
+		i++;
+	}
+	envp_cgi[i] = NULL;
 
 	html = looking_for_path(path);
 
@@ -322,14 +350,18 @@ void	HttpResponse::response_parser(std::string &request)
 		}
 
 		if (locations[path]._cgi == true)
-			exec_cgi(html, buff);
-		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
+			exec_cgi(html, request, envp_cgi);
+		else
+			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
 		conf_file.close();
 	}
 	else if (method.compare("POST") == 0)
 	{
 		buff_file(conf_file, buff, html);
-		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
+		if (locations[path]._cgi == true)
+			exec_cgi(html, request, envp_cgi);
+		else
+			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
 		conf_file.close();
 	}
 	else if (method.compare("DELETE") == 0)

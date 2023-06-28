@@ -18,13 +18,15 @@ class HttpRequest
 		~HttpRequest();
 
 
-		void			request_parser(std::string request);
-		void			cgi_envs_parser(std::string request);
+		void						request_parser(std::string request);
+		void						cgi_envs_parser(std::string request);
 
-		std::string		getMethod() const;
-		std::string		getUrl() const;
-		std::string		getProtocol() const;
-		std::string		getContentType() const;
+		std::string					getMethod() const;
+		std::string					getUrl() const;
+		std::string					getProtocol() const;
+		std::string					getContentType() const;
+		std::vector<std::string>	getCgiEnvs() const;
+		void						add_cgi_envs(std::string request, std::string str, std::string env, size_t size, char c);
 
 };
 

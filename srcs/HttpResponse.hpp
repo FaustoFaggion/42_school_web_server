@@ -11,7 +11,7 @@ class HttpResponse
 	private:
 		std::map<std::string, directive>	locations;
 		std::vector<std::string>			_indexes;
-
+		std::vector<std::string>			_envp;
 	public:
 
 		HttpResponse(std::map<std::string, directive> locations, std::vector<std::string> indexes);
@@ -23,7 +23,7 @@ class HttpResponse
 		void			diretory_list(std::stringstream &buff, std::string path, std::string html);
 		void			buff_file(std::fstream &conf_file, std::stringstream &buff, std::string html);
 		void			http_response_syntax(std::string status, std::string &request, std::stringstream &buff, std::string content_type);
-		void			exec_cgi(std::string &html, std::stringstream &buff);
+		void			exec_cgi(std::string &html, std::string &request, char *envp_cgi[]);
 };
 
 #endif
