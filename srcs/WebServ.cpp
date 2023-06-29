@@ -5,16 +5,17 @@ WebServ::WebServ()
 
 }
 
-WebServ::WebServ(FileParser file)
+WebServ::WebServ(char *file, std::string server_name)
 {
-	_listener.set_domain(file.get_domain());
-	_listener.set_type(file.get_type());
-	_listener.set_port(file.get_port());
-	_listener.set_flag(file.get_flag());
+	parse_configuration_file(file, server_name);
+	_listener.set_domain(get_domain());
+	_listener.set_type(get_type());
+	_listener.set_port(get_port());
+	_listener.set_flag(get_flag());
 	_listener.set_worker_connections(MAX_CONNECTIONS);
 
-	locations = file.getPath();
-	_indexes = file.getIndex();
+	locations = getPath();
+	_indexes = getIndex();
 
 }
 

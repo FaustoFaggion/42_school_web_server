@@ -10,10 +10,8 @@ int	main(int argc, char *argv[])
 		std::cout << "Wrong number of arguments" << std::endl;
 		exit(2);
 	}
-	
-	FileParser	conf_file(argv[1]);
 
-	WebServ		server(conf_file);
+	WebServ		server(argv[1], "localhost");
 
 	server.setup_server(SOCK_STREAM);
 

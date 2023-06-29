@@ -30,7 +30,7 @@ class FileParser {
 
 	public:
 		FileParser();
-		FileParser(char *file);
+		FileParser(char *file, std::string server_name);
 		~FileParser();
 
 		int									get_domain() const;
@@ -41,8 +41,8 @@ class FileParser {
 		std::map<std::string, directive>	getPath() const;
 		std::vector<std::string> 			getIndex() const;
 
-		void								parse_configuration_file(char *file);
-		void								parse_server(std::string file);
+		void								parse_configuration_file(char *file, std::string server_name);
+		void								parse_server(std::string file, std::string serv_name);
 		void								parse_listener();
 		void								parse_locations(bool simple_root_directive);
 		void								parse_path(std::string &str, std::string find, std::string &root_path, int flag);

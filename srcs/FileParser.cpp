@@ -9,14 +9,14 @@ FileParser::FileParser()
 	_listener._worker_processes = 0;
 }
 
-FileParser::FileParser(char * file)
+FileParser::FileParser(char *file, std::string server_name)
 {
 	_listener._domain = 0;
 	_listener._type = 0;
 	_listener._flag = 0;
 	_listener._port = "";
 	_listener._worker_processes = 0;
-	parse_configuration_file(file);
+	parse_configuration_file(file, server_name);
 }
 
 FileParser::~FileParser()
@@ -401,7 +401,7 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		}
 }
 
-void	FileParser::parse_server(std::string file)
+void	FileParser::parse_server(std::string file, std::string serv_name)
 {
 	size_t		start, end, i;
 	std::string	tmp_server, tmp1;
@@ -432,21 +432,21 @@ void	FileParser::parse_server(std::string file)
 		start = tmp_server.find("server_name", 0);
 		i = tmp_server.find("\r\n", start);
 		tmp1 = tmp_server.substr(start, (i - start));
-		if (tmp1.find("localhost") != tmp1.npos)
+		if (tmp1.find(serv_name) != tmp1.npos)
 			break ;
 		else
 			i = end;
 	}
 	_server_conf_file = tmp_server;
 }
-void	FileParser::parse_configuration_file(char *file)
+void	FileParser::parse_configuration_file(char *file, std::string server_name)
 {
 	std::string	configuration_file;
 
 	file_to_string(file, configuration_file);
 	
 	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
-	parse_server(configuration_file);
+	parse_server(configuration_file, server_name);
 
 	/*ERASE COMMENTS*/
 	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)

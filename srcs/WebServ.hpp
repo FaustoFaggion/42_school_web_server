@@ -21,7 +21,7 @@ typedef struct client {
 	std::string		response;
 } t_client;
 
-class WebServ
+class WebServ : FileParser
 {
 	private:
 		int										_fd_listener;
@@ -39,7 +39,7 @@ class WebServ
 
 	public:
 		WebServ();
-		WebServ(FileParser file);
+		WebServ(char *file, std::string server_name);
 		~WebServ();
 	
 		int				getFdListener() const;
