@@ -42,6 +42,7 @@ class FileParser {
 		std::vector<std::string> 			getIndex() const;
 
 		void								parse_configuration_file(char *file);
+		void								parse_server(std::string file);
 		void								parse_listener();
 		void								parse_locations(bool simple_root_directive);
 		void								parse_path(std::string &str, std::string find, std::string &root_path, int flag);

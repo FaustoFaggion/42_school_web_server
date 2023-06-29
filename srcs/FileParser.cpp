@@ -401,41 +401,34 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		}
 }
 
-
-void	FileParser::parse_configuration_file(char *file)
+void	FileParser::parse_server(std::string file)
 {
-	std::string	configuration_file;
-
-	file_to_string(file, configuration_file);
-	
-	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
-	// Falta parsear arquivos com mais de um servidor.
 	size_t		start, end, i;
 	std::string	tmp_server, tmp1;
 
 	i = 0;
 	while (1)
 	{
-		start = configuration_file.find("server", i);
-		end = configuration_file.find("{", start);
+		start = file.find("server", i);
+		end = file.find("{", start);
 		end++;
 		int flag = 1;
 		while (flag != 0)
 		{
-			if (configuration_file.at(end) == '{')
+			if (file.at(end) == '{')
 			{
 				flag++;
 				std::cout << flag << "\n";
 			}
-			else if (configuration_file.at(end) == '}')
+			else if (file.at(end) == '}')
 			{
 				flag--;
 				std::cout << flag << "\n";
 			}
 			end++;
-			std::cout << configuration_file.at(end);
+			std::cout << file.at(end);
 		}
-		tmp_server = configuration_file.substr(start, (end - start));
+		tmp_server = file.substr(start, (end - start));
 		start = tmp_server.find("server_name", 0);
 		i = tmp_server.find("\r\n", start);
 		tmp1 = tmp_server.substr(start, (i - start));
@@ -445,6 +438,16 @@ void	FileParser::parse_configuration_file(char *file)
 			i = end;
 	}
 	_server_conf_file = tmp_server;
+}
+void	FileParser::parse_configuration_file(char *file)
+{
+	std::string	configuration_file;
+
+	file_to_string(file, configuration_file);
+	
+	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
+	parse_server(configuration_file);
+
 	/*ERASE COMMENTS*/
 	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
 		str_substring(_server_conf_file, "#", 0, '\n');
