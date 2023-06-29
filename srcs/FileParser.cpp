@@ -410,10 +410,27 @@ void	FileParser::parse_configuration_file(char *file)
 	
 	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
 	// Falta parsear arquivos com mais de um servidor.
-	size_t	start;
-	size_t	end;
+	size_t	start, end;
+	
 	start = configuration_file.find("server", 0);
-	end = configuration_file.find_last_of("}", start);
+	end = configuration_file.find("{", start);
+	end++;
+	int flag = 1;
+	while (flag != 0)
+	{
+		if (configuration_file.at(end) == '{')
+		{
+			flag++;
+			std::cout << flag << "\n";
+		}
+		else if (configuration_file.at(end) == '}')
+		{
+			flag--;
+			std::cout << flag << "\n";
+		}
+		end++;
+		std::cout << configuration_file.at(end);
+	}
 	_server_conf_file = configuration_file.substr(start, (end - start));
 	
 	/*ERASE COMMENTS*/
