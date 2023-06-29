@@ -21,7 +21,7 @@ typedef struct client {
 	std::string		response;
 } t_client;
 
-class WebServ : FileParser
+class WebServ : protected FileParser
 {
 	private:
 		int										_fd_listener;

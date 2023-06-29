@@ -6,7 +6,7 @@
 
 class ListenerSocket
 {
-	private:
+	protected:
 		int					_domain;
 		int					_type;
 		int					_flag;

@@ -8,23 +8,24 @@
 #include <algorithm>
 #include <vector>
 #include <map>
+#include "ListenerSocket.hpp"
 
 #define SIMPLE_DIRECTIVE	0
 #define BLOCK_DIRECTIVE		1
 
-struct listener_socket {
-	int				_domain;
-	std::string		_port;
-	int				_flag;
-	int				_type;
-	int				_worker_processes;
-};
+// struct listener_socket {
+// 	int				_domain;
+// 	std::string		_port;
+// 	int				_flag;
+// 	int				_type;
+// 	int				_worker_processes;
+// };
 
-class FileParser {
+class FileParser : protected ListenerSocket {
 
-	private:
+	protected:
 		std::string							_server_conf_file;
-		listener_socket						_listener;
+		// listener_socket						_listener;
 		std::map<std::string, directive>	_path;
 		std::vector<std::string>			_index;
 
@@ -33,11 +34,11 @@ class FileParser {
 		FileParser(char *file, std::string server_name);
 		~FileParser();
 
-		int									get_domain() const;
-		std::string							get_port() const;
-		int									get_flag() const;
-		int									get_worker_processes() const;
-		int									get_type() const;
+		// int									get_domain() const;
+		// std::string							get_port() const;
+		// int									get_flag() const;
+		// int									get_worker_processes() const;
+		// int									get_type() const;
 		std::map<std::string, directive>	getPath() const;
 		std::vector<std::string> 			getIndex() const;
 

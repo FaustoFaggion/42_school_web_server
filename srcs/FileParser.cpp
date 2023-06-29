@@ -2,20 +2,20 @@
 
 FileParser::FileParser()
 {
-	_listener._domain = 0;
-	_listener._type = 0;
-	_listener._flag = 0;
-	_listener._port = "";
-	_listener._worker_processes = 0;
+	_domain = 0;
+	_type = 0;
+	_flag = 0;
+	_port = "";
+	_worker_connections = 0;
 }
 
 FileParser::FileParser(char *file, std::string server_name)
 {
-	_listener._domain = 0;
-	_listener._type = 0;
-	_listener._flag = 0;
-	_listener._port = "";
-	_listener._worker_processes = 0;
+	_domain = 0;
+	_type = 0;
+	_flag = 0;
+	_port = "";
+	_worker_connections = 0;
 	parse_configuration_file(file, server_name);
 }
 
@@ -24,30 +24,30 @@ FileParser::~FileParser()
 
 }
 
-int			FileParser::get_domain() const
-{
-	return (_listener._domain);
-}
+// int			FileParser::get_domain() const
+// {
+// 	return (_listener._domain);
+// }
 
-std::string	FileParser::get_port() const
-{
-	return (_listener._port);
-}
+// std::string	FileParser::get_port() const
+// {
+// 	return (_listener._port);
+// }
 
-int			FileParser::get_flag() const
-{
-	return (_listener._flag);
-}
+// int			FileParser::get_flag() const
+// {
+// 	return (_listener._flag);
+// }
 
-int			FileParser::get_worker_processes() const
-{
-	return (_listener._worker_processes);
-}
+// int			FileParser::get_worker_processes() const
+// {
+// 	return (_listener._worker_processes);
+// }
 
-int			FileParser::get_type() const
-{
-	return (_listener._type);
-}
+// int			FileParser::get_type() const
+// {
+// 	return (_listener._type);
+// }
 
 std::map<std::string, directive>	FileParser::getPath() const
 {
@@ -63,18 +63,18 @@ void	FileParser::setup_listener(std::string buff)
 {
 	if (buff.compare(0, 11, "listen [::]") == 0)
 	{
-		if (_listener._domain == AF_INET)
-			_listener._domain = AF_UNSPEC;
+		if (_domain == AF_INET)
+			_domain = AF_UNSPEC;
 		else
-			_listener._domain = AF_INET6;
-		if (_listener._port == "")
+			_domain = AF_INET6;
+		if (_port == "")
 		{
 			size_t i = 0;
 			while (i < buff.size() && !isdigit(buff.at(i)))
 				i++;
 			while (i < buff.size() && isdigit(buff.at(i)))
 			{
-				_listener._port += buff.at(i);
+				_port += buff.at(i);
 				i++;
 			}
 		}
@@ -82,14 +82,14 @@ void	FileParser::setup_listener(std::string buff)
 	else if (buff.compare(0, 6, "listen") == 0)
 	{
 		
-		_listener._domain = AF_INET;
+		_domain = AF_INET;
 		
 		size_t i = 0;
 		while (i < buff.size() && !isdigit(buff.at(i)))
 			i++;
 		while (i < buff.size() && isdigit(buff.at(i)))
 		{
-			_listener._port += buff.at(i);
+			_port += buff.at(i);
 			i++;
 		}
 	}
@@ -106,7 +106,7 @@ void	FileParser::setup_listener(std::string buff)
 			i++;
 		}
 		if (strcmp("localhost", server_name.c_str()) == 0)
-			_listener._flag = AI_PASSIVE;
+			_flag = AI_PASSIVE;
 
 	}
 	else if (buff.compare(0, 11, "worker_processes") == 0)
@@ -121,7 +121,7 @@ void	FileParser::setup_listener(std::string buff)
 			tmp += buff.at(i);
 			i++;
 		}
-		_listener._worker_processes = atoi(tmp.c_str());
+		_worker_connections = atoi(tmp.c_str());
 	}
 }
 
