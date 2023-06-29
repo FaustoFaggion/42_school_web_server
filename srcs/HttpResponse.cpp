@@ -245,7 +245,6 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request, char *envp_
 	int				fd[2];
 	int				pid;
 	char			*arg2[3];
-	static char		c[4096 * 4];
 	
 	arg2[0] = (char *)"/usr/bin/php-cgi7.4";
 	arg2[1] = (char *)html.c_str();
@@ -277,10 +276,15 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request, char *envp_
 	dup2(fd[0], STDIN_FILENO);
 	request = "HTTP/1.1 200 OK\r\n";
 	std::cout << "enter while\n";
-	while (read(fd[0], c, (4096 * 4)) != 0)
+
+	std::stringstream phpOutput;
+	static char		buffer[1024];
+	ssize_t bytesRead;
+	while ((bytesRead = read(fd[0], buffer, sizeof(buffer))) != 0)
 	{
-		request += c;
+		phpOutput.write(buffer, bytesRead);
 	}
+	request += phpOutput.str();
 	std::cout << "out while\n";
 	// std::cout << "request: " << request << "\n";
 	close(fd[0]);
