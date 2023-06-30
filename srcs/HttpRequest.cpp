@@ -73,7 +73,8 @@ void	HttpRequest::add_cgi_envs(std::string request, std::string str, std::string
 		_cgi_envs.push_back(value);
 	}
 }
-void	HttpRequest::cgi_envs_parser(std::string request)
+
+void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 {
 	std::cout << "\nCGI_ENVS_PARSER FUNCTION\n\n";
 	(void)request;
@@ -227,8 +228,9 @@ void	HttpRequest::cgi_envs_parser(std::string request)
 		_cgi_envs.push_back("REMOTE_HOST=NULL");
 
 	/*SCRIPT_NAME*/
-	// key = "SCRIPT_NAME=./php-cgi" + saved;
-	// _cgi_envs.push_back(key);
+	key = "SCRIPT_NAME=" + html;
+	_cgi_envs.push_back(key);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*SCRIPT_FILENAME*/
 	// key = "SCRIPT_FILENAME=" + saved;

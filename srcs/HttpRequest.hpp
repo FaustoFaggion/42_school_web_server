@@ -19,7 +19,7 @@ class HttpRequest
 
 
 		void						request_parser(std::string request);
-		void						cgi_envs_parser(std::string request);
+		void						cgi_envs_parser(std::string request, std::string html);
 
 		std::string					getMethod() const;
 		std::string					getUrl() const;

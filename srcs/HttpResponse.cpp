@@ -298,7 +298,9 @@ void	HttpResponse::response_parser(std::string &request)
 	request_parser(request);
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	cgi_envs_parser(request);
+	html = looking_for_path(_url);
+	
+	cgi_envs_parser(request, html);
 
 	/*CREATE ENVP_CGI ARRAY*/
 	/*Declaration of the environment variable array*/
@@ -316,7 +318,6 @@ void	HttpResponse::response_parser(std::string &request)
 	}
 	envp_cgi[i] = NULL;
 
-	html = looking_for_path(_url);
 
 	std::cout << "\n";
 	for (std::map<std::string, directive>::iterator it = locations.begin(); it != locations.end(); it++)
