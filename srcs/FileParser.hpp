@@ -12,14 +12,6 @@
 #define SIMPLE_DIRECTIVE	0
 #define BLOCK_DIRECTIVE		1
 
-// struct listener_socket {
-// 	int				_domain;
-// 	std::string		_port;
-// 	int				_flag;
-// 	int				_type;
-// 	int				_worker_processes;
-// };
-
 class FileParser {
 
 	protected:
