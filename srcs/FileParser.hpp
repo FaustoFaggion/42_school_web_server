@@ -16,7 +16,7 @@ class FileParser {
 
 	protected:
 		std::string							_server_conf_file;
-		std::map<std::string, directive>	_path;
+		std::map<std::string, directive>	_locations;
 		std::vector<std::string>			_index;
 
 	public:

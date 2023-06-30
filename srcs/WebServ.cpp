@@ -8,13 +8,8 @@ WebServ::WebServ()
 WebServ::WebServ(char *file, std::string server_name)
 {
 	parse_file(file, server_name);
-	// _listener.set_domain(get_domain());
-	// _listener.set_type(get_type());
-	// _listener.set_port(get_port());
-	// _listener.set_flag(get_flag());
-	// _listener.set_worker_connections(MAX_CONNECTIONS);
 
-	locations = getPath();
+	// locations = getPath();
 	_indexes = getIndex();
 
 }
@@ -232,7 +227,7 @@ void	WebServ::receive_data(int i)
 			std::cout <<  (*it).second.response << "\n";
 			
 			/*INSTANCIATE A HTTPRESPONSE CLASS TO RESPONSE THE REQUEST*/
-			HttpResponse	r(locations, _indexes);
+			HttpResponse	r(_locations, _indexes);
 			r.response_parser((*it).second.response);
 
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/

@@ -18,7 +18,7 @@ FileParser::~FileParser()
 
 std::map<std::string, directive>	FileParser::getPath() const
 {
-	return (_path);
+	return (_locations);
 }
 
 std::vector<std::string>	FileParser::getIndex() const
@@ -115,8 +115,8 @@ void	FileParser::parse_path(std::string &str, std::string find, std::string &pat
 	else
 	{
 		parse_path(_server_conf_file, "root", root_path, SIMPLE_DIRECTIVE);
-		_path["/"]._server_path = root_path;
-		_path["/"]._autoindex = false;
+		_locations["/"]._server_path = root_path;
+		_locations["/"]._autoindex = false;
 
 		/*CHECK DUPLICATED DIRECTIVE*/
 		/*IF THERE ARE IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
@@ -222,15 +222,15 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		}
 
 		/*INSERT LOCATION PATH INTO THE _PATH MAP*/
-		_path[request_path]._server_path = server_path;
+		_locations[request_path]._server_path = server_path;
 
 		/*CHECK AUTOINDEX TO LIST DIRECTORY*/
-		_path[request_path]._autoindex = false;
+		_locations[request_path]._autoindex = false;
 		if (location.find("autoindex", 0) != location.npos)
 		{
 			std::string auto_idx = str_substring(location, "autoindex", 0, '\n');
 			if (auto_idx.find("on", 0) != auto_idx.npos)
-				_path[request_path]._autoindex = true;
+				_locations[request_path]._autoindex = true;
 		}
 
 		/*CHECK INDEX DIRECTIVE*/
@@ -239,10 +239,10 @@ void	FileParser::parse_locations(bool simple_root_directive)
 			std::string	idx;
 			idx = str_substring(location, "index", 0, '\n');
 			std::cout << "location: " << location << "  idx: " << idx << "\n";
-			parse_index(_path[request_path]._index_block, idx);
+			parse_index(_locations[request_path]._index_block, idx);
 		}
 		else
-			_path[request_path]._index_block = _index;
+			_locations[request_path]._index_block = _index;
 
 		/*CHECK DUPLICATED DIRECTIVE*/
 		/*IF THERE ARE IDENCAL DIRECTIVES, JUST THE FIRST WILL BE CONSIDERED*/
@@ -252,9 +252,9 @@ void	FileParser::parse_locations(bool simple_root_directive)
 	}
 		/*PRINT*/
 		std::map<std::string, directive>::iterator	it;
-		it = _path.begin();
+		it = _locations.begin();
 		std::cout << "Print Locations:\n";
-		for (; it != _path.end(); it++)
+		for (; it != _locations.end(); it++)
 		{
 			std::cout << "location: " << (*it).first << "\n";
 			std::cout << "	server_path: " << (*it).second._server_path << std::endl;
