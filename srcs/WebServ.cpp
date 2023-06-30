@@ -24,12 +24,7 @@ WebServ::~WebServ()
 
 }
 
-// ListenerSocket	WebServ::getListener() const
-// {
-// 	return(_listener);
-// }
-
-int				WebServ::getFdListener() const
+int		WebServ::getFdListener() const
 {
 	return (_fd_listener);
 }

@@ -25,7 +25,6 @@ class WebServ : protected FileParser, ListenerSocket
 {
 	private:
 		int										_fd_listener;
-		// ListenerSocket							_listener;
 		std::map<std::string, directive>		locations;
 		std::vector<std::string>				_indexes;
 
@@ -43,7 +42,6 @@ class WebServ : protected FileParser, ListenerSocket
 		~WebServ();
 	
 		int				getFdListener() const;
-		// ListenerSocket	getListener() const;
 
 		void	parse_file(char *file, std::string server_name);
 		void	setup_server(int type);

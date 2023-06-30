@@ -22,7 +22,7 @@ class ListenerSocket
 		ListenerSocket();
 		~ListenerSocket();
 
-		int		get_fd_listener();
+		int			get_fd_listener();
 
 		int			get_domain() const;
 		std::string	get_port() const;
