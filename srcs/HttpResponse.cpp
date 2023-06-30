@@ -298,19 +298,20 @@ void	HttpResponse::response_parser(std::string &request)
 	request_parser(request);
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
+	cgi_envs_parser(request);
+
 	/*CREATE ENVP_CGI ARRAY*/
 	/*Declaration of the environment variable array*/
 	extern char** environ; 
     /*Iterate over the environment variables until a null pointer is encountered*/
-	_envp = getCgiEnvs();
 	for (int i = 0; environ[i] != NULL; i++) {
 		// std::cout << environ[i] << std::endl;
-		_envp.push_back(environ[i]);
+		_cgi_envs.push_back(environ[i]);
 	}
-	char *envp_cgi[_envp.size() + 1];
+	char *envp_cgi[_cgi_envs.size() + 1];
 	size_t i = 0;
-	while (i < _envp.size()) {
-		envp_cgi[i] = (char *)_envp.at(i).c_str();
+	while (i < _cgi_envs.size()) {
+		envp_cgi[i] = (char *)_cgi_envs.at(i).c_str();
 		i++;
 	}
 	envp_cgi[i] = NULL;

@@ -272,5 +272,5 @@ void		HttpRequest::request_parser(std::string request)
 		_content_type += "\r\n";
 	}
 
-	cgi_envs_parser(request);
+	// cgi_envs_parser(request);
 }

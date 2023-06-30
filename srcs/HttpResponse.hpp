@@ -9,7 +9,6 @@ class HttpResponse : HttpRequest
 	private:
 		std::map<std::string, directive>	locations;
 		std::vector<std::string>			_indexes;
-		std::vector<std::string>			_envp;
 	public:
 
 		HttpResponse(std::map<std::string, directive> locations, std::vector<std::string> indexes);
