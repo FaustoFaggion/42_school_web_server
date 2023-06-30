@@ -42,7 +42,7 @@ class FileParser : protected ListenerSocket {
 		std::map<std::string, directive>	getPath() const;
 		std::vector<std::string> 			getIndex() const;
 
-		void								parse_configuration_file(char *file, std::string server_name);
+		// void								parse_configuration_file(char *file, std::string server_name);
 		void								parse_server(std::string file, std::string serv_name);
 		void								parse_listener();
 		void								parse_locations(bool simple_root_directive);

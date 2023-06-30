@@ -16,7 +16,9 @@ FileParser::FileParser(char *file, std::string server_name)
 	_flag = 0;
 	_port = "";
 	_worker_connections = 0;
-	parse_configuration_file(file, server_name);
+	(void)file;
+	(void)server_name;
+	// parse_configuration_file(file, server_name);
 }
 
 FileParser::~FileParser()
@@ -439,31 +441,32 @@ void	FileParser::parse_server(std::string file, std::string serv_name)
 	}
 	_server_conf_file = tmp_server;
 }
-void	FileParser::parse_configuration_file(char *file, std::string server_name)
-{
-	std::string	configuration_file;
 
-	file_to_string(file, configuration_file);
-	
-	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
-	parse_server(configuration_file, server_name);
+// void	FileParser::parse_configuration_file(char *file, std::string server_name)
+// {
+// 	std::string	configuration_file;
 
-	/*ERASE COMMENTS*/
-	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
-		str_substring(_server_conf_file, "#", 0, '\n');
+// 	file_to_string(file, configuration_file);
 	
-	parse_listener();
-	
-	/*PARSE ROOT SIMPLE DIRECTIVE*/
-	bool	simple_root_directive;
+// 	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
+// 	parse_server(configuration_file, server_name);
 
-	simple_root_directive = parse_simple_root_directive();
+// 	/*ERASE COMMENTS*/
+// 	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
+// 		str_substring(_server_conf_file, "#", 0, '\n');
 	
-	/*PARSE INDEX*/
-
-	parse_index(_index, _server_conf_file);
+// 	parse_listener();
 	
-	/*PARSE LOCATIONS*/
-	parse_locations(simple_root_directive);
+// 	/*PARSE ROOT SIMPLE DIRECTIVE*/
+// 	bool	simple_root_directive;
 
-}
+// 	simple_root_directive = parse_simple_root_directive();
+	
+// 	/*PARSE INDEX*/
+
+// 	parse_index(_index, _server_conf_file);
+	
+// 	/*PARSE LOCATIONS*/
+// 	parse_locations(simple_root_directive);
+
+// }

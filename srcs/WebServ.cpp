@@ -7,7 +7,7 @@ WebServ::WebServ()
 
 WebServ::WebServ(char *file, std::string server_name)
 {
-	parse_configuration_file(file, server_name);
+	parse_file(file, server_name);
 	_listener.set_domain(get_domain());
 	_listener.set_type(get_type());
 	_listener.set_port(get_port());
@@ -32,6 +32,36 @@ ListenerSocket	WebServ::getListener() const
 int				WebServ::getFdListener() const
 {
 	return (_fd_listener);
+}
+
+void	WebServ::parse_file(char *file, std::string server_name)
+{
+	// parse_configuration_file(file, server_name);
+		std::string	configuration_file;
+
+	file_to_string(file, configuration_file);
+	
+	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
+	parse_server(configuration_file, server_name);
+
+	/*ERASE COMMENTS*/
+	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
+		str_substring(_server_conf_file, "#", 0, '\n');
+	
+	parse_listener();
+	
+	/*PARSE ROOT SIMPLE DIRECTIVE*/
+	bool	simple_root_directive;
+
+	simple_root_directive = parse_simple_root_directive();
+	
+	/*PARSE INDEX*/
+
+	parse_index(_index, _server_conf_file);
+	
+	/*PARSE LOCATIONS*/
+	parse_locations(simple_root_directive);
+
 }
 
 void	WebServ::setup_server(int type)

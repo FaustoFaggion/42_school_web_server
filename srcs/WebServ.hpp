@@ -45,6 +45,7 @@ class WebServ : protected FileParser
 		int				getFdListener() const;
 		ListenerSocket	getListener() const;
 
+		void	parse_file(char *file, std::string server_name);
 		void	setup_server(int type);
 		void	create_listener_socket();
 		void	create_connections();
