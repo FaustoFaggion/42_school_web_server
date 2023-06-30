@@ -238,6 +238,9 @@ void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 
 	// setenv("REMOTE_ADDR", "127.0.0.1", 1);
 
+	key = "DOCUMENT_ROOT=/home/fausto/42SP/webserv_git";
+	_cgi_envs.push_back(key);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
 }
 
 void		HttpRequest::request_parser(std::string request)
