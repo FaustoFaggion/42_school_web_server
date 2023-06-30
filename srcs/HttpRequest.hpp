@@ -5,10 +5,10 @@
 
 class HttpRequest 
 {
-	private:
-		std::string					_request_method;
+	protected:
+		std::string					_method;
 		std::string					_url;
-		std::string					_server_protocol;
+		std::string					_protocol;
 		std::string					_content_type;
 
 		std::vector<std::string>	_cgi_envs;

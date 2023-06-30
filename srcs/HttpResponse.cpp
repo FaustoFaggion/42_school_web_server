@@ -258,10 +258,6 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request, char *envp_
 	if (pid == 0)
 	{
 
-		// for (std::vector<std::string>::iterator it = _envp.begin(); it != _envp.end(); it++)
-		// {
-		// 	std::cout << *it << std::endl;
-		// }
 		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[1]);
@@ -295,24 +291,18 @@ void	HttpResponse::response_parser(std::string &request)
 {
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	std::string method, path, protocol, html, content_type;
+	std::string				html;
 	std::fstream			conf_file;
 	std::stringstream		buff;
 
-	HttpRequest	rqst;
-	rqst.request_parser(request);
-	method = rqst.getMethod();
-	path = rqst.getUrl();
-	protocol = rqst.getProtocol();
-	content_type = rqst.getContentType();
-
+	request_parser(request);
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
 	/*CREATE ENVP_CGI ARRAY*/
 	/*Declaration of the environment variable array*/
 	extern char** environ; 
     /*Iterate over the environment variables until a null pointer is encountered*/
-	_envp = rqst.getCgiEnvs();
+	_envp = getCgiEnvs();
 	for (int i = 0; environ[i] != NULL; i++) {
 		// std::cout << environ[i] << std::endl;
 		_envp.push_back(environ[i]);
@@ -325,7 +315,7 @@ void	HttpResponse::response_parser(std::string &request)
 	}
 	envp_cgi[i] = NULL;
 
-	html = looking_for_path(path);
+	html = looking_for_path(_url);
 
 	std::cout << "\n";
 	for (std::map<std::string, directive>::iterator it = locations.begin(); it != locations.end(); it++)
@@ -333,19 +323,19 @@ void	HttpResponse::response_parser(std::string &request)
 		std::cout << (*it).first << " : " << (*it).second._server_path << "\n";
 	}
 	std::cout << "\n";
-	std::cout << "Method: " << method << std::endl;
-	std::cout << "Path: " << path << std::endl;
-	std::cout << "Protocol: " << protocol << std::endl;
+	std::cout << "Method: " << _method << std::endl;
+	std::cout << "Path: " << _url << std::endl;
+	std::cout << "Protocol: " << _protocol << std::endl;
 	std::cout << "html: " << html << std::endl;
 	std::cout << "\n";
 
-	if (method.compare("GET") == 0)
+	if (_method.compare("GET") == 0)
 	{
-		if (locations[path]._autoindex == true)
+		if (locations[_url]._autoindex == true)
 		{
 			std::cout << "autoindex on\n";
-			if (locations[path]._path_ok == false)
-				diretory_list(buff, path, html);
+			if (locations[_url]._path_ok == false)
+				diretory_list(buff, _url, html);
 			else
 				buff_file(conf_file, buff, html);
 		}
@@ -355,34 +345,34 @@ void	HttpResponse::response_parser(std::string &request)
 			buff_file(conf_file, buff, html);
 		}
 
-		if (locations[path]._cgi == true)
+		if (locations[_url]._cgi == true)
 		{
 			exec_cgi(html, request, envp_cgi);
 			std::cout << "cgi request:\n" << request << "\n\n";
 		}
 		else
-			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
+			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, _content_type);
 		conf_file.close();
 	}
-	else if (method.compare("POST") == 0)
+	else if (_method.compare("POST") == 0)
 	{
 		buff_file(conf_file, buff, html);
-		if (locations[path]._cgi == true)
+		if (locations[_url]._cgi == true)
 			exec_cgi(html, request, envp_cgi);
 		else
-			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
+			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, _content_type);
 		conf_file.close();
 	}
-	else if (method.compare("DELETE") == 0)
+	else if (_method.compare("DELETE") == 0)
 	{
 		buff_file(conf_file, buff, html);
-		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, content_type);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, _content_type);
 		conf_file.close();
 	}
 	else
 	{
 		buff_file(conf_file, buff, "./locations/test/error.html");
-		http_response_syntax("HTTP/1.1 404 Not Found\r\n", request, buff, content_type);
+		http_response_syntax("HTTP/1.1 404 Not Found\r\n", request, buff, _content_type);
 		conf_file.close();
 	}
 }

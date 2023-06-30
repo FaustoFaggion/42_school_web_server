@@ -12,7 +12,7 @@ HttpRequest::~HttpRequest()
 
 std::string		HttpRequest::getMethod() const
 {
-	return (_request_method);
+	return (_method);
 }
 
 std::string		HttpRequest::getUrl() const
@@ -22,7 +22,7 @@ std::string		HttpRequest::getUrl() const
 
 std::string		HttpRequest::getProtocol() const
 {
-	return(_server_protocol);
+	return(_protocol);
 }
 
 std::string		HttpRequest::getContentType() const
@@ -250,7 +250,7 @@ void		HttpRequest::request_parser(std::string request)
 	size_t requestLineEnd = request.find("\r\n");
 	requestLine = request.substr(0, requestLineEnd);
 	std::istringstream iss0(requestLine);
-	iss0 >> _request_method >> _url >> _server_protocol;
+	iss0 >> _method >> _url >> _protocol;
 
 	size_t pos = _url.find("?");
 	if (pos != _url.npos)
