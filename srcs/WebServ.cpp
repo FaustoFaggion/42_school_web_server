@@ -8,11 +8,11 @@ WebServ::WebServ()
 WebServ::WebServ(char *file, std::string server_name)
 {
 	parse_file(file, server_name);
-	_listener.set_domain(get_domain());
-	_listener.set_type(get_type());
-	_listener.set_port(get_port());
-	_listener.set_flag(get_flag());
-	_listener.set_worker_connections(MAX_CONNECTIONS);
+	// _listener.set_domain(get_domain());
+	// _listener.set_type(get_type());
+	// _listener.set_port(get_port());
+	// _listener.set_flag(get_flag());
+	// _listener.set_worker_connections(MAX_CONNECTIONS);
 
 	locations = getPath();
 	_indexes = getIndex();
@@ -48,8 +48,14 @@ void	WebServ::parse_file(char *file, std::string server_name)
 	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
 		str_substring(_server_conf_file, "#", 0, '\n');
 	
-	parse_listener();
+	_listener.parse_listener(_server_conf_file);
 	
+	std::cout << "_domain: " << _listener.get_domain() << "\n";
+	std::cout << "_port: " << _listener.get_port() << "\n";
+	std::cout << "_type: " << _listener.get_type() << "\n";
+	std::cout << "_flag: " << _listener.get_flag() << "\n";
+	std::cout << "_work_connections: " << _listener.get_worker_connections() << "\n";
+
 	/*PARSE ROOT SIMPLE DIRECTIVE*/
 	bool	simple_root_directive;
 

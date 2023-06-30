@@ -8,7 +8,6 @@
 #include <algorithm>
 #include <vector>
 #include <map>
-#include "ListenerSocket.hpp"
 
 #define SIMPLE_DIRECTIVE	0
 #define BLOCK_DIRECTIVE		1
@@ -21,7 +20,7 @@
 // 	int				_worker_processes;
 // };
 
-class FileParser : protected ListenerSocket {
+class FileParser {
 
 	protected:
 		std::string							_server_conf_file;
@@ -44,11 +43,11 @@ class FileParser : protected ListenerSocket {
 
 		// void								parse_configuration_file(char *file, std::string server_name);
 		void								parse_server(std::string file, std::string serv_name);
-		void								parse_listener();
+		// void								parse_listener();
 		void								parse_locations(bool simple_root_directive);
 		void								parse_path(std::string &str, std::string find, std::string &root_path, int flag);
-		bool									parse_simple_root_directive();
-		void								setup_listener(std::string buff);
+		bool								parse_simple_root_directive();
+		// void								setup_listener(std::string buff);
 		void								parse_index(std::vector<std::string> &idx, std::string &str);
 
 		void								file_to_string(char *file, std::string &buff);

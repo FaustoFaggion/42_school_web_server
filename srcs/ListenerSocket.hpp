@@ -35,10 +35,15 @@ class ListenerSocket
 		void		set_worker_connections(int connections);
 		void		set_type(int type);
 
+		void		parse_listener(std::string &_server_conf_file);
+		void		setup_listener(std::string buff);
 		void		addrinfo(int domain, int type, int flag, std::string port);
 		void		create_fd();
 		void		bind_fd_to_port();
 		void		listen_fd();
+
+		std::string	str_substring(std::string &str, std::string find, int init, char finish);
+		void		chk_simple_directive(std::string &str);
 };
 
 
