@@ -403,7 +403,7 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		}
 }
 
-void	FileParser::parse_server(std::string file, std::string serv_name)
+void	FileParser::select_server(std::string file, std::string serv_name)
 {
 	size_t		start, end, i;
 	std::string	tmp_server, tmp1;
@@ -442,31 +442,31 @@ void	FileParser::parse_server(std::string file, std::string serv_name)
 	_server_conf_file = tmp_server;
 }
 
-// void	FileParser::parse_configuration_file(char *file, std::string server_name)
-// {
-// 	std::string	configuration_file;
+void	FileParser::parse_server(char *file, std::string server_name)
+{
+	std::string	configuration_file;
 
-// 	file_to_string(file, configuration_file);
+	file_to_string(file, configuration_file);
 	
-// 	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
-// 	parse_server(configuration_file, server_name);
+	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
+	select_server(configuration_file, server_name);
 
-// 	/*ERASE COMMENTS*/
-// 	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
-// 		str_substring(_server_conf_file, "#", 0, '\n');
+	/*ERASE COMMENTS*/
+	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
+		str_substring(_server_conf_file, "#", 0, '\n');
 	
-// 	parse_listener();
+	// parse_listener();
 	
-// 	/*PARSE ROOT SIMPLE DIRECTIVE*/
-// 	bool	simple_root_directive;
+	// /*PARSE ROOT SIMPLE DIRECTIVE*/
+	// bool	simple_root_directive;
 
-// 	simple_root_directive = parse_simple_root_directive();
+	// simple_root_directive = parse_simple_root_directive();
 	
-// 	/*PARSE INDEX*/
+	// /*PARSE INDEX*/
 
-// 	parse_index(_index, _server_conf_file);
+	// parse_index(_index, _server_conf_file);
 	
-// 	/*PARSE LOCATIONS*/
-// 	parse_locations(simple_root_directive);
+	// /*PARSE LOCATIONS*/
+	// parse_locations(simple_root_directive);
 
-// }
+}

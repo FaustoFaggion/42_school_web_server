@@ -24,10 +24,10 @@ WebServ::~WebServ()
 
 }
 
-ListenerSocket	WebServ::getListener() const
-{
-	return(_listener);
-}
+// ListenerSocket	WebServ::getListener() const
+// {
+// 	return(_listener);
+// }
 
 int				WebServ::getFdListener() const
 {
@@ -36,25 +36,15 @@ int				WebServ::getFdListener() const
 
 void	WebServ::parse_file(char *file, std::string server_name)
 {
-	// parse_configuration_file(file, server_name);
-		std::string	configuration_file;
+	parse_server(file, server_name);
 
-	file_to_string(file, configuration_file);
+	parse_listener(_server_conf_file);
 	
-	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
-	parse_server(configuration_file, server_name);
-
-	/*ERASE COMMENTS*/
-	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
-		str_substring(_server_conf_file, "#", 0, '\n');
-	
-	_listener.parse_listener(_server_conf_file);
-	
-	std::cout << "_domain: " << _listener.get_domain() << "\n";
-	std::cout << "_port: " << _listener.get_port() << "\n";
-	std::cout << "_type: " << _listener.get_type() << "\n";
-	std::cout << "_flag: " << _listener.get_flag() << "\n";
-	std::cout << "_work_connections: " << _listener.get_worker_connections() << "\n";
+	std::cout << "_domain: " << get_domain() << "\n";
+	std::cout << "_port: " << get_port() << "\n";
+	std::cout << "_type: " << get_type() << "\n";
+	std::cout << "_flag: " << get_flag() << "\n";
+	std::cout << "_work_connections: " << get_worker_connections() << "\n";
 
 	/*PARSE ROOT SIMPLE DIRECTIVE*/
 	bool	simple_root_directive;
@@ -72,16 +62,15 @@ void	WebServ::parse_file(char *file, std::string server_name)
 
 void	WebServ::setup_server(int type)
 {
-	_listener.addrinfo(_listener.get_domain(), type, _listener.get_flag(),
-						_listener.get_port());
+	addrinfo(get_domain(), type, get_flag(), get_port());
 }
 
 void	WebServ::create_listener_socket()
 {
-	_listener.create_fd();
-	_listener.bind_fd_to_port();
-	_listener.listen_fd();
-	_fd_listener = _listener.get_fd_listener();
+	create_fd();
+	bind_fd_to_port();
+	listen_fd();
+	_fd_listener = get_fd_listener();
 	_ev.data.fd = 0;
 	_ev.data.ptr = NULL;
 	_ev.data.u32 = 0;
@@ -94,7 +83,7 @@ void	WebServ::create_listener_socket()
 void	WebServ::create_connections()
 {
 	/*EPOLL FUNCTION*/
-	if ((_efd = epoll_create(_listener.get_worker_connections())) == -1)
+	if ((_efd = epoll_create(get_worker_connections())) == -1)
 		std::cout << "ERROR: epoll_create" << std::endl;
 	/*FD IS AVAIABLE FOR READ*/
 	_ev.events = EPOLLIN;
@@ -109,7 +98,7 @@ void	WebServ::run()
 	while (1)
 	{
 		/*MONITOR FDS. STILL WAITING UNTIL A EVENT HEAPPENS IN A FD*/
-		if ((_nfds = epoll_wait (_efd, _ep_event, _listener.get_worker_connections(),  2000)) == -1) // '-1' to block indefinitely
+		if ((_nfds = epoll_wait (_efd, _ep_event, get_worker_connections(),  2000)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
 		
 		/*A REQUEST TO SERVER SHOULD NEVER HANG FOREVER.*/
