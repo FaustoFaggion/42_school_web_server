@@ -88,8 +88,7 @@ void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 	std::cout << "enviroment variables\n" << "\n";
 	
 	/*SET REDIRECT_STATUS ENV*/
-	// setenv("REDIRECT_STATUS", "true", 1);
-	_cgi_envs.push_back("REDIRECT_STATUS=TRUE");
+	_cgi_envs.push_back("REDIRECT_STATUS=200");
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/* SSL HAS TO BE CHECKED INTO THE FILE PARSER*/
@@ -149,9 +148,9 @@ void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 		std::cout << *(_cgi_envs.end() - 1) << "\n";
 		std::istringstream	iss1(tmp0);
 		getline(iss1, tmp1, ':');
-		// value = "SERVER_NAME=localhost";
-		// _cgi_envs.push_back(value);
-		// std::cout << *(_cgi_envs.end() - 1) << "\n";
+		value = "SERVER_NAME=tmp1";
+		_cgi_envs.push_back(value);
+		std::cout << *(_cgi_envs.end() - 1) << "\n";
 		getline(iss1, tmp1, ':');
 		value = "SERVER_PORT=" + tmp1;
 		_cgi_envs.push_back(value);
@@ -162,8 +161,8 @@ void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 		std::cout << "requestline == vazio\n";
 		_cgi_envs.push_back("HTTP_HOST=NULL");
 		std::cout << *(_cgi_envs.end() - 1) << "\n";
-		// _cgi_envs.push_back("SERVER_NAME=NULL");
-		// std::cout << *(_cgi_envs.end() - 1) << "\n";
+		_cgi_envs.push_back("SERVER_NAME=NULL");
+		std::cout << *(_cgi_envs.end() - 1) << "\n";
 		_cgi_envs.push_back("SERVER_PORT=NULL");
 		std::cout << *(_cgi_envs.end() - 1) << "\n";
 	}
@@ -173,43 +172,49 @@ void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 	add_cgi_envs(request, key, "HTTP_USER_AGENT=", key.size(), ' ');
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
-	/*PATH_INFO, QUERY_STRING*/
+	/*PATH_INFO*/
+	{
+		size_t		start, end;
+		
+		start = html.find_last_of("/");
+		end = html.size() - start;
+		requestLine = html.substr(start, end);
+		key = "PATH_INFO=" + requestLine;
+		_cgi_envs.push_back(key);
+		std::cout << *(_cgi_envs.end() - 1) << "\n";
+		key = "REQUEST_URI=" + requestLine;
+		_cgi_envs.push_back(key);
+		std::cout << *(_cgi_envs.end() - 1) << "\n";
+	}
+
+	/*QUERY_STRING*/
 	size_t	end = request.find("\r\n");
 	requestLine = request.substr(0, end);
 	{
-		std::string	mthd, addr, prtl, tmp0, tmp1, tmp2;
-		std::cout << "requestLine: " << requestLine << "\n";
+		std::string	mthd, addr, prtl, tmp0;
+		size_t		pos;
+		
 		std::istringstream iss0(requestLine);
 		iss0 >> mthd >> addr >> prtl;
 		std::cout << "_URL: " << addr << "\n";
-		size_t pos = addr.find("?");
+		pos = addr.find("?");
 		if (pos != addr.npos)
 		{
-			size_t start = addr.find("/");
-			size_t end = addr.find("?");
-			value = addr.substr(start, (end - start));
-			key = "PATH_INFO=" + value;
-			saved = value;
-			_cgi_envs.push_back(key);
-			std::cout << *(_cgi_envs.end() - 1) << "\n";
-			std::istringstream iss2(addr);
-			getline(iss2, tmp0, '?');
-			getline(iss2, tmp0, '?');
+			std::istringstream iss1(addr);
+			getline(iss1, tmp0, '?');
+			getline(iss1, tmp0, '?');
 			key = "QUERY_STRING=" + tmp0;
 			_cgi_envs.push_back(key);
 			std::cout << *(_cgi_envs.end() - 1) << "\n";
 		}
 		else
 		{
-			size_t start =_url.find("/");
-			value = _url.substr(start, (_url.size() - start));
-			key = "PATH_INFO=" + value;
-			_cgi_envs.push_back(key);
+			_cgi_envs.push_back("QUERY_STRING=");
 			std::cout << *(_cgi_envs.end() - 1) << "\n";
 		}
-		// key = "REQUEST_METHOD=" + mthd;
-		// _cgi_envs.push_back(key);
-		// std::cout << *(_cgi_envs.end() - 1) << "\n";
+		key = "REQUEST_METHOD=" + mthd;
+		_cgi_envs.push_back(key);
+		std::cout << *(_cgi_envs.end() - 1) << "\n";
 		key = "SERVER_PROTOCOL=" + prtl;
 		_cgi_envs.push_back(key);
 		std::cout << *(_cgi_envs.end() - 1) << "\n";
@@ -228,18 +233,19 @@ void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 		_cgi_envs.push_back("REMOTE_HOST=NULL");
 
 	/*SCRIPT_NAME*/
-	key = "SCRIPT_NAME=" + html;
+	key = "SCRIPT_NAME=/usr/bin/php-cgi";
 	_cgi_envs.push_back(key);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*SCRIPT_FILENAME*/
-	// key = "SCRIPT_FILENAME=" + saved;
-	// _cgi_envs.push_back(key);
-
-	// setenv("REMOTE_ADDR", "127.0.0.1", 1);
+	key = "SCRIPT_FILENAME=" + html;
+	_cgi_envs.push_back(key);
 
 	key = "DOCUMENT_ROOT=/home/fausto/42SP/webserv_git";
 	_cgi_envs.push_back(key);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	_cgi_envs.push_back("REDIRECT_STATUS=true");
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 }
 
