@@ -238,6 +238,124 @@ void	HttpResponse::http_response_syntax(std::string status, std::string &request
 	std::cout << request;
 }
 
+void	HttpResponse::cgi_envs_parser(std::string html)
+{
+	std::cout << "\nCGI_ENVS_PARSER FUNCTION\n\n";
+
+	std::string		env;
+	
+	/*SET REDIRECT_STATUS ENV*/
+	_cgi_envs.push_back("REDIRECT_STATUS=200");
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/* SSL HAS TO BE CHECKED INTO THE FILE PARSER*/
+	// _cgi_envs.push_back("AUTH_TYPE=NULL");
+	// setenv("AUTY_TYPE", "NULL", 1);
+	_cgi_envs.push_back("AUTY_TYPE=NULL");
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	
+	/*CONTENT_LENGTH*/
+	env = "CONTENT_LENGTH=" + _content_length;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	
+	/*CONTENT_TYPE*/
+	env = "CONTENT_TYPE=" + _content_type;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*GATWAY_INTERFACE*/ //?????????????????????????????????
+	_cgi_envs.push_back("GATWAY_INTERFACE=CGI/7.4");
+
+	/*HTTP_ACCEPT*/
+	env = "HTTP_ACCEPT=" + _http_accept;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*HTTP_ACCEPT_ENCODING*/
+	env = "HTTP_ACCEPT_ENCODING=" + _http_accept_encoding;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*HTTP_ACCEPT_LANGUAGE*/
+	env = "HTTP_ACCEPT_LANGUAGE=" + _http_accept_language;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*HTTP_HOST*/
+	env = "HTTP_HOST=" + _http_host;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	
+	/*SERVER_NAME*/
+	env = "SERVER_NAME=" + _server_name;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	
+	/*SERVER_PORT*/
+	env = "SERVER_PORT=" + _server_port;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+
+	/*HTTP_USER_AGENT*/
+	env = "HTTP_USER_AGENT=" + _user_agent;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*QUERY_STRING*/
+	env = "QUERY_STRING=" + _query_string;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*PATH_INFO*/
+	env = "PATH_INFO=" + _path_info;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*REQUEST_URI*/
+	env = "REQUEST_URI=" + _request_uri;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	
+	/*REQUEST_METHOD*/
+	env = "REQUEST_METHOD=" + _method;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*SERVER_PROTOCOL*/
+	env = "SERVER_PROTOCOL=" + _protocol;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*REMOTE_HOST*/
+	env = "REMOTE_HOST=" + _remote_host;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*SCRIPT_NAME*/
+	env = "SCRIPT_NAME=/usr/bin/php-cgi";
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	
+	/*SCRIPT_FILENAME*/
+	env = "SCRIPT_FILENAME=" + html;
+	_cgi_envs.push_back(env);
+
+	env = "DOCUMENT_ROOT=/home/fausto/42SP/webserv_git";
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	_cgi_envs.push_back("REDIRECT_STATUS=true");
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+
+	/*ADD ENVP TO CGI_ENVS */
+	extern char** environ; 
+	for (int i = 0; environ[i] != NULL; i++)
+		_cgi_envs.push_back(environ[i]);
+}
+
 void	HttpResponse::exec_cgi(std::string &html, std::string &request)
 {
 	std::cout << "\nEXEC_CGI FUNCTION" << html << "\n\n";
@@ -259,14 +377,8 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request)
 	{
 
 		cgi_envs_parser(html);
-		/*CREATE ENVP_CGI ARRAY*/
-		/*Declaration of the environment variable array*/
-		extern char** environ; 
-	    /*Iterate over the environment variables until a null pointer is encountered*/
-		for (int i = 0; environ[i] != NULL; i++) {
-			// std::cout << environ[i] << std::endl;
-			_cgi_envs.push_back(environ[i]);
-		}
+
+		/*CREATE ENVP_CGI ARRAY TO EXECVE*/
 		char *envp_cgi[_cgi_envs.size() + 1];
 		size_t i = 0;
 		while (i < _cgi_envs.size()) {

@@ -23,25 +23,12 @@ class HttpRequest
 		std::string					_request_uri;
 		std::string					_remote_host;
 
-
-		std::vector<std::string>	_cgi_envs;
-
-		
 	public:
 		HttpRequest();
 		~HttpRequest();
 
-
 		void						request_parser(std::string request);
-		void						cgi_envs_parser(std::string html);
-
-		std::string					getMethod() const;
-		std::string					getUrl() const;
-		std::string					getProtocol() const;
-		std::string					getContentType() const;
-		std::vector<std::string>	getCgiEnvs() const;
-		void						add_cgi_envs(std::string request, std::string str, std::string env, size_t size, char c);
-
+		std::string					parse_line(std::string &request, std::string start, std::string end);
 };
 
 #endif

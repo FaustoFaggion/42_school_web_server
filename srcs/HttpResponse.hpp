@@ -9,6 +9,8 @@ class HttpResponse : HttpRequest
 	private:
 		std::map<std::string, directive>	locations;
 		std::vector<std::string>			_indexes;
+		std::vector<std::string>			_cgi_envs;
+
 	public:
 
 		HttpResponse(std::map<std::string, directive> locations, std::vector<std::string> indexes);
@@ -21,6 +23,7 @@ class HttpResponse : HttpRequest
 		void			buff_file(std::fstream &conf_file, std::stringstream &buff, std::string html);
 		void			http_response_syntax(std::string status, std::string &request, std::stringstream &buff, std::string content_type);
 
+		void			cgi_envs_parser(std::string html);
 		void			exec_cgi(std::string &html, std::string &request);
 };
 
