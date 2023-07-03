@@ -22,6 +22,9 @@ class HttpRequest
 		std::string					_path_info;
 		std::string					_request_uri;
 		std::string					_remote_host;
+		std::string					_boundary;
+		std::string					_content;
+
 
 	public:
 		HttpRequest();

@@ -349,11 +349,13 @@ void	HttpResponse::cgi_envs_parser(std::string html)
 	_cgi_envs.push_back("REDIRECT_STATUS=true");
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
-
 	/*ADD ENVP TO CGI_ENVS */
 	extern char** environ; 
 	for (int i = 0; environ[i] != NULL; i++)
 		_cgi_envs.push_back(environ[i]);
+
+	/*PRINT CONTENT TO DEBUG*/
+	std::cout << "CONTENT\n\n" << _content << "\n\n";
 }
 
 void	HttpResponse::exec_cgi(std::string &html, std::string &request)
@@ -387,6 +389,34 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request)
 		}
 		envp_cgi[i] = NULL;
 
+
+		if (_method == "POST")
+		{
+
+
+			// Open the file in output mode
+			std::ofstream outputFile("_TMP_FILE");
+			// Check if the file was opened successfully
+			if (!outputFile) {
+				std::cerr << "Error opening the file." << std::endl;
+				return ;
+			}
+			// Write the content to the file
+			outputFile << _content;
+			// Close the file
+			outputFile.close();
+		
+			int fd1 = open("_TMP_FILE", O_RDONLY);
+
+    		// Check if the file was opened successfully
+   			 if (fd1 == -1) {
+        		std::cerr << "Error opening the file." << std::endl;
+        		return ;
+		    }
+			dup2(fd1, fd[0]);
+			close(fd1);
+		}
+		dup2(fd[0], STDIN_FILENO);
 		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[1]);

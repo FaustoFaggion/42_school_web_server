@@ -18,6 +18,8 @@ HttpRequest::HttpRequest()
 	_path_info = "";
 	_request_uri = "";
 	_remote_host = "";
+	_boundary = "";
+	_content = "";
 }
 
 HttpRequest::~HttpRequest()
@@ -85,11 +87,11 @@ void		HttpRequest::request_parser(std::string request)
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
 		getline(iss0, _content_type, ' ');
-		getline(iss0, tmp, ' ');
-		_content_type += " " + tmp;
+		getline(iss0, _boundary, ' ');
+		_content_type += " " + _boundary;
 	}
 
-	/*CONTENT_TYPE*/
+	/*CONTENT_LENGTH*/
 	pos = request.find("Content-Length: ");
 	if (pos != request.npos)
 	{
@@ -97,6 +99,16 @@ void		HttpRequest::request_parser(std::string request)
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
 		getline(iss0, _content_length, ' ');
+	}
+
+	/*CONTENT*/
+	pos = _content_type.find("boundary");
+	if (pos != _content_type.npos)
+	{
+		pos = request.find_last_of(_boundary);
+		start = pos - atoi(_content_length.c_str());
+		end = atoi(_content_length.c_str());
+		_content = request.substr(start, end);
 	}
 
 	/*HTTP_HOST*/
