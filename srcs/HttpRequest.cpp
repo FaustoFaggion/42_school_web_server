@@ -2,7 +2,22 @@
 
 HttpRequest::HttpRequest()
 {
-
+	_method = "";
+	_url = "";
+	_protocol = "";
+	_content_type = "";
+	_content_length = "";
+	_server_name = "";
+	_server_port = "";
+	_user_agent = "";
+	_http_host = "";
+	_http_accept = "";
+	_http_accept_encoding = "";
+	_http_accept_language = "";
+	_query_string = "";
+	_path_info = "";
+	_request_uri = "";
+	_remote_host = "";
 }
 
 HttpRequest::~HttpRequest()
@@ -74,18 +89,11 @@ void	HttpRequest::add_cgi_envs(std::string request, std::string str, std::string
 	}
 }
 
-void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
+void	HttpRequest::cgi_envs_parser(std::string html)
 {
 	std::cout << "\nCGI_ENVS_PARSER FUNCTION\n\n";
-	(void)request;
 
-	std::string		requestLine;
-	std::string		key;
-	std::string		value;
-	std::string		saved;
-
-	std::cout << request << "\n";
-	std::cout << "enviroment variables\n" << "\n";
+	std::string		env;
 	
 	/*SET REDIRECT_STATUS ENV*/
 	_cgi_envs.push_back("REDIRECT_STATUS=200");
@@ -98,165 +106,95 @@ void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*CONTENT_LENGTH*/
-	key = "Content-Length: ";
-	add_cgi_envs(request, key, "CONTENT_LENGTH=", key.size(), ' ');
+	env = "CONTENT_LENGTH=" + _content_length;
+	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*CONTENT_TYPE*/
-	requestLine = parse_line(request, "Content-Type: ", "\r\n");
-	if (requestLine != "")
-	{
-		std::string			tmp0, tmp1;
-		std::istringstream	iss2(requestLine);
-		getline(iss2, tmp0, ' ');
-		getline(iss2, tmp0, ' ');
-		std::istringstream	iss3(tmp0);
-		getline(iss3, tmp1, ';');
-		value = "CONTENT_TYPE=" + tmp1;
-		_cgi_envs.push_back(value);	
-	}
+	env = "CONTENT_TYPE=" + _content_type;
+	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*GATWAY_INTERFACE*/ //?????????????????????????????????
 	_cgi_envs.push_back("GATWAY_INTERFACE=CGI/7.4");
 
 	/*HTTP_ACCEPT*/
-	key = "Accept: ";
-	add_cgi_envs(request, key, "HTTP_ACCEPT=", key.size(), ' ');
+	env = "HTTP_ACCEPT=" + _http_accept;
+	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_ACCEPT_ENCODING*/
-	key = "Accept-Encoding: ";
-	add_cgi_envs(request, key, "HTTP_ACCEPT_ENCODING=", key.size(), ' ');
+	env = "HTTP_ACCEPT_ENCODING=" + _http_accept_encoding;
+	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_ACCEPT_LANGUAGE*/
-	key = "Accept-Language: ";
-	add_cgi_envs(request, key, "HTTP_ACCEPT_LANGUAGE=", key.size(), ' ');
+	env = "HTTP_ACCEPT_LANGUAGE=" + _http_accept_language;
+	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
-	/*HTTP_HOST, SERVER_NAME, SERVER_PORT*/
-	requestLine = parse_line(request, "Host: ", "\r\n");
-	if (requestLine != "")
-	{
-		std::string		tmp0, tmp1;
-		std::istringstream	iss0(requestLine);
-		getline(iss0, tmp0, ' ');
-		getline(iss0, tmp0, ' ');
-		value = "HTTP_HOST=" + tmp0;
-		_cgi_envs.push_back(value);
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
-		std::istringstream	iss1(tmp0);
-		getline(iss1, tmp1, ':');
-		value = "SERVER_NAME=tmp1";
-		_cgi_envs.push_back(value);
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
-		getline(iss1, tmp1, ':');
-		value = "SERVER_PORT=" + tmp1;
-		_cgi_envs.push_back(value);
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
-	}
-	else
-	{
-		std::cout << "requestline == vazio\n";
-		_cgi_envs.push_back("HTTP_HOST=NULL");
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
-		_cgi_envs.push_back("SERVER_NAME=NULL");
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
-		_cgi_envs.push_back("SERVER_PORT=NULL");
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
-	}
+	/*HTTP_HOST*/
+	env = "HTTP_HOST=" + _http_host;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	
+	/*SERVER_NAME*/
+	env = "SERVER_NAME=" + _server_name;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	
+	/*SERVER_PORT*/
+	env = "SERVER_PORT=" + _server_port;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
 
 	/*HTTP_USER_AGENT*/
-	key = "User-Agent: ";
-	add_cgi_envs(request, key, "HTTP_USER_AGENT=", key.size(), ' ');
+	env = "HTTP_USER_AGENT=" + _user_agent;
+	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
-	// /*PATH_INFO*/
-	// {
-	// 	size_t		start, end;
-		
-	// 	start = html.find_last_of("/");
-	// 	end = html.size() - start;
-	// 	requestLine = html.substr(start, end);
-	// 	key = "PATH_INFO=" + requestLine;
-	// 	_cgi_envs.push_back(key);
-	// 	std::cout << *(_cgi_envs.end() - 1) << "\n";
-	// 	key = "REQUEST_URI=" + requestLine;
-	// 	_cgi_envs.push_back(key);
-	// 	std::cout << *(_cgi_envs.end() - 1) << "\n";
-	// }
-
 	/*QUERY_STRING*/
-	size_t	end = request.find("\r\n");
-	requestLine = request.substr(0, end);
-	{
-		std::string	mthd, addr, prtl, tmp0;
-		size_t		pos;
-		
-		std::istringstream iss0(requestLine);
-		iss0 >> mthd >> addr >> prtl;
-		std::cout << "_URL: " << addr << "\n";
-		pos = addr.find("?");
-		if (pos != addr.npos)
-		{
-			std::istringstream iss1(addr);
-			getline(iss1, tmp0, '?');
-			key = "PATH_INFO=" + tmp0;
-			_cgi_envs.push_back(key);
-			std::cout << *(_cgi_envs.end() - 1) << "\n";
-			key = "REQUEST_URI=" + tmp0;
-			_cgi_envs.push_back(key);
-			std::cout << *(_cgi_envs.end() - 1) << "\n";
+	env = "QUERY_STRING=" + _query_string;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
-			getline(iss1, tmp0, '?');
-			key = "QUERY_STRING=" + tmp0;
-			_cgi_envs.push_back(key);
-			std::cout << *(_cgi_envs.end() - 1) << "\n";
-		}
-		else
-		{
-			key = "PATH_INFO=" + addr;
-			_cgi_envs.push_back(key);
-			std::cout << *(_cgi_envs.end() - 1) << "\n";
-			key = "REQUEST_URI=" + addr;
-			_cgi_envs.push_back(key);
-			std::cout << *(_cgi_envs.end() - 1) << "\n";
-			
-			_cgi_envs.push_back("QUERY_STRING=");
-			std::cout << *(_cgi_envs.end() - 1) << "\n";
-		}
-		key = "REQUEST_METHOD=" + mthd;
-		_cgi_envs.push_back(key);
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
-		key = "SERVER_PROTOCOL=" + prtl;
-		_cgi_envs.push_back(key);
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
-	}
+	/*PATH_INFO*/
+	env = "PATH_INFO=" + _path_info;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
-	requestLine = parse_line(request, "Origin: ", "\r\n");
-	if (requestLine != "")
-	{
-		std::istringstream iss(requestLine);
-		getline(iss, value, ' ');
-		getline(iss, value, ' ');
-		key = "REMOTE_HOST=" + value;
-		_cgi_envs.push_back(key);
-	}
-	else
-		_cgi_envs.push_back("REMOTE_HOST=NULL");
+	/*REQUEST_URI*/
+	env = "REQUEST_URI=" + _request_uri;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	
+	/*REQUEST_METHOD*/
+	env = "REQUEST_METHOD=" + _method;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*SERVER_PROTOCOL*/
+	env = "SERVER_PROTOCOL=" + _protocol;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
+	/*REMOTE_HOST*/
+	env = "REMOTE_HOST=" + _remote_host;
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*SCRIPT_NAME*/
-	key = "SCRIPT_NAME=/usr/bin/php-cgi";
-	_cgi_envs.push_back(key);
+	env = "SCRIPT_NAME=/usr/bin/php-cgi";
+	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*SCRIPT_FILENAME*/
-	key = "SCRIPT_FILENAME=" + html;
-	_cgi_envs.push_back(key);
+	env = "SCRIPT_FILENAME=" + html;
+	_cgi_envs.push_back(env);
 
-	key = "DOCUMENT_ROOT=/home/fausto/42SP/webserv_git";
-	_cgi_envs.push_back(key);
+	env = "DOCUMENT_ROOT=/home/fausto/42SP/webserv_git";
+	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	_cgi_envs.push_back("REDIRECT_STATUS=true");
@@ -268,6 +206,7 @@ void		HttpRequest::request_parser(std::string request)
 
 	std::cout << "\nREQUEST_PARSER FUNCTION\n";
 
+	size_t			pos, start, end;
 	std::string		tmp;
 	std::string		requestLine;
 
@@ -277,11 +216,22 @@ void		HttpRequest::request_parser(std::string request)
 	std::istringstream iss0(requestLine);
 	iss0 >> _method >> _url >> _protocol;
 
-	size_t pos = _url.find("?");
+	/*URL, QUERY_STRING*/
+	pos = _url.find("?");
 	if (pos != _url.npos)
 	{
 		std::istringstream iss0(_url);
-		getline(iss0, _url, '?');
+		getline(iss0, tmp, '?');
+		getline(iss0, _query_string, '?');
+		_url = tmp;
+	}
+	
+	/*PATH_INFO, REQUEST_URI*/
+	{
+		start = _url.find("/");
+		end = _url.size() - start;
+		_path_info = _url.substr(start, end);
+		_request_uri = _url.substr(start, end);
 	}
 
 	/*CONTENT_TYPE*/
@@ -291,11 +241,82 @@ void		HttpRequest::request_parser(std::string request)
 		requestLine = parse_line(request, "Content-Type: ", "\r\n");
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
+		getline(iss0, _content_type, ' ');
 		getline(iss0, tmp, ' ');
-		std::istringstream iss1(tmp);
-		getline(iss1, _content_type, ';');
-		_content_type += "\r\n";
+		_content_type += " " + tmp;
 	}
 
-	// cgi_envs_parser(request);
+	/*CONTENT_TYPE*/
+	pos = request.find("Content-Length: ");
+	if (pos != request.npos)
+	{
+		requestLine = parse_line(request, "Content-Length: ", "\r\n");
+		std::istringstream iss0(requestLine);
+		getline(iss0, tmp, ' ');
+		getline(iss0, _content_length, ' ');
+	}
+
+	/*HTTP_HOST*/
+	pos = request.find("Host: ");
+	if (pos != request.npos)
+	{
+		requestLine = parse_line(request, "Host: ", "\r\n");
+		std::istringstream iss0(requestLine);
+		getline(iss0, tmp, ' ');
+		getline(iss0, _http_host, ' ');
+		std::istringstream iss1(_http_host);
+		getline(iss1, _server_name, ':');
+		getline(iss1, _server_port, ':');
+	}
+
+	/*USER_AGENT*/
+	pos = request.find("User-Agent: ");
+	if (pos != request.npos)
+	{
+		requestLine = parse_line(request, "User-Agent: ", "\r\n");
+		std::istringstream iss0(requestLine);
+		getline(iss0, tmp, ' ');
+		getline(iss0, _user_agent, ' ');
+	}
+
+	/*ACCEPT*/
+	pos = request.find("Accept: ");
+	if (pos != request.npos)
+	{
+		requestLine = parse_line(request, "Accept: ", "\r\n");
+		std::istringstream iss0(requestLine);
+		getline(iss0, tmp, ' ');
+		getline(iss0, _http_accept, ' ');
+	}
+
+	/*ACCEPT_LANGUAGE*/
+	pos = request.find("Accept-Language: ");
+	if (pos != request.npos)
+	{
+		requestLine = parse_line(request, "Accept-Language: ", "\r\n");
+		std::istringstream iss0(requestLine);
+		getline(iss0, tmp, ' ');
+		getline(iss0, _http_accept_language, ' ');
+	}
+
+	/*ACCEPT_ENCODING*/
+	pos = request.find("Accept-Encoding: ");
+	if (pos != request.npos)
+	{
+		requestLine = parse_line(request, "Accept-Encoding: ", "\r\n");
+		std::istringstream iss0(requestLine);
+		getline(iss0, tmp, ' ');
+		getline(iss0, _http_accept_encoding, ' ');
+	}
+
+	/*REMOTE_HOST*/
+	pos = request.find("Origin: ");
+	if (pos != request.npos)
+	{
+		requestLine = parse_line(request, "Origin: ", "\r\n");
+		std::istringstream iss0(requestLine);
+		getline(iss0, tmp, ' ');
+		getline(iss0, _remote_host, ' ');
+	}
+
 }

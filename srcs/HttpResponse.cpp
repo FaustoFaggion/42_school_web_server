@@ -238,9 +238,9 @@ void	HttpResponse::http_response_syntax(std::string status, std::string &request
 	std::cout << request;
 }
 
-void	HttpResponse::exec_cgi(std::string &html, std::string &request, char *envp_cgi[])
+void	HttpResponse::exec_cgi(std::string &html, std::string &request)
 {
-	std::cout << "\nEXEC_CGI FUNCTION" << envp_cgi[0] << html << "\n\n";
+	std::cout << "\nEXEC_CGI FUNCTION" << html << "\n\n";
 
 	int				fd[2];
 	int				pid;
@@ -257,6 +257,23 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request, char *envp_
 		exit(write(1, "fork error\n", 11));
 	if (pid == 0)
 	{
+
+		cgi_envs_parser(html);
+		/*CREATE ENVP_CGI ARRAY*/
+		/*Declaration of the environment variable array*/
+		extern char** environ; 
+	    /*Iterate over the environment variables until a null pointer is encountered*/
+		for (int i = 0; environ[i] != NULL; i++) {
+			// std::cout << environ[i] << std::endl;
+			_cgi_envs.push_back(environ[i]);
+		}
+		char *envp_cgi[_cgi_envs.size() + 1];
+		size_t i = 0;
+		while (i < _cgi_envs.size()) {
+			envp_cgi[i] = (char *)_cgi_envs.at(i).c_str();
+			i++;
+		}
+		envp_cgi[i] = NULL;
 
 		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
@@ -299,24 +316,6 @@ void	HttpResponse::response_parser(std::string &request)
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
 	html = looking_for_path(_url);
-	
-	cgi_envs_parser(request, html);
-
-	/*CREATE ENVP_CGI ARRAY*/
-	/*Declaration of the environment variable array*/
-	extern char** environ; 
-    /*Iterate over the environment variables until a null pointer is encountered*/
-	for (int i = 0; environ[i] != NULL; i++) {
-		// std::cout << environ[i] << std::endl;
-		_cgi_envs.push_back(environ[i]);
-	}
-	char *envp_cgi[_cgi_envs.size() + 1];
-	size_t i = 0;
-	while (i < _cgi_envs.size()) {
-		envp_cgi[i] = (char *)_cgi_envs.at(i).c_str();
-		i++;
-	}
-	envp_cgi[i] = NULL;
 
 
 	std::cout << "\n";
@@ -349,7 +348,7 @@ void	HttpResponse::response_parser(std::string &request)
 
 		if (locations[_url]._cgi == true)
 		{
-			exec_cgi(html, request, envp_cgi);
+			exec_cgi(html, request);
 			std::cout << "cgi request:\n" << request << "\n\n";
 		}
 		else
@@ -360,7 +359,7 @@ void	HttpResponse::response_parser(std::string &request)
 	{
 		buff_file(conf_file, buff, html);
 		if (locations[_url]._cgi == true)
-			exec_cgi(html, request, envp_cgi);
+			exec_cgi(html, request);
 		else
 			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, _content_type);
 		conf_file.close();
