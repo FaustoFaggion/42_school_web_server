@@ -172,20 +172,20 @@ void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 	add_cgi_envs(request, key, "HTTP_USER_AGENT=", key.size(), ' ');
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
-	/*PATH_INFO*/
-	{
-		size_t		start, end;
+	// /*PATH_INFO*/
+	// {
+	// 	size_t		start, end;
 		
-		start = html.find_last_of("/");
-		end = html.size() - start;
-		requestLine = html.substr(start, end);
-		key = "PATH_INFO=" + requestLine;
-		_cgi_envs.push_back(key);
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
-		key = "REQUEST_URI=" + requestLine;
-		_cgi_envs.push_back(key);
-		std::cout << *(_cgi_envs.end() - 1) << "\n";
-	}
+	// 	start = html.find_last_of("/");
+	// 	end = html.size() - start;
+	// 	requestLine = html.substr(start, end);
+	// 	key = "PATH_INFO=" + requestLine;
+	// 	_cgi_envs.push_back(key);
+	// 	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// 	key = "REQUEST_URI=" + requestLine;
+	// 	_cgi_envs.push_back(key);
+	// 	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// }
 
 	/*QUERY_STRING*/
 	size_t	end = request.find("\r\n");
@@ -202,6 +202,13 @@ void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 		{
 			std::istringstream iss1(addr);
 			getline(iss1, tmp0, '?');
+			key = "PATH_INFO=" + tmp0;
+			_cgi_envs.push_back(key);
+			std::cout << *(_cgi_envs.end() - 1) << "\n";
+			key = "REQUEST_URI=" + tmp0;
+			_cgi_envs.push_back(key);
+			std::cout << *(_cgi_envs.end() - 1) << "\n";
+
 			getline(iss1, tmp0, '?');
 			key = "QUERY_STRING=" + tmp0;
 			_cgi_envs.push_back(key);
@@ -209,6 +216,13 @@ void	HttpRequest::cgi_envs_parser(std::string request, std::string html)
 		}
 		else
 		{
+			key = "PATH_INFO=" + addr;
+			_cgi_envs.push_back(key);
+			std::cout << *(_cgi_envs.end() - 1) << "\n";
+			key = "REQUEST_URI=" + addr;
+			_cgi_envs.push_back(key);
+			std::cout << *(_cgi_envs.end() - 1) << "\n";
+			
 			_cgi_envs.push_back("QUERY_STRING=");
 			std::cout << *(_cgi_envs.end() - 1) << "\n";
 		}
