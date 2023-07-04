@@ -134,7 +134,7 @@ void	WebServ::delete_timeout_socket()
 		double	timeout = difftime(time(NULL), map_connections[_ep_event[j].data.fd].start_connection);
 		if (_ep_event[j].data.fd != _fd_listener)
 		{
-			if (timeout > 0.0)
+			if (timeout > 3.0)
 			{
 				int	fd = _ep_event[j].data.fd;
 
@@ -187,7 +187,7 @@ void	WebServ::accept_new_connection()
 
 void	WebServ::receive_data(int i)
 {
-	char	buff[2048];
+	char	buff[_buffer_size];
                                          
 
 	memset (&buff, '\0', sizeof (buff));
