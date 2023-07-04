@@ -167,7 +167,7 @@ void	ListenerSocket::parse_listener(std::string &_server_conf_file)
 {
 	std::cout << "PARSER_LISTENER FUNCTION\n\n";
 	std::cout << _server_conf_file << "\n\n";
-	// /*PARSE SERVEER FAMILY AND PORT*/
+	// /*PARSE SERVER FAMILY AND PORT*/
 	std::string	ltn;
 	while (_server_conf_file.find("listen", 0) != _server_conf_file.npos)
 	{

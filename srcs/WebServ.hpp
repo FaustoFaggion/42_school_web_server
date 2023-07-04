@@ -25,8 +25,6 @@ class WebServ : protected FileParser, ListenerSocket
 {
 	private:
 		int										_fd_listener;
-		// std::map<std::string, directive>		locations;
-		std::vector<std::string>				_indexes;
 
 		std::map<int, t_client>		map_connections;
 		int 						_efd;

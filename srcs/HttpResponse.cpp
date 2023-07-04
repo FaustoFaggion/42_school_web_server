@@ -265,7 +265,8 @@ void	HttpResponse::cgi_envs_parser(std::string html)
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*GATWAY_INTERFACE*/ //?????????????????????????????????
-	_cgi_envs.push_back("GATWAY_INTERFACE=CGI/7.4");
+	_cgi_envs.push_back("GATEWAY_INTERFACE=CGI/7.4");
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_ACCEPT*/
 	env = "HTTP_ACCEPT=" + _http_accept;
@@ -341,6 +342,7 @@ void	HttpResponse::cgi_envs_parser(std::string html)
 	/*SCRIPT_FILENAME*/
 	env = "SCRIPT_FILENAME=" + html;
 	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	env = "DOCUMENT_ROOT=/home/fausto/42SP/webserv_git";
 	_cgi_envs.push_back(env);

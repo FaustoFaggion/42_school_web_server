@@ -8,10 +8,6 @@ WebServ::WebServ()
 WebServ::WebServ(char *file, std::string server_name)
 {
 	parse_file(file, server_name);
-
-	// locations = getPath();
-	_indexes = getIndex();
-
 }
 
 WebServ::~WebServ()
@@ -42,9 +38,11 @@ void	WebServ::parse_file(char *file, std::string server_name)
 	simple_root_directive = parse_simple_root_directive();
 	
 	/*PARSE INDEX*/
-
 	parse_index(_index, _server_conf_file);
-	
+
+	/*PARSE BUFFER_SIZE*/
+
+
 	/*PARSE LOCATIONS*/
 	parse_locations(simple_root_directive);
 
@@ -227,7 +225,7 @@ void	WebServ::receive_data(int i)
 			std::cout <<  (*it).second.response << "\n";
 			
 			/*INSTANCIATE A HTTPRESPONSE CLASS TO RESPONSE THE REQUEST*/
-			HttpResponse	r(_locations, _indexes);
+			HttpResponse	r(_locations, _index);
 			r.response_parser((*it).second.response);
 
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
