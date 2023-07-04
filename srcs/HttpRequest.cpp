@@ -2,28 +2,27 @@
 
 HttpRequest::HttpRequest()
 {
-	_method = "";
-	_url = "";
-	_protocol = "";
-	_content_type = "";
-	_content_length = "";
-	_server_name = "";
-	_server_port = "";
-	_user_agent = "";
-	_http_host = "";
-	_http_accept = "";
-	_http_accept_encoding = "";
-	_http_accept_language = "";
-	_query_string = "";
-	_path_info = "";
-	_request_uri = "";
-	_remote_host = "";
-	_boundary = "";
-	_content = "";
+	// _method = "";
+	// _url = "";
+	// _protocol = "";
+	// _content_type = "";
+	// _content_length = "";
+	// _server_name = "";
+	// _server_port = "";
+	// _user_agent = "";
+	// _http_host = "";
+	// _http_accept = "";
+	// _http_accept_encoding = "";
+	// _http_accept_language = "";
+	// _query_string = "";
+	// _path_info = "";
+	// _request_uri = "";
+	// _remote_host = "";
+	// _boundary = "";
+	// _content = "";
 
-	_url_file = "";
-	_url_file_extension = "";
-	_url_location = "";
+	// _url_file = "";
+	// _url_file_extension = "";
 }
 
 HttpRequest::~HttpRequest()
@@ -50,7 +49,7 @@ std::string	HttpRequest::parse_line(std::string &request, std::string start, std
 	return (requestLine);
 }
 
-void		HttpRequest::request_parser(std::string request)
+void		HttpRequest::request_parser(t_client &client)
 {
 
 	std::cout << "\nREQUEST_PARSER FUNCTION\n";
@@ -60,160 +59,160 @@ void		HttpRequest::request_parser(std::string request)
 	std::string		requestLine;
 
 	/*METHOD, URL, PROTOCOL*/
-	size_t requestLineEnd = request.find("\r\n");
-	requestLine = request.substr(0, requestLineEnd);
+	size_t requestLineEnd = client._request.find("\r\n");
+	requestLine = client._request.substr(0, requestLineEnd);
 	std::istringstream iss0(requestLine);
-	iss0 >> _method >> _url >> _protocol;
+	iss0 >> client._method >> client._url >> client._protocol;
 
 	/*URL, QUERY_STRING*/
-	pos = _url.find("?");
-	if (pos != _url.npos)
+	pos = client._url.find("?");
+	if (pos != client._url.npos)
 	{
-		std::istringstream iss0(_url);
+		std::istringstream iss0(client._url);
 		getline(iss0, tmp, '?');
-		getline(iss0, _query_string, '?');
-		_url = tmp;
+		getline(iss0, client._query_string, '?');
+		client._url = tmp;
 	}
 	
 	/*PATH_INFO, REQUEST_URI*/
 	{
-		start = _url.find("/");
-		end = _url.size() - start;
-		_path_info = _url.substr(start, end);
-		_request_uri = _url.substr(start, end);
+		start = client._url.find("/");
+		end = client._url.size() - start;
+		client._path_info = client._url.substr(start, end);
+		client._request_uri = client._url.substr(start, end);
 	}
 
 	/*CONTENT_TYPE*/
-	pos = request.find("Content-Type: ");
-	if (pos != request.npos)
+	pos = client._request.find("Content-Type: ");
+	if (pos != client._request.npos)
 	{
-		requestLine = parse_line(request, "Content-Type: ", "\r\n");
+		requestLine = parse_line(client._request, "Content-Type: ", "\r\n");
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
-		getline(iss0, _content_type, ' ');
-		getline(iss0, _boundary, ' ');
-		_content_type += " " + _boundary;
+		getline(iss0, client._content_type, ' ');
+		getline(iss0, client._boundary, ' ');
+		client._content_type += " " + client._boundary;
 	}
 
 	/*CONTENT_LENGTH*/
-	pos = request.find("Content-Length: ");
-	if (pos != request.npos)
+	pos = client._request.find("Content-Length: ");
+	if (pos != client._request.npos)
 	{
-		requestLine = parse_line(request, "Content-Length: ", "\r\n");
+		requestLine = parse_line(client._request, "Content-Length: ", "\r\n");
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
-		getline(iss0, _content_length, ' ');
+		getline(iss0, client._content_length, ' ');
 	}
 
 	/*CONTENT*/
-	pos = _content_type.find("boundary");
-	if (pos != _content_type.npos)
+	pos = client._content_type.find("boundary");
+	if (pos != client._content_type.npos)
 	{
-		pos = request.find_last_of(_boundary);
-		start = pos - atoi(_content_length.c_str());
-		end = atoi(_content_length.c_str());
-		_content = request.substr(start, end);
+		pos = client._request.find_last_of(client._boundary);
+		start = pos - atoi(client._content_length.c_str());
+		end = atoi(client._content_length.c_str());
+		client._content = client._request.substr(start, end);
 	}
 
 	/*HTTP_HOST*/
-	pos = request.find("Host: ");
-	if (pos != request.npos)
+	pos = client._request.find("Host: ");
+	if (pos != client._request.npos)
 	{
-		requestLine = parse_line(request, "Host: ", "\r\n");
+		requestLine = parse_line(client._request, "Host: ", "\r\n");
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
-		getline(iss0, _http_host, ' ');
-		std::istringstream iss1(_http_host);
-		getline(iss1, _server_name, ':');
-		getline(iss1, _server_port, ':');
+		getline(iss0, client._http_host, ' ');
+		std::istringstream iss1(client._http_host);
+		getline(iss1, client._server_name, ':');
+		getline(iss1, client._server_port, ':');
 	}
 
 	/*USER_AGENT*/
-	pos = request.find("User-Agent: ");
-	if (pos != request.npos)
+	pos = client._request.find("User-Agent: ");
+	if (pos != client._request.npos)
 	{
-		requestLine = parse_line(request, "User-Agent: ", "\r\n");
+		requestLine = parse_line(client._request, "User-Agent: ", "\r\n");
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
-		getline(iss0, _user_agent, ' ');
+		getline(iss0, client._user_agent, ' ');
 	}
 
 	/*ACCEPT*/
-	pos = request.find("Accept: ");
-	if (pos != request.npos)
+	pos = client._request.find("Accept: ");
+	if (pos != client._request.npos)
 	{
-		requestLine = parse_line(request, "Accept: ", "\r\n");
+		requestLine = parse_line(client._request, "Accept: ", "\r\n");
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
-		getline(iss0, _http_accept, ' ');
+		getline(iss0, client._http_accept, ' ');
 	}
 
 	/*ACCEPT_LANGUAGE*/
-	pos = request.find("Accept-Language: ");
-	if (pos != request.npos)
+	pos = client._request.find("Accept-Language: ");
+	if (pos != client._request.npos)
 	{
-		requestLine = parse_line(request, "Accept-Language: ", "\r\n");
+		requestLine = parse_line(client._request, "Accept-Language: ", "\r\n");
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
-		getline(iss0, _http_accept_language, ' ');
+		getline(iss0, client._http_accept_language, ' ');
 	}
 
 	/*ACCEPT_ENCODING*/
-	pos = request.find("Accept-Encoding: ");
-	if (pos != request.npos)
+	pos = client._request.find("Accept-Encoding: ");
+	if (pos != client._request.npos)
 	{
-		requestLine = parse_line(request, "Accept-Encoding: ", "\r\n");
+		requestLine = parse_line(client._request, "Accept-Encoding: ", "\r\n");
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
-		getline(iss0, _http_accept_encoding, ' ');
+		getline(iss0, client._http_accept_encoding, ' ');
 	}
 
 	/*REMOTE_HOST*/
-	pos = request.find("Origin: ");
-	if (pos != request.npos)
+	pos = client._request.find("Origin: ");
+	if (pos != client._request.npos)
 	{
-		requestLine = parse_line(request, "Origin: ", "\r\n");
+		requestLine = parse_line(client._request, "Origin: ", "\r\n");
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
-		getline(iss0, _remote_host, ' ');
+		getline(iss0, client._remote_host, ' ');
 	}
 
 	/*_URL_FILE, _URL_FILE_EXTENSION, _URL_LOCATION*/
-	pos = _url.find(".");
-	if (pos != _url.npos)
+	pos = client._url.find(".");
+	if (pos != client._url.npos)
 	{
-		end = _url.size() - pos;
-		_url_file_extension = _url.substr(pos, end);
+		end = client._url.size() - pos;
+		client._url_file_extension = client._url.substr(pos, end);
 		
-		start = _url.find_last_of("/");
-		end = _url.size() - start;
-		_url_file = _url.substr(start, end);
+		start = client._url.find_last_of("/");
+		end = client._url.size() - start;
+		client._url_file = client._url.substr(start, end);
 
 		end = start;
-		_url_location = _url.substr(0, end);
-		if (_url_location == "")
-			_url_location = '/';
+		client._url_location = client._url.substr(0, end);
+		if (client._url_location == "")
+			client._url_location = '/';
 	}
 
-		std::cout << "_method: " << _method << "\n";
-		std::cout << "_url: " << _url << "\n";
-		std::cout << "_protocol: " << _protocol << "\n";
-		std::cout << "_content_type: " << _content_type << "\n";
-		std::cout << "_content_length: " << _content_length << "\n";
-		std::cout << "_server_name: " << _server_name << "\n";
-		std::cout << "_server_port: " << _server_port << "\n";
-		std::cout << "_user_agent: " << _user_agent << "\n";
-		std::cout << "_http_host: " << _http_host << "\n";
-		std::cout << "_http_accept: " << _http_accept << "\n";
-		std::cout << "_http_accept_encoding: " << _http_accept_encoding << "\n";
-		std::cout << "_http_accept_language: " << _http_accept_language << "\n";
-		std::cout << "_query_string: " << _query_string << "\n";
-		std::cout << "_path_info: " << _path_info << "\n";
-		std::cout << "_request_uri: " << _request_uri << "\n";
-		std::cout << "_remote_host: " << _remote_host << "\n";
-		std::cout << "_boundary: " << _boundary << "\n";
-		std::cout << "_content: " << _content << "\n";
-		std::cout << "_url_file: " << _url_file << "\n";
-		std::cout << "_url_file_extension: " << _url_file_extension << "\n";
-		std::cout << "_url_location: " << _url_location << "\n";
+		std::cout << "_method: " << client._method << "\n";
+		std::cout << "_url: " << client._url << "\n";
+		std::cout << "_protocol: " << client._protocol << "\n";
+		std::cout << "_content_type: " << client._content_type << "\n";
+		std::cout << "_content_length: " << client._content_length << "\n";
+		std::cout << "_server_name: " << client._server_name << "\n";
+		std::cout << "_server_port: " << client._server_port << "\n";
+		std::cout << "_user_agent: " << client._user_agent << "\n";
+		std::cout << "_http_host: " << client._http_host << "\n";
+		std::cout << "_http_accept: " << client._http_accept << "\n";
+		std::cout << "_http_accept_encoding: " << client._http_accept_encoding << "\n";
+		std::cout << "_http_accept_language: " << client._http_accept_language << "\n";
+		std::cout << "_query_string: " << client._query_string << "\n";
+		std::cout << "_path_info: " << client._path_info << "\n";
+		std::cout << "_request_uri: " << client._request_uri << "\n";
+		std::cout << "_remote_host: " << client._remote_host << "\n";
+		std::cout << "_boundary: " << client._boundary << "\n";
+		std::cout << "_content: " << client._content << "\n";
+		std::cout << "_url_file: " << client._url_file << "\n";
+		std::cout << "_url_file_extension: " << client._url_file_extension << "\n";
+		std::cout << "_url_location: " << client._url_location << "\n";
 }

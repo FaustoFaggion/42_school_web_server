@@ -179,10 +179,35 @@ void	WebServ::accept_new_connection()
 
 	/*ADD fd_new TO MAP_CONNECTIONS AND SET TO EMPTY*/
 	t_client	c;
+	initialize_client_struct(c, fd_new);
+	map_connections[fd_new] = c;
+}
+
+void			WebServ::initialize_client_struct(t_client &c, int fd_new)
+{
 	c.fd = fd_new;
 	c.start_connection = time(NULL);
-	c.response = "";
-	map_connections[fd_new] = c;
+	c._request = "";
+	c._method = "";
+	c._url = "";
+	c._protocol = "";
+	c._content_type = "";
+	c._content_length = "";
+	c._server_name = "";
+	c._server_port = "";
+	c._user_agent = "";
+	c._http_host = "";
+	c._http_accept = "";
+	c._http_accept_encoding = "";
+	c._http_accept_language = "";
+	c._query_string = "";
+	c._path_info = "";
+	c._request_uri = "";
+	c._remote_host = "";
+	c._boundary = "";
+	c._content = "";
+	c._url_file = "";
+	c._response = "";
 }
 
 void	WebServ::receive_data(int i)
@@ -214,19 +239,19 @@ void	WebServ::receive_data(int i)
 	else 
 	{
 		/*CONCAT DATA UNTIL FIND \r \n THAT MEANS THE END OF REQUEST DATA*/
-		map_connections[_ep_event[i].data.fd].response += buff;
+		map_connections[_ep_event[i].data.fd]._request += buff;
 	
 		/*CHECK IF REQUEST DATA FINISHED*/
 		std::map<int, t_client>::iterator	it;
 		it = map_connections.find(_ep_event[i].data.fd);
-		if ((*it).second.response.find("\r\n\r\n") != std::string::npos)
+		if ((*it).second._request.find("\r\n\r\n") != std::string::npos)
 		{
 			/*PRINT RECEIVED DATA*/
-			std::cout <<  (*it).second.response << "\n";
+			std::cout <<  (*it).second._request << "\n";
 			
 			/*INSTANCIATE A HTTPRESPONSE CLASS TO RESPONSE THE REQUEST*/
 			HttpResponse	r(_locations, _index);
-			r.response_parser((*it).second.response);
+			r.response_parser((*it).second);
 
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
 			_ev.events = EPOLLOUT | EPOLLONESHOT;
@@ -240,10 +265,10 @@ void	WebServ::response(int i)
 	std::map<int, t_client>::iterator	it;
 	it = map_connections.find(_ep_event[i].data.fd);
 	/*PROTECTION FROM CONNECTION HAND-SHAKE*/
-	if (!(*it).second.response.empty())
+	if (!(*it).second._request.empty())
 	{
 		// std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.response.c_str() << "\n";
-		send(_ep_event[i].data.fd, (*it).second.response.c_str(), (*it).second.response.size(), 0);
+		send(_ep_event[i].data.fd, (*it).second._request.c_str(), (*it).second._request.size(), 0);
 		
 		
 		/*If keep-alive SET FD SOCKET TO READ AGAIN*/

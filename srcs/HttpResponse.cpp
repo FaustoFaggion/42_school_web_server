@@ -20,21 +20,21 @@ HttpResponse::~HttpResponse()
 // 	str += '\0';
 // }
 
-void	HttpResponse::chk_indexies(std::string &html)
+void	HttpResponse::chk_indexies(t_client &client, std::string &html)
 {
 	std::cout << "\nCHK_INDEXIES FUNCTION\n";
 
 	bool	flag = false;
 	size_t	i = 0;
 		
-	while (flag == false && i < locations[_url]._index_block.size())
+	while (flag == false && i < locations[client._url]._index_block.size())
 	{
-		html = locations[_url]._server_path + "/" + locations[_url]._index_block.at(i);
+		html = locations[client._url]._server_path + "/" + locations[client._url]._index_block.at(i);
 		if(access(html.c_str(), F_OK) == 0)
 		{
 			flag = true;
-			locations[_url]._path_ok = true;
-			std::cout << "1 -path_ok = " << locations[_url]._path_ok << "\n";
+			locations[client._url]._path_ok = true;
+			std::cout << "1 -path_ok = " << locations[client._url]._path_ok << "\n";
 			std::cout << "index found block directive: " << html << "\n";
 		}
 		i++;
@@ -44,12 +44,12 @@ void	HttpResponse::chk_indexies(std::string &html)
 	{
 		while (flag == false && i < _indexes.size())
 		{
-			html = locations[_url]._server_path + "/" + _indexes.at(i);
+			html = locations[client._url]._server_path + "/" + _indexes.at(i);
 			if(access(html.c_str(), F_OK) == 0)
 			{
 				flag = true;
-				locations[_url]._path_ok = true;
-				std::cout << "2 -path_ok = " << locations[_url]._path_ok << "\n";
+				locations[client._url]._path_ok = true;
+				std::cout << "2 -path_ok = " << locations[client._url]._path_ok << "\n";
 				std::cout << "index found simple directive: " << html << "\n";
 			}
 			i++;
@@ -57,26 +57,26 @@ void	HttpResponse::chk_indexies(std::string &html)
 	}
 	if (flag == false)
 	{
-		locations[_url]._path_ok = false;
-		html = locations[_url]._server_path;
-		std::cout << "3 -path_ok = " << locations[_url]._path_ok << "\n";
+		locations[client._url]._path_ok = false;
+		html = locations[client._url]._server_path;
+		std::cout << "3 -path_ok = " << locations[client._url]._path_ok << "\n";
 		std::cout << "index not found: " << html << "\n";
 	}
 
 }
 
-std::string	HttpResponse::looking_for_path()
+std::string	HttpResponse::looking_for_path(t_client &client)
 {
 	std::cout << "\nLOOKING_FOR_PATH FUNCTION\n";
 	
 	std::string	html = "";
 
 	/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
-	if(locations.find(_url) != locations.end())
+	if(locations.find(client._url) != locations.end())
 	{
-		std::cout << "path on location map found: " << _url << "\n";
-		chk_indexies(html);
-		if (locations[_url]._path_ok == true)
+		std::cout << "path on location map found: " << client._url << "\n";
+		chk_indexies(client, html);
+		if (locations[client._url]._path_ok == true)
 			return(html);
 	}
 
@@ -116,42 +116,42 @@ std::string	HttpResponse::looking_for_path()
 	// }
 	
 	/*CHECK FOR FILE IN THE END OF THE PATH REQUEST*/
-	if (_url_file == "")
+	if (client._url_file == "")
 	{
-		html = locations[_url]._server_path;
-		locations[_url]._path_ok = false;
-		std::cout << "path_ok = " << locations[_url]._path_ok << "\n";
+		html = locations[client._url]._server_path;
+		locations[client._url]._path_ok = false;
+		std::cout << "path_ok = " << locations[client._url]._path_ok << "\n";
 		std::cout << "path on location map not found: " << html << "\n";
 		return (html);
 	}
 
-	if(locations.find(_url_location) != locations.end())
+	if(locations.find(client._url_location) != locations.end())
 	{
-		if (_url_file_extension == ".php")
-			html = "php-cgi" + _url_file;
+		if (client._url_file_extension == ".php")
+			html = "php-cgi" + client._url_file;
 		else
-			html = locations[_url_location]._server_path + _url_file;
+			html = locations[client._url_location]._server_path + client._url_file;
 		std::cout << "html: " << html << "\n";
-		_url = _url_location;
+		client._url = client._url_location;
 		if (access(html.c_str(), F_OK) == 0)
 		{
-			locations[_url_location]._path_ok = true;
-			std::cout << "path_ok = " << locations[_url_location]._path_ok << "\n";
-			std::cout << "find path on location map and file: " << _url_location <<"\n";
+			locations[client._url_location]._path_ok = true;
+			std::cout << "path_ok = " << locations[client._url_location]._path_ok << "\n";
+			std::cout << "find path on location map and file: " << client._url_location <<"\n";
 		}
 		else
 		{
-			locations[_url_location]._path_ok = false;
-			std::cout << "path_ok = " << locations[_url_location]._path_ok << "\n";
-			std::cout << "find path on location map but not file: " << _url_location <<"\n";
+			locations[client._url_location]._path_ok = false;
+			std::cout << "path_ok = " << locations[client._url_location]._path_ok << "\n";
+			std::cout << "find path on location map but not file: " << client._url_location <<"\n";
 		}
 	}
 	else
 	{
 		// html = locations[request_path]._server_path;
-		locations[_url_location]._path_ok = false;
-		std::cout << "path_ok = " << locations[_url_location]._path_ok << "\n";
-		std::cout << "path not found on location map after extract file: " << _url_location << "\n";
+		locations[client._url_location]._path_ok = false;
+		std::cout << "path_ok = " << locations[client._url_location]._path_ok << "\n";
+		std::cout << "path not found on location map after extract file: " << client._url_location << "\n";
 	}
 
 	/*REWRITE THE PATH CORRECTILY IF '//' IS FIND*/
@@ -213,7 +213,7 @@ void	HttpResponse::http_response_syntax(std::string status, std::string &request
 	std::cout << request;
 }
 
-void	HttpResponse::cgi_envs_parser(std::string html)
+void	HttpResponse::cgi_envs_parser(t_client client, std::string html)
 {
 	std::cout << "\nCGI_ENVS_PARSER FUNCTION\n\n";
 
@@ -230,12 +230,12 @@ void	HttpResponse::cgi_envs_parser(std::string html)
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*CONTENT_LENGTH*/
-	env = "CONTENT_LENGTH=" + _content_length;
+	env = "CONTENT_LENGTH=" + client._content_length;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*CONTENT_TYPE*/
-	env = "CONTENT_TYPE=" + _content_type;
+	env = "CONTENT_TYPE=" + client._content_type;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
@@ -244,68 +244,68 @@ void	HttpResponse::cgi_envs_parser(std::string html)
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_ACCEPT*/
-	env = "HTTP_ACCEPT=" + _http_accept;
+	env = "HTTP_ACCEPT=" + client._http_accept;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_ACCEPT_ENCODING*/
-	env = "HTTP_ACCEPT_ENCODING=" + _http_accept_encoding;
+	env = "HTTP_ACCEPT_ENCODING=" + client._http_accept_encoding;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_ACCEPT_LANGUAGE*/
-	env = "HTTP_ACCEPT_LANGUAGE=" + _http_accept_language;
+	env = "HTTP_ACCEPT_LANGUAGE=" + client._http_accept_language;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_HOST*/
-	env = "HTTP_HOST=" + _http_host;
+	env = "HTTP_HOST=" + client._http_host;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*SERVER_NAME*/
-	env = "SERVER_NAME=" + _server_name;
+	env = "SERVER_NAME=" + client._server_name;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*SERVER_PORT*/
-	env = "SERVER_PORT=" + _server_port;
+	env = "SERVER_PORT=" + client._server_port;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 
 	/*HTTP_USER_AGENT*/
-	env = "HTTP_USER_AGENT=" + _user_agent;
+	env = "HTTP_USER_AGENT=" + client._user_agent;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*QUERY_STRING*/
-	env = "QUERY_STRING=" + _query_string;
+	env = "QUERY_STRING=" + client._query_string;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*PATH_INFO*/
-	env = "PATH_INFO=" + _path_info;
+	env = "PATH_INFO=" + client._path_info;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*REQUEST_URI*/
-	env = "REQUEST_URI=" + _request_uri;
+	env = "REQUEST_URI=" + client._request_uri;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*REQUEST_METHOD*/
-	env = "REQUEST_METHOD=" + _method;
+	env = "REQUEST_METHOD=" + client._method;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*SERVER_PROTOCOL*/
-	env = "SERVER_PROTOCOL=" + _protocol;
+	env = "SERVER_PROTOCOL=" + client._protocol;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*REMOTE_HOST*/
-	env = "REMOTE_HOST=" + _remote_host;
+	env = "REMOTE_HOST=" + client._remote_host;
 	_cgi_envs.push_back(env);
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
@@ -332,10 +332,10 @@ void	HttpResponse::cgi_envs_parser(std::string html)
 		_cgi_envs.push_back(environ[i]);
 
 	/*PRINT CONTENT TO DEBUG*/
-	std::cout << "CONTENT\n\n" << _content << "\n\n";
+	std::cout << "CONTENT\n\n" << client._content << "\n\n";
 }
 
-void	HttpResponse::exec_cgi(std::string &html, std::string &request)
+void	HttpResponse::exec_cgi(std::string &html, t_client &client)
 {
 	std::cout << "\nEXEC_CGI FUNCTION" << html << "\n\n";
 
@@ -355,7 +355,7 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request)
 	if (pid == 0)
 	{
 
-		cgi_envs_parser(html);
+		cgi_envs_parser(client, html);
 
 		/*CREATE ENVP_CGI ARRAY TO EXECVE*/
 		char *envp_cgi[_cgi_envs.size() + 1];
@@ -367,7 +367,7 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request)
 		envp_cgi[i] = NULL;
 
 
-		if (_method == "POST")
+		if (client._method == "POST")
 		{
 
 
@@ -379,7 +379,7 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request)
 				return ;
 			}
 			// Write the content to the file
-			outputFile << _content;
+			outputFile << client._content;
 			// Close the file
 			outputFile.close();
 		
@@ -406,7 +406,7 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request)
 	waitpid(pid, NULL, 0);
 	close(fd[1]);
 	dup2(fd[0], STDIN_FILENO);
-	request = "HTTP/1.1 200 OK\r\n";
+	client._request = "HTTP/1.1 200 OK\r\n";
 	std::cout << "enter while\n";
 
 	std::stringstream phpOutput;
@@ -416,14 +416,14 @@ void	HttpResponse::exec_cgi(std::string &html, std::string &request)
 	{
 		phpOutput.write(buffer, bytesRead);
 	}
-	request += phpOutput.str();
+	client._request += phpOutput.str();
 	std::cout << "out while\n";
 	// std::cout << "request: " << request << "\n";
 	close(fd[0]);
 
 }
 
-void	HttpResponse::response_parser(std::string &request)
+void	HttpResponse::response_parser(t_client &client)
 {
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
@@ -431,10 +431,10 @@ void	HttpResponse::response_parser(std::string &request)
 	std::fstream			conf_file;
 	std::stringstream		buff;
 
-	request_parser(request);
+	request_parser(client);
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	html = looking_for_path();
+	html = looking_for_path(client);
 
 
 	std::cout << "\n";
@@ -443,19 +443,19 @@ void	HttpResponse::response_parser(std::string &request)
 		std::cout << (*it).first << " : " << (*it).second._server_path << "\n";
 	}
 	std::cout << "\n";
-	std::cout << "Method: " << _method << std::endl;
-	std::cout << "Path: " << _url << std::endl;
-	std::cout << "Protocol: " << _protocol << std::endl;
+	std::cout << "Method: " << client._method << std::endl;
+	std::cout << "Path: " << client._url << std::endl;
+	std::cout << "Protocol: " << client._protocol << std::endl;
 	std::cout << "html: " << html << std::endl;
 	std::cout << "\n";
 
-	if (_method.compare("GET") == 0)
+	if (client._method.compare("GET") == 0)
 	{
-		if (locations[_url]._autoindex == true)
+		if (locations[client._url]._autoindex == true)
 		{
 			std::cout << "autoindex on\n";
-			if (locations[_url]._path_ok == false)
-				diretory_list(buff, _url, html);
+			if (locations[client._url]._path_ok == false)
+				diretory_list(buff, client._url, html);
 			else
 				buff_file(conf_file, buff, html);
 		}
@@ -465,34 +465,34 @@ void	HttpResponse::response_parser(std::string &request)
 			buff_file(conf_file, buff, html);
 		}
 
-		if (_url_file_extension == ".php")
+		if (client._url_file_extension == ".php")
 		{
-			exec_cgi(html, request);
-			std::cout << "cgi request:\n" << request << "\n\n";
+			exec_cgi(html, client);
+			std::cout << "cgi request:\n" << client._request << "\n\n";
 		}
 		else
-			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, _content_type);
+			http_response_syntax("HTTP/1.1 200 OK\r\n", client._request, buff, client._content_type);
 		conf_file.close();
 	}
-	else if (_method.compare("POST") == 0)
+	else if (client._method.compare("POST") == 0)
 	{
 		buff_file(conf_file, buff, html);
-		if (_url_file_extension == ".php")
-			exec_cgi(html, request);
+		if (client._url_file_extension == ".php")
+			exec_cgi(html, client);
 		else
-			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, _content_type);
+			http_response_syntax("HTTP/1.1 200 OK\r\n", client._request, buff, client._content_type);
 		conf_file.close();
 	}
-	else if (_method.compare("DELETE") == 0)
+	else if (client._method.compare("DELETE") == 0)
 	{
 		buff_file(conf_file, buff, html);
-		http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, _content_type);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", client._request, buff, client._content_type);
 		conf_file.close();
 	}
 	else
 	{
 		buff_file(conf_file, buff, "./locations/test/error.html");
-		http_response_syntax("HTTP/1.1 404 Not Found\r\n", request, buff, _content_type);
+		http_response_syntax("HTTP/1.1 404 Not Found\r\n", client._request, buff, client._content_type);
 		conf_file.close();
 	}
 }

@@ -15,13 +15,7 @@
 #include "HttpResponse.hpp"
 #include <map>
 
-typedef struct client {
-	int				fd;
-	time_t			start_connection;
-	std::string		response;
-} t_client;
-
-class WebServ : protected FileParser, ListenerSocket
+class WebServ : protected FileParser, ListenerSocket, HttpRequest
 {
 	private:
 		int							_fd_listener;
@@ -51,6 +45,8 @@ class WebServ : protected FileParser, ListenerSocket
 		void	accept_new_connection();
 		void	receive_data(int i);
 		void	response(int i);
+
+		void	initialize_client_struct(t_client &c, int fd_new);
 };
 
 #endif
