@@ -20,24 +20,24 @@ HttpResponse::~HttpResponse()
 // 	str += '\0';
 // }
 
-void	HttpResponse::chk_indexies(std::string path, std::string &html)
+void	HttpResponse::chk_indexies(std::string &html)
 {
 	std::cout << "\nCHK_INDEXIES FUNCTION\n";
 
 	bool	flag = false;
 	size_t	i = 0;
 		
-	while (flag == false && i < locations[path]._index_block.size())
+	while (flag == false && i < locations[_url]._index_block.size())
 	{
-		html = locations[path]._server_path + "/" + locations[path]._index_block.at(i);
+		html = locations[_url]._server_path + "/" + locations[_url]._index_block.at(i);
 		if(access(html.c_str(), F_OK) == 0)
 		{
 			flag = true;
-			locations[path]._path_ok = true;
-			std::cout << "1 -path_ok = " << locations[path]._path_ok << "\n";
+			locations[_url]._path_ok = true;
+			std::cout << "1 -path_ok = " << locations[_url]._path_ok << "\n";
 			std::cout << "index found block directive: " << html << "\n";
-			if (locations[path]._index_block.at(i).find(".php"))
-				locations[path]._cgi = true;
+			if (locations[_url]._index_block.at(i).find(".php"))
+				locations[_url]._cgi = true;
 		}
 		i++;
 	}
@@ -46,15 +46,15 @@ void	HttpResponse::chk_indexies(std::string path, std::string &html)
 	{
 		while (flag == false && i < _indexes.size())
 		{
-			html = locations[path]._server_path + "/" + _indexes.at(i);
+			html = locations[_url]._server_path + "/" + _indexes.at(i);
 			if(access(html.c_str(), F_OK) == 0)
 			{
 				flag = true;
-				locations[path]._path_ok = true;
-				std::cout << "2 -path_ok = " << locations[path]._path_ok << "\n";
+				locations[_url]._path_ok = true;
+				std::cout << "2 -path_ok = " << locations[_url]._path_ok << "\n";
 				std::cout << "index found simple directive: " << html << "\n";
 				if (_indexes.at(i).find(".php") != _indexes.at(i).npos)
-					locations[path]._cgi = true;
+					locations[_url]._cgi = true;
 
 			}
 			i++;
@@ -62,27 +62,27 @@ void	HttpResponse::chk_indexies(std::string path, std::string &html)
 	}
 	if (flag == false)
 	{
-		locations[path]._path_ok = false;
-		html = locations[path]._server_path;
-		std::cout << "3 -path_ok = " << locations[path]._path_ok << "\n";
+		locations[_url]._path_ok = false;
+		html = locations[_url]._server_path;
+		std::cout << "3 -path_ok = " << locations[_url]._path_ok << "\n";
 		std::cout << "index not found: " << html << "\n";
-		locations[path]._cgi = false;
+		locations[_url]._cgi = false;
 	}
 
 }
 
-std::string	HttpResponse::looking_for_path(std::string &path)
+std::string	HttpResponse::looking_for_path()
 {
 	std::cout << "\nLOOKING_FOR_PATH FUNCTION\n";
 	
 	std::string	html = "";
 
 	/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
-	if(locations.find(path) != locations.end())
+	if(locations.find(_url) != locations.end())
 	{
-		std::cout << "path on location map found: " << path << "\n";
-		chk_indexies(path, html);
-		if (locations[path]._path_ok == true)
+		std::cout << "path on location map found: " << _url << "\n";
+		chk_indexies(html);
+		if (locations[_url]._path_ok == true)
 			return(html);
 	}
 
@@ -122,61 +122,49 @@ std::string	HttpResponse::looking_for_path(std::string &path)
 	// }
 	
 	/*CHECK FOR FILE IN THE END OF THE PATH REQUEST*/
-	if (path.find(".", 0) == path.npos)
+	if (_url_file == "")
 	{
-		html = locations[path]._server_path;
-		locations[path]._path_ok = false;
-		std::cout << "path_ok = " << locations[path]._path_ok << "\n";
+		html = locations[_url]._server_path;
+		locations[_url]._path_ok = false;
+		std::cout << "path_ok = " << locations[_url]._path_ok << "\n";
 		std::cout << "path on location map not found: " << html << "\n";
-		locations[path]._cgi = false;
+		locations[_url]._cgi = false;
 		return (html);
 	}
-	
-	/*REMOVE FILE FROM PATH TO LOOKING FOR INTO THE LOCATIONS MAP*/
-	size_t start = path.find_last_of("/", path.size());
-	std::cout << "start: " << start << std::endl;
-	size_t end = path.size();
-	std::cout << "end: " << end << std::endl;
-	std::string	request_path = path.substr(0, start);
-	if (request_path == "")
-		request_path = "/";
-	std::cout << "request_path: " << request_path << std::endl;
-	std::string file = path.substr(start, (end - (start)));
-	std::cout << "file: " << file << std::endl;
 
-	if(locations.find(request_path) != locations.end())
+	if(locations.find(_url_location) != locations.end())
 	{
-		if (file.find(".php") != file.npos)
-			html = "php-cgi" + file;
+		if (_url_file_extension == ".php")
+			html = "php-cgi" + _url_file;
 		else
-			html = locations[request_path]._server_path + file;
+			html = locations[_url_location]._server_path + _url_file;
 		std::cout << "html: " << html << "\n";
-		path = request_path;
+		_url = _url_location;
 		if (access(html.c_str(), F_OK) == 0)
 		{
-			locations[request_path]._path_ok = true;
-			std::cout << "path_ok = " << locations[request_path]._path_ok << "\n";
-			std::cout << "find path on location map and file: " << request_path <<"\n";
-			if (file.find(".php") != file.npos)
-				locations[path]._cgi = true;
+			locations[_url_location]._path_ok = true;
+			std::cout << "path_ok = " << locations[_url_location]._path_ok << "\n";
+			std::cout << "find path on location map and file: " << _url_location <<"\n";
+			if (_url_file_extension == ".php")
+				locations[_url]._cgi = true;
 			else
-				locations[path]._cgi = false;
+				locations[_url]._cgi = false;
 		}
 		else
 		{
-			locations[request_path]._path_ok = false;
-			std::cout << "path_ok = " << locations[request_path]._path_ok << "\n";
-			std::cout << "find path on location map but not file: " << request_path <<"\n";
-			locations[path]._cgi = false;
+			locations[_url_location]._path_ok = false;
+			std::cout << "path_ok = " << locations[_url_location]._path_ok << "\n";
+			std::cout << "find path on location map but not file: " << _url_location <<"\n";
+			locations[_url]._cgi = false;
 		}
 	}
 	else
 	{
 		// html = locations[request_path]._server_path;
-		locations[request_path]._path_ok = false;
-		std::cout << "path_ok = " << locations[request_path]._path_ok << "\n";
-		std::cout << "path not found on location map after extract file: " << request_path << "\n";
-		locations[path]._cgi = false;
+		locations[_url_location]._path_ok = false;
+		std::cout << "path_ok = " << locations[_url_location]._path_ok << "\n";
+		std::cout << "path not found on location map after extract file: " << _url_location << "\n";
+		locations[_url]._cgi = false;
 	}
 
 	/*REWRITE THE PATH CORRECTILY IF '//' IS FIND*/
@@ -459,7 +447,7 @@ void	HttpResponse::response_parser(std::string &request)
 	request_parser(request);
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	html = looking_for_path(_url);
+	html = looking_for_path();
 
 
 	std::cout << "\n";

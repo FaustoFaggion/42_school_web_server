@@ -24,8 +24,9 @@ class HttpRequest
 		std::string					_remote_host;
 		std::string					_boundary;
 		std::string					_content;
-		std::string					_file; /*FILE IN THE END OF URL REQUEST*/
-		std::string					_file_extension; /*IF .PHP RUN CGI*/
+		std::string					_url_file; /*FILE IN THE END OF URL REQUEST*/
+		std::string					_url_file_extension; /*IF .PHP RUN CGI*/
+		std::string					_url_location;
 
 	public:
 		HttpRequest();

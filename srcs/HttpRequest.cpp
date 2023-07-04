@@ -21,8 +21,9 @@ HttpRequest::HttpRequest()
 	_boundary = "";
 	_content = "";
 
-	_file = "";
-	_file_extension = "";
+	_url_file = "";
+	_url_file_extension = "";
+	_url_location = "";
 }
 
 HttpRequest::~HttpRequest()
@@ -177,16 +178,21 @@ void		HttpRequest::request_parser(std::string request)
 		getline(iss0, _remote_host, ' ');
 	}
 
-	/*FILE, FILE_EXTENSION*/
+	/*_URL_FILE, _URL_FILE_EXTENSION, _URL_LOCATION*/
 	pos = _url.find(".");
 	if (pos != _url.npos)
 	{
 		end = _url.size() - pos;
-		_file_extension = _url.substr(pos, end);
+		_url_file_extension = _url.substr(pos, end);
 		
 		start = _url.find_last_of("/");
 		end = _url.size() - start;
-		_file = _url.substr(start, end);
+		_url_file = _url.substr(start, end);
+
+		end = start;
+		_url_location = _url.substr(0, end);
+		if (_url_location == "")
+			_url_location = '/';
 	}
 
 		std::cout << "_method: " << _method << "\n";
@@ -207,7 +213,7 @@ void		HttpRequest::request_parser(std::string request)
 		std::cout << "_remote_host: " << _remote_host << "\n";
 		std::cout << "_boundary: " << _boundary << "\n";
 		std::cout << "_content: " << _content << "\n";
-		std::cout << "_file: " << _file << "\n";
-		std::cout << "_file_extension: " << _file_extension << "\n";
-
+		std::cout << "_url_file: " << _url_file << "\n";
+		std::cout << "_url_file_extension: " << _url_file_extension << "\n";
+		std::cout << "_url_location: " << _url_location << "\n";
 }
