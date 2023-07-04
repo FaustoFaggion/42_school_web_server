@@ -20,6 +20,9 @@ HttpRequest::HttpRequest()
 	_remote_host = "";
 	_boundary = "";
 	_content = "";
+
+	_file = "";
+	_file_extension = "";
 }
 
 HttpRequest::~HttpRequest()
@@ -173,5 +176,38 @@ void		HttpRequest::request_parser(std::string request)
 		getline(iss0, tmp, ' ');
 		getline(iss0, _remote_host, ' ');
 	}
+
+	/*FILE, FILE_EXTENSION*/
+	pos = _url.find(".");
+	if (pos != _url.npos)
+	{
+		end = _url.size() - pos;
+		_file_extension = _url.substr(pos, end);
+		
+		start = _url.find_last_of("/");
+		end = _url.size() - start;
+		_file = _url.substr(start, end);
+	}
+
+		std::cout << "_method: " << _method << "\n";
+		std::cout << "_url: " << _url << "\n";
+		std::cout << "_protocol: " << _protocol << "\n";
+		std::cout << "_content_type: " << _content_type << "\n";
+		std::cout << "_content_length: " << _content_length << "\n";
+		std::cout << "_server_name: " << _server_name << "\n";
+		std::cout << "_server_port: " << _server_port << "\n";
+		std::cout << "_user_agent: " << _user_agent << "\n";
+		std::cout << "_http_host: " << _http_host << "\n";
+		std::cout << "_http_accept: " << _http_accept << "\n";
+		std::cout << "_http_accept_encoding: " << _http_accept_encoding << "\n";
+		std::cout << "_http_accept_language: " << _http_accept_language << "\n";
+		std::cout << "_query_string: " << _query_string << "\n";
+		std::cout << "_path_info: " << _path_info << "\n";
+		std::cout << "_request_uri: " << _request_uri << "\n";
+		std::cout << "_remote_host: " << _remote_host << "\n";
+		std::cout << "_boundary: " << _boundary << "\n";
+		std::cout << "_content: " << _content << "\n";
+		std::cout << "_file: " << _file << "\n";
+		std::cout << "_file_extension: " << _file_extension << "\n";
 
 }
