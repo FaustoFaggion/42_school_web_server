@@ -13,10 +13,11 @@ class HttpResponse
 
 	public:
 
+		HttpResponse();
 		HttpResponse(std::map<std::string, directive> locations, std::vector<std::string> indexes);
 		~HttpResponse();
 		
-		void			response_parser(t_client &client);
+		void			response_parser(t_client &client, std::map<std::string, directive> locations, std::vector<std::string> indexes);
 		std::string		looking_for_path(t_client &client);
 		void			chk_indexies(t_client &client, std::string &html);
 		void			diretory_list(std::stringstream &buff, std::string path, std::string html);

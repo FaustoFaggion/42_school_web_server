@@ -15,7 +15,7 @@
 #include "HttpResponse.hpp"
 #include <map>
 
-class WebServ : protected FileParser, ListenerSocket, HttpRequest
+class WebServ : protected FileParser, ListenerSocket, HttpRequest, HttpResponse
 {
 	private:
 		int							_fd_listener;

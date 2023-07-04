@@ -251,8 +251,8 @@ void	WebServ::receive_data(int i)
 			
 			/*INSTANCIATE A HTTPRESPONSE CLASS TO RESPONSE THE REQUEST*/
 			request_parser((*it).second);
-			HttpResponse	r(_locations, _index);
-			r.response_parser((*it).second);
+			
+			response_parser((*it).second, _locations, _index);
 
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
 			_ev.events = EPOLLOUT | EPOLLONESHOT;
@@ -269,7 +269,7 @@ void	WebServ::response(int i)
 	if (!(*it).second._request.empty())
 	{
 		// std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.response.c_str() << "\n";
-		send(_ep_event[i].data.fd, (*it).second._request.c_str(), (*it).second._request.size(), 0);
+		send(_ep_event[i].data.fd, (*it).second._response.c_str(), (*it).second._response.size(), 0);
 		
 		
 		/*If keep-alive SET FD SOCKET TO READ AGAIN*/

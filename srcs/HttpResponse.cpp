@@ -1,5 +1,9 @@
 #include "HttpResponse.hpp"
 
+HttpResponse::HttpResponse()
+{
+
+}
 HttpResponse::HttpResponse(std::map<std::string, directive> locations, std::vector<std::string> indexes)
 {
 	this->locations = locations;
@@ -406,7 +410,7 @@ void	HttpResponse::exec_cgi(std::string &html, t_client &client)
 	waitpid(pid, NULL, 0);
 	close(fd[1]);
 	dup2(fd[0], STDIN_FILENO);
-	client._request = "HTTP/1.1 200 OK\r\n";
+	client._response = "HTTP/1.1 200 OK\r\n";
 	std::cout << "enter while\n";
 
 	std::stringstream phpOutput;
@@ -416,16 +420,19 @@ void	HttpResponse::exec_cgi(std::string &html, t_client &client)
 	{
 		phpOutput.write(buffer, bytesRead);
 	}
-	client._request += phpOutput.str();
+	client._response += phpOutput.str();
 	std::cout << "out while\n";
 	// std::cout << "request: " << request << "\n";
 	close(fd[0]);
 
 }
 
-void	HttpResponse::response_parser(t_client &client)
+void	HttpResponse::response_parser(t_client &client, std::map<std::string, directive> locations, std::vector<std::string> indexes)
 {
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
+
+	this->locations = locations;
+	_indexes = indexes;
 
 	std::string				html;
 	std::fstream			conf_file;
@@ -470,7 +477,7 @@ void	HttpResponse::response_parser(t_client &client)
 			std::cout << "cgi request:\n" << client._request << "\n\n";
 		}
 		else
-			http_response_syntax("HTTP/1.1 200 OK\r\n", client._request, buff, client._content_type);
+			http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
 	else if (client._method.compare("POST") == 0)
@@ -479,19 +486,19 @@ void	HttpResponse::response_parser(t_client &client)
 		if (client._url_file_extension == ".php")
 			exec_cgi(html, client);
 		else
-			http_response_syntax("HTTP/1.1 200 OK\r\n", client._request, buff, client._content_type);
+			http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
 	else if (client._method.compare("DELETE") == 0)
 	{
 		buff_file(conf_file, buff, html);
-		http_response_syntax("HTTP/1.1 200 OK\r\n", client._request, buff, client._content_type);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
 	else
 	{
 		buff_file(conf_file, buff, "./locations/test/error.html");
-		http_response_syntax("HTTP/1.1 404 Not Found\r\n", client._request, buff, client._content_type);
+		http_response_syntax("HTTP/1.1 404 Not Found\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
 }
