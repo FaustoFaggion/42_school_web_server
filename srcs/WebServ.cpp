@@ -41,7 +41,8 @@ void	WebServ::parse_file(char *file, std::string server_name)
 	parse_index(_index, _server_conf_file);
 
 	/*PARSE BUFFER_SIZE*/
-	
+	parse_buffer_size();
+	std::cout << _buffer_size << "\n";
 	/*PARSE LOCATIONS*/
 	parse_locations(simple_root_directive);
 
@@ -85,7 +86,7 @@ void	WebServ::run()
 	while (1)
 	{
 		/*MONITOR FDS. STILL WAITING UNTIL A EVENT HEAPPENS IN A FD*/
-		if ((_nfds = epoll_wait (_efd, _ep_event, get_worker_connections(),  4000)) == -1) // '-1' to block indefinitely
+		if ((_nfds = epoll_wait (_efd, _ep_event, get_worker_connections(),  1000)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
 		
 		/*A REQUEST TO SERVER SHOULD NEVER HANG FOREVER.*/

@@ -18,7 +18,7 @@ class FileParser {
 		std::string							_server_conf_file;
 		std::map<std::string, directive>	_locations;
 		std::vector<std::string>			_index;
-		std::string							_buffer_size;
+		size_t								_buffer_size;
 		
 
 	public:
@@ -29,17 +29,18 @@ class FileParser {
 		std::map<std::string, directive>	getPath() const;
 		std::vector<std::string> 			getIndex() const;
 
-		void								parse_server(char *file, std::string server_name);
-		void								select_server(std::string file, std::string serv_name);
-		void								parse_locations(bool simple_root_directive);
-		void								parse_path(std::string &str, std::string find, std::string &root_path, int flag);
-		bool								parse_simple_root_directive();
-		void								parse_index(std::vector<std::string> &idx, std::string &str);
+		void			parse_server(char *file, std::string server_name);
+		void			file_to_string(char *file, std::string &buff);
+		void			select_server(std::string file, std::string serv_name);
+		bool			parse_simple_root_directive();
+		void			parse_locations(bool simple_root_directive);
+		void			parse_index(std::vector<std::string> &idx, std::string &str);
+		void			parse_buffer_size();
+		void			parse_path(std::string &str, std::string find, std::string &root_path, int flag);
 
-		void								file_to_string(char *file, std::string &buff);
-		std::string							str_substring(std::string &str, std::string find, int init, char finish);
-		void								chk_simple_directive(std::string &str);
-		std::string							get_simple_directive_value(std::string &str);
+		std::string		str_substring(std::string &str, std::string find, int init, char finish);
+		void			chk_simple_directive(std::string &str);
+		std::string		get_simple_directive_value(std::string &str);
 };
 
 #endif

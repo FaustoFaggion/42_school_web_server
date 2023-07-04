@@ -10,7 +10,7 @@ if (isset($_FILES['userfile']))
 
     // Get the file name and temporary file path
     $fileName = $_FILES['userfile']['name'];
-	echo $filename . "\n";
+	echo $fileName . "\n";
     // $tempFilePath = "./_TMP_FILE";
 	$tempFilePath = $_FILES['userfile']['tmp_name'];
 	echo $tempFilePath . "\n";
