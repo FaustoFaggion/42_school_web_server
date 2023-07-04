@@ -4,7 +4,7 @@
 #include "main.hpp"
 #include "HttpRequest.hpp"
 
-class HttpResponse : HttpRequest
+class HttpResponse
 {
 	private:
 		std::map<std::string, directive>	locations;

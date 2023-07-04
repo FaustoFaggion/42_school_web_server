@@ -431,7 +431,6 @@ void	HttpResponse::response_parser(t_client &client)
 	std::fstream			conf_file;
 	std::stringstream		buff;
 
-	request_parser(client);
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
 	html = looking_for_path(client);

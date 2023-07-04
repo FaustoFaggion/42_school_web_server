@@ -250,6 +250,7 @@ void	WebServ::receive_data(int i)
 			std::cout <<  (*it).second._request << "\n";
 			
 			/*INSTANCIATE A HTTPRESPONSE CLASS TO RESPONSE THE REQUEST*/
+			request_parser((*it).second);
 			HttpResponse	r(_locations, _index);
 			r.response_parser((*it).second);
 
