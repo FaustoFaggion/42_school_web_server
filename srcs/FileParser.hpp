@@ -18,6 +18,7 @@ class FileParser {
 		std::string							_server_conf_file;
 		std::map<std::string, directive>	_locations;
 		std::vector<std::string>			_index;
+		std::string							_buffer_size;
 		
 
 	public:

@@ -41,8 +41,7 @@ void	WebServ::parse_file(char *file, std::string server_name)
 	parse_index(_index, _server_conf_file);
 
 	/*PARSE BUFFER_SIZE*/
-
-
+	
 	/*PARSE LOCATIONS*/
 	parse_locations(simple_root_directive);
 

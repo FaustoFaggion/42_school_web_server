@@ -309,10 +309,11 @@ void	FileParser::parse_server(char *file, std::string server_name)
 
 	file_to_string(file, configuration_file);
 	
-	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
-	select_server(configuration_file, server_name);
-
 	/*ERASE COMMENTS*/
 	while (_server_conf_file.find("#", 0) != _server_conf_file.npos)
 		str_substring(_server_conf_file, "#", 0, '\n');
+	
+	/*PARSE EACH SERVER FROM CONFIGURATION FILE TO A STRING*/
+	select_server(configuration_file, server_name);
+
 }
