@@ -36,8 +36,6 @@ void	HttpResponse::chk_indexies(std::string &html)
 			locations[_url]._path_ok = true;
 			std::cout << "1 -path_ok = " << locations[_url]._path_ok << "\n";
 			std::cout << "index found block directive: " << html << "\n";
-			if (locations[_url]._index_block.at(i).find(".php"))
-				locations[_url]._cgi = true;
 		}
 		i++;
 	}
@@ -53,9 +51,6 @@ void	HttpResponse::chk_indexies(std::string &html)
 				locations[_url]._path_ok = true;
 				std::cout << "2 -path_ok = " << locations[_url]._path_ok << "\n";
 				std::cout << "index found simple directive: " << html << "\n";
-				if (_indexes.at(i).find(".php") != _indexes.at(i).npos)
-					locations[_url]._cgi = true;
-
 			}
 			i++;
 		}
@@ -66,7 +61,6 @@ void	HttpResponse::chk_indexies(std::string &html)
 		html = locations[_url]._server_path;
 		std::cout << "3 -path_ok = " << locations[_url]._path_ok << "\n";
 		std::cout << "index not found: " << html << "\n";
-		locations[_url]._cgi = false;
 	}
 
 }
@@ -128,7 +122,6 @@ std::string	HttpResponse::looking_for_path()
 		locations[_url]._path_ok = false;
 		std::cout << "path_ok = " << locations[_url]._path_ok << "\n";
 		std::cout << "path on location map not found: " << html << "\n";
-		locations[_url]._cgi = false;
 		return (html);
 	}
 
@@ -145,17 +138,12 @@ std::string	HttpResponse::looking_for_path()
 			locations[_url_location]._path_ok = true;
 			std::cout << "path_ok = " << locations[_url_location]._path_ok << "\n";
 			std::cout << "find path on location map and file: " << _url_location <<"\n";
-			if (_url_file_extension == ".php")
-				locations[_url]._cgi = true;
-			else
-				locations[_url]._cgi = false;
 		}
 		else
 		{
 			locations[_url_location]._path_ok = false;
 			std::cout << "path_ok = " << locations[_url_location]._path_ok << "\n";
 			std::cout << "find path on location map but not file: " << _url_location <<"\n";
-			locations[_url]._cgi = false;
 		}
 	}
 	else
@@ -164,7 +152,6 @@ std::string	HttpResponse::looking_for_path()
 		locations[_url_location]._path_ok = false;
 		std::cout << "path_ok = " << locations[_url_location]._path_ok << "\n";
 		std::cout << "path not found on location map after extract file: " << _url_location << "\n";
-		locations[_url]._cgi = false;
 	}
 
 	/*REWRITE THE PATH CORRECTILY IF '//' IS FIND*/
@@ -478,7 +465,7 @@ void	HttpResponse::response_parser(std::string &request)
 			buff_file(conf_file, buff, html);
 		}
 
-		if (locations[_url]._cgi == true)
+		if (_url_file_extension == ".php")
 		{
 			exec_cgi(html, request);
 			std::cout << "cgi request:\n" << request << "\n\n";
@@ -490,7 +477,7 @@ void	HttpResponse::response_parser(std::string &request)
 	else if (_method.compare("POST") == 0)
 	{
 		buff_file(conf_file, buff, html);
-		if (locations[_url]._cgi == true)
+		if (_url_file_extension == ".php")
 			exec_cgi(html, request);
 		else
 			http_response_syntax("HTTP/1.1 200 OK\r\n", request, buff, _content_type);
