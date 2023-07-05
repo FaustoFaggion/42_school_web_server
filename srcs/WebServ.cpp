@@ -245,15 +245,25 @@ void	WebServ::receive_data(int i)
 			map_connections[_ep_event[i].data.fd]._request += buff;
 		else
 		{
+			size_t	pos;
+			std::string	str;
 			std::map<int, t_client>::iterator	it;
 			it = map_connections.find(_ep_event[i].data.fd);
+
+			pos = tmp.find("\r\n\r\n");
+			pos += 4;
+			str = tmp.substr(0, pos);
 			
-			map_connections[_ep_event[i].data.fd]._request += buff;
-			/*PRINT RECEIVED DATA*/
-			std::cout <<  (*it).second._request << "\n";
-			
-			/*INSTANCIATE A HTTPRESPONSE CLASS TO RESPONSE THE REQUEST*/
+			map_connections[_ep_event[i].data.fd]._request += str;
 			request_parser((*it).second);
+			
+			
+			(*it).second._content = tmp.substr(pos, atoi((*it).second._content_length.c_str()));
+
+			std::cout << "tmp:\n" << tmp << "\n";
+			std::cout << "str:\n" << str << "\n";
+			std::cout << "_content:\n" << (*it).second._content << "\n";
+
 			(*it).second._server_path = looking_for_path((*it).second, _locations, _index);
 			
 			// if((*it).second._url_file_extension == ".php")
