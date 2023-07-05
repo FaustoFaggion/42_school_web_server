@@ -239,21 +239,29 @@ void	WebServ::receive_data(int i)
 	}
 	else 
 	{
-		/*CONCAT DATA UNTIL FIND \r \n THAT MEANS THE END OF REQUEST DATA*/
-		map_connections[_ep_event[i].data.fd]._request += buff;
-	
+		std::string	tmp(buff);
 		/*CHECK IF REQUEST DATA FINISHED*/
-		std::map<int, t_client>::iterator	it;
-		it = map_connections.find(_ep_event[i].data.fd);
-		if ((*it).second._request.find("\r\n\r\n") != std::string::npos)
+		if (tmp.find("\r\n\r\n") == std::string::npos)
+			map_connections[_ep_event[i].data.fd]._request += buff;
+		else
 		{
+			std::map<int, t_client>::iterator	it;
+			it = map_connections.find(_ep_event[i].data.fd);
+			
+			map_connections[_ep_event[i].data.fd]._request += buff;
 			/*PRINT RECEIVED DATA*/
 			std::cout <<  (*it).second._request << "\n";
 			
 			/*INSTANCIATE A HTTPRESPONSE CLASS TO RESPONSE THE REQUEST*/
 			request_parser((*it).second);
 			(*it).second._server_path = looking_for_path((*it).second, _locations, _index);
-			response_parser((*it).second, _locations);
+			
+			// if((*it).second._url_file_extension == ".php")
+			// {
+
+			// }
+			// else
+				response_parser((*it).second, _locations);
 
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
 			_ev.events = EPOLLOUT | EPOLLONESHOT;
