@@ -448,7 +448,7 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 	{
 		buff_file(conf_file, buff, client._server_path);
 		if (client._url_file_extension == ".php")
-			exec_cgi(client._server_name, client);
+			exec_cgi(client._server_path, client);
 		else
 			http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
