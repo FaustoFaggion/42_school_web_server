@@ -434,13 +434,12 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 	this->locations = locations;
 	_indexes = indexes;
 
-	std::string				html;
 	std::fstream			conf_file;
 	std::stringstream		buff;
 
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	html = looking_for_path(client);
+	client._server_name = looking_for_path(client);
 
 
 	std::cout << "\n";
@@ -452,7 +451,7 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 	std::cout << "Method: " << client._method << std::endl;
 	std::cout << "Path: " << client._url << std::endl;
 	std::cout << "Protocol: " << client._protocol << std::endl;
-	std::cout << "html: " << html << std::endl;
+	std::cout << "html: " << client._server_name << std::endl;
 	std::cout << "\n";
 
 	if (client._method.compare("GET") == 0)
@@ -461,19 +460,19 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 		{
 			std::cout << "autoindex on\n";
 			if (locations[client._url]._path_ok == false)
-				diretory_list(buff, client._url, html);
+				diretory_list(buff, client._url, client._server_name);
 			else
-				buff_file(conf_file, buff, html);
+				buff_file(conf_file, buff, client._server_name);
 		}
 		else
 		{
 			std::cout << "autoindex off\n";
-			buff_file(conf_file, buff, html);
+			buff_file(conf_file, buff, client._server_name);
 		}
 
 		if (client._url_file_extension == ".php")
 		{
-			exec_cgi(html, client);
+			exec_cgi(client._server_name, client);
 			std::cout << "cgi request:\n" << client._request << "\n\n";
 		}
 		else
@@ -482,16 +481,16 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 	}
 	else if (client._method.compare("POST") == 0)
 	{
-		buff_file(conf_file, buff, html);
+		buff_file(conf_file, buff, client._server_name);
 		if (client._url_file_extension == ".php")
-			exec_cgi(html, client);
+			exec_cgi(client._server_name, client);
 		else
 			http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
 	else if (client._method.compare("DELETE") == 0)
 	{
-		buff_file(conf_file, buff, html);
+		buff_file(conf_file, buff, client._server_name);
 		http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
