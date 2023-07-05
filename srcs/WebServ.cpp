@@ -209,6 +209,7 @@ void			WebServ::initialize_client_struct(t_client &c, int fd_new)
 	c._url_file = "";
 	c._server_path = "";
 	c._response = "";
+	c._upload_content_size = 0;
 }
 
 void	WebServ::receive_data(int i)
@@ -257,8 +258,9 @@ void	WebServ::receive_data(int i)
 			map_connections[_ep_event[i].data.fd]._request += str;
 			request_parser((*it).second);
 			
-			
 			(*it).second._content = tmp.substr(pos, atoi((*it).second._content_length.c_str()));
+			
+			(*it).second._upload_content_size = (size_t)atoi((*it).second._content_length.c_str());
 
 			std::cout << "tmp:\n" << tmp << "\n";
 			std::cout << "str:\n" << str << "\n";
@@ -273,9 +275,13 @@ void	WebServ::receive_data(int i)
 			else
 				response_parser((*it).second, _locations);
 
+
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
-			_ev.events = EPOLLOUT | EPOLLONESHOT;
-			epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
+			if ((*it).second._upload_content_size == (size_t)atoi((*it).second._content_length.c_str()))
+			{
+				_ev.events = EPOLLOUT | EPOLLONESHOT;
+				epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
+			}
 		}
 	}
 }
