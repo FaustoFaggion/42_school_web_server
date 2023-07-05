@@ -4,9 +4,9 @@ HttpResponse::HttpResponse()
 {
 
 }
-HttpResponse::HttpResponse(std::map<std::string, directive> locations, std::vector<std::string> indexes)
+
+HttpResponse::HttpResponse( std::vector<std::string> indexes)
 {
-	this->locations = locations;
 	_indexes = indexes;
 }
 
@@ -15,16 +15,7 @@ HttpResponse::~HttpResponse()
 
 }
 
-// void	clean(std::string& str) {
-    // Remove leading spaces
-//     str.erase(str.begin(), std::find_if(str.begin(), str.end(), std::not1(std::ptr_fun<int, int>(std::isspace))));
-
-//     // Remove trailing spaces
-//     str.erase(std::find_if(str.rbegin(), str.rend(), std::not1(std::ptr_fun<int, int>(std::isspace))).base(), str.end());
-// 	str += '\0';
-// }
-
-void	HttpResponse::chk_indexies(t_client &client, std::string &html)
+void	HttpResponse::chk_indexies(t_client &client, std::string &html, std::map<std::string, directive> &locations)
 {
 	std::cout << "\nCHK_INDEXIES FUNCTION\n";
 
@@ -69,7 +60,7 @@ void	HttpResponse::chk_indexies(t_client &client, std::string &html)
 
 }
 
-std::string	HttpResponse::looking_for_path(t_client &client)
+std::string	HttpResponse::looking_for_path(t_client &client, std::map<std::string, directive> &locations)
 {
 	std::cout << "\nLOOKING_FOR_PATH FUNCTION\n";
 	
@@ -79,7 +70,7 @@ std::string	HttpResponse::looking_for_path(t_client &client)
 	if(locations.find(client._url) != locations.end())
 	{
 		std::cout << "path on location map found: " << client._url << "\n";
-		chk_indexies(client, html);
+		chk_indexies(client, html, locations);
 		if (locations[client._url]._path_ok == true)
 			return(html);
 	}
@@ -396,7 +387,6 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 {
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	this->locations = locations;
 	_indexes = indexes;
 
 	std::fstream			conf_file;
@@ -404,7 +394,7 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	client._server_path = looking_for_path(client);
+	client._server_path = looking_for_path(client, locations);
 
 
 	std::cout << "\n";
