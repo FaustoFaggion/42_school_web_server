@@ -207,6 +207,7 @@ void			WebServ::initialize_client_struct(t_client &c, int fd_new)
 	c._boundary = "";
 	c._content = "";
 	c._url_file = "";
+	c._server_path = "";
 	c._response = "";
 }
 

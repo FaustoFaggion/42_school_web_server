@@ -404,7 +404,7 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	client._server_name = looking_for_path(client);
+	client._server_path = looking_for_path(client);
 
 
 	std::cout << "\n";
@@ -416,7 +416,7 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 	std::cout << "Method: " << client._method << std::endl;
 	std::cout << "Path: " << client._url << std::endl;
 	std::cout << "Protocol: " << client._protocol << std::endl;
-	std::cout << "html: " << client._server_name << std::endl;
+	std::cout << "client._server_path: " << client._server_path << std::endl;
 	std::cout << "\n";
 
 	if (client._method.compare("GET") == 0)
@@ -425,19 +425,19 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 		{
 			std::cout << "autoindex on\n";
 			if (locations[client._url]._path_ok == false)
-				diretory_list(buff, client._url, client._server_name);
+				diretory_list(buff, client._url, client._server_path);
 			else
-				buff_file(conf_file, buff, client._server_name);
+				buff_file(conf_file, buff, client._server_path);
 		}
 		else
 		{
 			std::cout << "autoindex off\n";
-			buff_file(conf_file, buff, client._server_name);
+			buff_file(conf_file, buff, client._server_path);
 		}
 
 		if (client._url_file_extension == ".php")
 		{
-			exec_cgi(client._server_name, client);
+			exec_cgi(client._server_path, client);
 			std::cout << "cgi request:\n" << client._request << "\n\n";
 		}
 		else
@@ -446,7 +446,7 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 	}
 	else if (client._method.compare("POST") == 0)
 	{
-		buff_file(conf_file, buff, client._server_name);
+		buff_file(conf_file, buff, client._server_path);
 		if (client._url_file_extension == ".php")
 			exec_cgi(client._server_name, client);
 		else
@@ -455,7 +455,7 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 	}
 	else if (client._method.compare("DELETE") == 0)
 	{
-		buff_file(conf_file, buff, client._server_name);
+		buff_file(conf_file, buff, client._server_path);
 		http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
