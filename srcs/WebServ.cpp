@@ -252,8 +252,8 @@ void	WebServ::receive_data(int i)
 			
 			/*INSTANCIATE A HTTPRESPONSE CLASS TO RESPONSE THE REQUEST*/
 			request_parser((*it).second);
-			// (*it).second._server_name = looking_for_path((*it).second);
-			response_parser((*it).second, _locations, _index);
+			(*it).second._server_path = looking_for_path((*it).second, _locations, _index);
+			response_parser((*it).second, _locations);
 
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
 			_ev.events = EPOLLOUT | EPOLLONESHOT;

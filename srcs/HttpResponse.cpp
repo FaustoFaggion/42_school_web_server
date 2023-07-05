@@ -5,17 +5,13 @@ HttpResponse::HttpResponse()
 
 }
 
-HttpResponse::HttpResponse( std::vector<std::string> indexes)
-{
-	_indexes = indexes;
-}
 
 HttpResponse::~HttpResponse()
 {
 
 }
 
-void	HttpResponse::chk_indexies(t_client &client, std::string &html, std::map<std::string, directive> &locations)
+void	HttpResponse::chk_indexies(t_client &client, std::string &html, std::map<std::string, directive> &locations, std::vector<std::string> indexes)
 {
 	std::cout << "\nCHK_INDEXIES FUNCTION\n";
 
@@ -37,9 +33,9 @@ void	HttpResponse::chk_indexies(t_client &client, std::string &html, std::map<st
 	i = 0;
 	if (flag == false)
 	{
-		while (flag == false && i < _indexes.size())
+		while (flag == false && i < indexes.size())
 		{
-			html = locations[client._url]._server_path + "/" + _indexes.at(i);
+			html = locations[client._url]._server_path + "/" + indexes.at(i);
 			if(access(html.c_str(), F_OK) == 0)
 			{
 				flag = true;
@@ -60,7 +56,7 @@ void	HttpResponse::chk_indexies(t_client &client, std::string &html, std::map<st
 
 }
 
-std::string	HttpResponse::looking_for_path(t_client &client, std::map<std::string, directive> &locations)
+std::string	HttpResponse::looking_for_path(t_client &client, std::map<std::string, directive> &locations, std::vector<std::string> indexes)
 {
 	std::cout << "\nLOOKING_FOR_PATH FUNCTION\n";
 	
@@ -70,7 +66,7 @@ std::string	HttpResponse::looking_for_path(t_client &client, std::map<std::strin
 	if(locations.find(client._url) != locations.end())
 	{
 		std::cout << "path on location map found: " << client._url << "\n";
-		chk_indexies(client, html, locations);
+		chk_indexies(client, html, locations, indexes);
 		if (locations[client._url]._path_ok == true)
 			return(html);
 	}
@@ -383,18 +379,18 @@ void	HttpResponse::exec_cgi(std::string &html, t_client &client)
 
 }
 
-void	HttpResponse::response_parser(t_client &client, std::map<std::string, directive> locations, std::vector<std::string> indexes)
+void	HttpResponse::response_parser(t_client &client, std::map<std::string, directive> locations)
 {
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	_indexes = indexes;
+	// _indexes = indexes;
 
 	std::fstream			conf_file;
 	std::stringstream		buff;
 
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	client._server_path = looking_for_path(client, locations);
+	// client._server_path = looking_for_path(client, locations, indexes);
 
 
 	std::cout << "\n";
