@@ -134,7 +134,7 @@ void	WebServ::delete_timeout_socket()
 		double	timeout = difftime(time(NULL), map_connections[_ep_event[j].data.fd].start_connection);
 		if (_ep_event[j].data.fd != _fd_listener)
 		{
-			if (timeout > .0)
+			if (timeout > 2.0)
 			{
 				int	fd = _ep_event[j].data.fd;
 
