@@ -105,14 +105,14 @@ void		HttpRequest::request_parser(t_client &client)
 	}
 
 	/*CONTENT*/
-	pos = client._content_type.find("boundary");
-	if (pos != client._content_type.npos)
-	{
-		pos = client._request.find_last_of(client._boundary);
-		start = pos - atoi(client._content_length.c_str());
-		end = atoi(client._content_length.c_str());
-		client._content = client._request.substr(start, end);
-	}
+	// pos = client._content_type.find("boundary");
+	// if (pos != client._content_type.npos)
+	// {
+	// 	pos = client._request.find_last_of(client._boundary);
+	// 	start = pos - atoi(client._content_length.c_str());
+	// 	end = atoi(client._content_length.c_str());
+	// 	client._content = client._request.substr(start, end);
+	// }
 
 	/*HTTP_HOST*/
 	pos = client._request.find("Host: ");

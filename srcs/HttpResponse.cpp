@@ -291,7 +291,7 @@ void	HttpResponse::cgi_envs_parser(t_client client, std::string html)
 	std::cout << "CONTENT\n\n" << client._content << "\n\n";
 }
 
-void	HttpResponse::exec_cgi(std::string &html, t_client &client)
+void	HttpResponse::exec_cgi(std::string &html, t_client &client, int client_fd)
 {
 	std::cout << "\nEXEC_CGI FUNCTION" << html << "\n\n";
 
@@ -326,30 +326,11 @@ void	HttpResponse::exec_cgi(std::string &html, t_client &client)
 		if (client._method == "POST")
 		{
 
-
-			// Open the file in output mode
-			std::ofstream outputFile("_TMP_FILE");
-			// Check if the file was opened successfully
-			if (!outputFile) {
-				std::cerr << "Error opening the file." << std::endl;
-				return ;
-			}
-			// Write the content to the file
-			outputFile << client._content;
-			// Close the file
-			outputFile.close();
-		
-			int fd1 = open("_TMP_FILE", O_RDONLY);
-
-    		// Check if the file was opened successfully
-   			 if (fd1 == -1) {
-        		std::cerr << "Error opening the file." << std::endl;
-        		return ;
-		    }
-			dup2(fd1, fd[0]);
-			close(fd1);
+			dup2(client_fd, fd[0]);
+			close(client_fd);
+			write(fd[0], client._content.c_str(), client._content.size());
+			dup2(fd[0], STDIN_FILENO);
 		}
-		dup2(fd[0], STDIN_FILENO);
 		close(fd[0]);
 		dup2(fd[1], STDOUT_FILENO);
 		close(fd[1]);
@@ -359,12 +340,25 @@ void	HttpResponse::exec_cgi(std::string &html, t_client &client)
 			exit(1);
 		}
 	}
+
+	if (client._method == "POST")
+	{
+
+		client._upload_content_size = client._content.size();
+
+		char	buff[1024];
+		while (client._upload_content_size < (size_t)atoi(client._content_length.c_str()))
+		{
+			memset (&buff, '\0', sizeof (buff));
+			/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
+			ssize_t numbytes = recv (fd[1], &buff, sizeof(buff), 0);
+			client._upload_content_size += numbytes;
+		}
+	}
 	waitpid(pid, NULL, 0);
-	close(fd[1]);
-	dup2(fd[0], STDIN_FILENO);
 	client._response = "HTTP/1.1 200 OK\r\n";
 	std::cout << "enter while\n";
-
+	close(fd[1]);
 	std::stringstream phpOutput;
 	static char		buffer[1024];
 	ssize_t bytesRead;

@@ -86,7 +86,7 @@ void	WebServ::run()
 	while (1)
 	{
 		/*MONITOR FDS. STILL WAITING UNTIL A EVENT HEAPPENS IN A FD*/
-		if ((_nfds = epoll_wait (_efd, _ep_event, get_worker_connections(),  1000)) == -1) // '-1' to block indefinitely
+		if ((_nfds = epoll_wait (_efd, _ep_event, get_worker_connections(), 0)) == -1) // '-1' to block indefinitely
 			std::cout << "ERROR: epoll_wait" << std::endl;
 		
 		/*A REQUEST TO SERVER SHOULD NEVER HANG FOREVER.*/
@@ -134,7 +134,7 @@ void	WebServ::delete_timeout_socket()
 		double	timeout = difftime(time(NULL), map_connections[_ep_event[j].data.fd].start_connection);
 		if (_ep_event[j].data.fd != _fd_listener)
 		{
-			if (timeout > 3.0)
+			if (timeout > .0)
 			{
 				int	fd = _ep_event[j].data.fd;
 
@@ -259,8 +259,6 @@ void	WebServ::receive_data(int i)
 			request_parser((*it).second);
 			
 			(*it).second._content = tmp.substr(pos, atoi((*it).second._content_length.c_str()));
-			
-			(*it).second._upload_content_size = (size_t)atoi((*it).second._content_length.c_str());
 
 			std::cout << "tmp:\n" << tmp << "\n";
 			std::cout << "str:\n" << str << "\n";
@@ -270,13 +268,16 @@ void	WebServ::receive_data(int i)
 			
 			if((*it).second._url_file_extension == ".php")
 			{
-				exec_cgi((*it).second._server_path, (*it).second);
+				exec_cgi((*it).second._server_path, (*it).second, _ep_event[i].data.fd);
 			}
 			else
 				response_parser((*it).second, _locations);
 
 
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
+			if ((*it).second._method == "GET")
+				(*it).second._upload_content_size = (size_t)atoi((*it).second._content_length.c_str());
+			
 			if ((*it).second._upload_content_size == (size_t)atoi((*it).second._content_length.c_str()))
 			{
 				_ev.events = EPOLLOUT | EPOLLONESHOT;

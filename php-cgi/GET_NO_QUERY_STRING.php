@@ -3,8 +3,6 @@ http_response_code(200);
 header("HTTP/1.1 200 OK");
 // header("Status: 200 OK");
 
-echo 'sapi_type: ' . $sapi_type . '\n\n';
-
         echo "<body>\n";
 
         echo "<br>";
