@@ -266,11 +266,11 @@ void	WebServ::receive_data(int i)
 
 			(*it).second._server_path = looking_for_path((*it).second, _locations, _index);
 			
-			// if((*it).second._url_file_extension == ".php")
-			// {
-
-			// }
-			// else
+			if((*it).second._url_file_extension == ".php")
+			{
+				exec_cgi((*it).second._server_path, (*it).second);
+			}
+			else
 				response_parser((*it).second, _locations);
 
 			/*SET FD SOCKET TO WRITE (EPOLLIN)*/

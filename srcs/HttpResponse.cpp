@@ -421,21 +421,21 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 			buff_file(conf_file, buff, client._server_path);
 		}
 
-		if (client._url_file_extension == ".php")
-		{
-			exec_cgi(client._server_path, client);
-			std::cout << "cgi request:\n" << client._request << "\n\n";
-		}
-		else
+		// if (client._url_file_extension == ".php")
+		// {
+		// 	exec_cgi(client._server_path, client);
+		// 	std::cout << "cgi request:\n" << client._request << "\n\n";
+		// }
+		// else
 			http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
 	else if (client._method.compare("POST") == 0)
 	{
 		buff_file(conf_file, buff, client._server_path);
-		if (client._url_file_extension == ".php")
-			exec_cgi(client._server_path, client);
-		else
+		// if (client._url_file_extension == ".php")
+		// 	exec_cgi(client._server_path, client);
+		// else
 			http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
