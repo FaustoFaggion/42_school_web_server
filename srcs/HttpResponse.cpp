@@ -83,41 +83,6 @@ std::string	HttpResponse::looking_for_path(t_client &client)
 		if (locations[client._url]._path_ok == true)
 			return(html);
 	}
-
-	/*IF REQUEST PATH NOT MATCH, IT TAKES THE LONGEST PATH THAT INICIATES WITH THE REQUEST*/
-	// size_t		s = 0;
-	// std::string	comp;
-	// if (*(path.end() - 1) != '/')
-	// 	comp = path + "/";
-	// else
-	// 	comp = path;
-
-	// for(std::map<std::string, directive>::iterator it = locations.begin(); it != locations.end(); it++)
-	// {
-	// 	if ((*it).first.compare(0, comp.size(), comp) == 0)
-	// 	{
-	// 		if ((*it).first.size() > s)
-	// 		{
-
-	// 			html = locations[(*it).first]._server_path + "/" + _indexes.at(0);
-	// 			size_t i = 1;
-	// 			while (i < _indexes.size() && access(html.c_str(), F_OK) != 0)
-	// 			{	
-	// 				std::cout << "f a path: " << html << "\n";
-	// 				html = locations[(*it).first]._server_path + "/" + _indexes.at(i);
-	// 				i++;
-	// 			}
-	// 			s = (*it).first.size();
-	// 		}
-	// 	}
-	// }
-
-	/*IF PATH MATCH, RETURN HTML STRING*/
-	// if (s > 0)
-	// {
-	// 	std::cout << "find alternative path\n" << html << "\n";
-	// 	return (html);
-	// }
 	
 	/*CHECK FOR FILE IN THE END OF THE PATH REQUEST*/
 	if (client._url_file == "")
