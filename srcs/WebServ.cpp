@@ -266,9 +266,9 @@ void	WebServ::receive_data(int i)
 			
 			(*it).second._content = tmp.substr(pos, atoi((*it).second._content_length.c_str()));
 
-			std::cout << "tmp:\n" << tmp << "\n";
-			std::cout << "str:\n" << str << "\n";
-			std::cout << "_content:\n" << (*it).second._content << "\n";
+			// std::cout << "tmp:\n" << tmp << "\n";
+			// std::cout << "str:\n" << str << "\n";
+			// std::cout << "_content:\n" << (*it).second._content << "\n";
 
 			(*it).second._server_path = looking_for_path((*it).second, _locations, _index);
 			
@@ -341,11 +341,11 @@ void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
 
 		std::cout << "CONTENT: " << client._content << "\n\n";
 		std::cout << "CONTENT_SIZE: " << client._content.size() << "\n\n";
-		std::cout << "UPLOAD_BUFF_SIZE: " << client._upload_buff_size << "\n\n";
+		std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
 		close(client.pipe0[0]);
 		write(client.pipe0[1], client._content.c_str(), client._content.size());
 		client._upload_content_size = client._content.size();
-		std::cout << client._content.size() << " : " << client._upload_buff_size << "\n\n";
+		std::cout << client._content.size() << " : " << client._upload_content_size << "\n\n";
 		while (client._upload_content_size < (size_t)atoi(client._content_length.c_str()))
 		{
 			memset (&buff, '\0', sizeof (buff));
@@ -360,7 +360,7 @@ void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
 	}
 	waitpid(pid, NULL, 0);
 	client._response = "HTTP/1.1 200 OK\r\n";
-	std::cout << "enter while\n";
+	std::cout << "\n\nSTART READ CGI OUTPUT FROM PIPE\n\n";
 	close(client.pipe1[1]);
 	std::stringstream phpOutput;
 	char		buffer[client._upload_buff_size];
@@ -370,7 +370,7 @@ void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
 		phpOutput.write(buffer, bytesRead);
 	}
 	client._response += phpOutput.str();
-	std::cout << "out while\n";
+	std::cout << "\n\nFINISH READ CGI OUTPUT FROM PIPE\n";
 	// std::cout << "request: " << request << "\n";
 	close(client.pipe1[0]);
 
