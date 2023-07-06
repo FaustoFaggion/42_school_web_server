@@ -211,6 +211,11 @@ void			WebServ::initialize_client_struct(t_client &c, int fd_new)
 	c._response = "";
 	c._upload_content_size = 0;
 	c._upload_buff_size = _buffer_size;
+	c.pipe0[0] = 0;
+	c.pipe0[1] = 0;
+	c.pipe1[0] = 0;
+	c.pipe1[1] = 0;
+
 }
 
 void	WebServ::receive_data(int i)
@@ -269,7 +274,7 @@ void	WebServ::receive_data(int i)
 			
 			if((*it).second._url_file_extension == ".php")
 			{
-				exec_cgi((*it).second._server_path, (*it).second, _ep_event[i].data.fd);
+				exec_cgi((*it).second._server_path, (*it).second);
 			}
 			else
 				response_parser((*it).second, _locations);

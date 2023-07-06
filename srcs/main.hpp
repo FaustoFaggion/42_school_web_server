@@ -38,6 +38,9 @@ struct directive {
 
 typedef struct client {
 	int				fd;
+	int				pipe0[2];
+	int				pipe1[2];
+
 	time_t			start_connection;
 	
 	std::string		_response;
