@@ -326,12 +326,8 @@ void	HttpResponse::exec_cgi(std::string &html, t_client &client)
 
 
 		if (client._method == "POST")
-		{
-
-			
-			write(client.pipe0[0], client._content.c_str(), client._content.size());
 			dup2(client.pipe0[0], STDIN_FILENO);
-		}
+
 		dup2(client.pipe1[1], STDOUT_FILENO);
 		close(client.pipe0[0]);
 		close(client.pipe0[1]);
@@ -346,18 +342,24 @@ void	HttpResponse::exec_cgi(std::string &html, t_client &client)
 
 	if (client._method == "POST")
 	{
+		char	buff[client._upload_buff_size];
 
-		client._upload_content_size = client._content.size();
-
-		char	buff[1024];
+		std::cout << "CONTENT: " << client._content << "\n\n";
+		std::cout << "CONTENT_SIZE: " << client._content.size() << "\n\n";
+		std::cout << "UPLOAD_BUFF_SIZE: " << client._upload_buff_size << "\n\n";
 		close(client.pipe0[0]);
+		write(client.pipe0[1], client._content.c_str(), client._content.size());
+		client._upload_content_size = client._content.size();
+		std::cout << client._content.size() << " : " << client._upload_buff_size << "\n\n";
 		while (client._upload_content_size < (size_t)atoi(client._content_length.c_str()))
 		{
 			memset (&buff, '\0', sizeof (buff));
 			/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
 			ssize_t numbytes = recv (client.fd, &buff, sizeof(buff), 0);
+			// std::cout << "BUFF: " << buff << "\n\n";
 			write(client.pipe0[1], buff, numbytes);
 			client._upload_content_size += numbytes;
+			std::cout << client._upload_content_size << " : " << numbytes << " > ";
 		}
 		close(client.pipe0[1]);
 	}
@@ -366,7 +368,7 @@ void	HttpResponse::exec_cgi(std::string &html, t_client &client)
 	std::cout << "enter while\n";
 	close(client.pipe1[1]);
 	std::stringstream phpOutput;
-	static char		buffer[1024];
+	char		buffer[client._upload_buff_size];
 	ssize_t bytesRead;
 	while ((bytesRead = read(client.pipe1[0], buffer, sizeof(buffer))) != 0)
 	{
