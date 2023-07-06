@@ -210,13 +210,16 @@ void			WebServ::initialize_client_struct(t_client &c, int fd_new)
 	c._server_path = "";
 	c._response = "";
 	c._upload_content_size = 0;
+	c._upload_buff_size = _buffer_size;
 }
 
 void	WebServ::receive_data(int i)
 {
-	char	buff[_buffer_size];
-                                         
-
+	std::map<int, t_client>::iterator	it;
+	it = map_connections.find(_ep_event[i].data.fd);
+	t_client client = (*it).second;
+	
+	char	buff[client._upload_buff_size];
 	memset (&buff, '\0', sizeof (buff));
 	
 	/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
@@ -248,8 +251,6 @@ void	WebServ::receive_data(int i)
 		{
 			size_t	pos;
 			std::string	str;
-			std::map<int, t_client>::iterator	it;
-			it = map_connections.find(_ep_event[i].data.fd);
 
 			pos = tmp.find("\r\n\r\n");
 			pos += 4;

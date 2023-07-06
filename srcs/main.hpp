@@ -40,7 +40,9 @@ typedef struct client {
 	int				fd;
 	time_t			start_connection;
 	
+	std::string		_response;
 	std::string		_request;
+	
 	std::string		_method;
 	std::string		_url;
 	std::string		_protocol;
@@ -64,8 +66,9 @@ typedef struct client {
 	std::string		_url_location;
 	std::string		_server_path;
 	size_t			_upload_content_size;
+	size_t			_upload_buff_size;
 
-	std::string		_response;
+
 } t_client;
 
 #endif
