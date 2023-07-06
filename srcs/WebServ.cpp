@@ -288,7 +288,7 @@ void	WebServ::receive_data(int i)
 
 void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
 {
-	std::cout << "\nEXEC_CGI FUNCTION" << html << "\n\n";
+	std::cout << "\nEXEC_CGI FUNCTION" << "\n\n";
 
 	int				pid;
 	char			*arg2[3];
@@ -351,7 +351,7 @@ void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
 			memset (&buff, '\0', sizeof (buff));
 			/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
 			ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
-			// std::cout << "BUFF: " << buff << "\n\n";
+			std::cout << "BUFF: " << buff[0] << " : " << buff[numbytes - 1] << " <>\n\n";
 			write(client.pipe0[1], buff, numbytes);
 			client._upload_content_size += numbytes;
 			std::cout << client._upload_content_size << " : " << numbytes << " > ";

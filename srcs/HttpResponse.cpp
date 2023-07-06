@@ -282,13 +282,19 @@ void	HttpResponse::cgi_envs_parser(t_client client, std::string html)
 	_cgi_envs.push_back("REDIRECT_STATUS=true");
 	std::cout << *(_cgi_envs.end() - 1) << "\n";
 
+	std::ostringstream oss;
+    oss << client._upload_buff_size;
+	env = "BUFFER_SIZE=" + oss.str();
+	_cgi_envs.push_back(env);
+	std::cout << *(_cgi_envs.end() - 1) << "\n";
+
 	/*ADD ENVP TO CGI_ENVS */
 	extern char** environ; 
 	for (int i = 0; environ[i] != NULL; i++)
 		_cgi_envs.push_back(environ[i]);
 
 	/*PRINT CONTENT TO DEBUG*/
-	std::cout << "CONTENT\n\n" << client._content << "\n\n";
+	// std::cout << "CONTENT\n\n" << client._content << "\n\n";
 }
 
 // void	HttpResponse::exec_cgi(std::string &html, t_client &client)
