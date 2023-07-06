@@ -165,7 +165,7 @@ void	WebServ::accept_new_connection()
 	fcntl(fd_new, F_SETFL, fd_flag | O_NONBLOCK);
 	
 	/*ADD NEW FD EPOOL TO MONNITORING THE EVENTS*/
-	_ev.events = EPOLLIN | EPOLLHUP | EPOLLONESHOT;
+	_ev.events = EPOLLIN | EPOLLHUP; // | EPOLLONESHOT;
 	_ev.data.fd = fd_new;
 	
 	std::cout << "new_fd: " << fd_new << "\n";
