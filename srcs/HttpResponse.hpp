@@ -6,7 +6,7 @@
 
 class HttpResponse
 {
-	private:
+	protected:
 		// std::vector<std::string>			_indexes;
 		std::vector<std::string>			_cgi_envs;
 
@@ -23,7 +23,7 @@ class HttpResponse
 		void			http_response_syntax(std::string status, std::string &request, std::stringstream &buff, std::string content_type);
 
 		void			cgi_envs_parser(t_client client, std::string html);
-		void			exec_cgi(std::string &html, t_client &client);
+		// void			exec_cgi(std::string &html, t_client &client);
 };
 
 #endif

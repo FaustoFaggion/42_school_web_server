@@ -274,7 +274,7 @@ void	WebServ::receive_data(int i)
 			
 			if((*it).second._url_file_extension == ".php")
 			{
-				exec_cgi((*it).second._server_path, (*it).second);
+				exec_cgi((*it).second._server_path, (*it).second, i);
 			}
 			else
 				response_parser((*it).second, _locations);
@@ -283,6 +283,97 @@ void	WebServ::receive_data(int i)
 			epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 		}
 	}
+}
+
+
+void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
+{
+	std::cout << "\nEXEC_CGI FUNCTION" << html << "\n\n";
+
+	int				pid;
+	char			*arg2[3];
+	
+	arg2[0] = (char *)"/usr/bin/php-cgi7.4";
+	arg2[1] = (char *)html.c_str();
+	arg2[2] = NULL;
+
+	if (pipe(client.pipe0) == -1)
+		exit(write(1, "pipe error\n", 11));
+	if (pipe(client.pipe1) == -1)
+		exit(write(1, "pipe error\n", 11));
+	
+	pid = fork();
+	if (pid < 0)
+		exit(write(1, "fork error\n", 11));
+	if (pid == 0)
+	{
+
+		cgi_envs_parser(client, html);
+
+		/*CREATE ENVP_CGI ARRAY TO EXECVE*/
+		char *envp_cgi[_cgi_envs.size() + 1];
+		size_t i = 0;
+		while (i < _cgi_envs.size()) {
+			envp_cgi[i] = (char *)_cgi_envs.at(i).c_str();
+			i++;
+		}
+		envp_cgi[i] = NULL;
+
+
+		if (client._method == "POST")
+			dup2(client.pipe0[0], STDIN_FILENO);
+
+		dup2(client.pipe1[1], STDOUT_FILENO);
+		close(client.pipe0[0]);
+		close(client.pipe0[1]);
+		close(client.pipe1[0]);
+		close(client.pipe1[1]);
+		if (execve(arg2[0], arg2, envp_cgi) == -1)
+		{
+			write(2, strerror(errno), strlen(strerror(errno)));
+			exit(1);
+		}
+	}
+
+	if (client._method == "POST")
+	{
+		char	buff[client._upload_buff_size];
+
+		std::cout << "CONTENT: " << client._content << "\n\n";
+		std::cout << "CONTENT_SIZE: " << client._content.size() << "\n\n";
+		std::cout << "UPLOAD_BUFF_SIZE: " << client._upload_buff_size << "\n\n";
+		close(client.pipe0[0]);
+		write(client.pipe0[1], client._content.c_str(), client._content.size());
+		client._upload_content_size = client._content.size();
+		std::cout << client._content.size() << " : " << client._upload_buff_size << "\n\n";
+		while (client._upload_content_size < (size_t)atoi(client._content_length.c_str()))
+		{
+			memset (&buff, '\0', sizeof (buff));
+			/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
+			ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
+			// std::cout << "BUFF: " << buff << "\n\n";
+			write(client.pipe0[1], buff, numbytes);
+			client._upload_content_size += numbytes;
+			std::cout << client._upload_content_size << " : " << numbytes << " > ";
+		}
+		close(client.pipe0[1]);
+	}
+	waitpid(pid, NULL, 0);
+	client._response = "HTTP/1.1 200 OK\r\n";
+	std::cout << "enter while\n";
+	close(client.pipe1[1]);
+	std::stringstream phpOutput;
+	char		buffer[client._upload_buff_size];
+	ssize_t bytesRead;
+	while ((bytesRead = read(client.pipe1[0], buffer, sizeof(buffer))) != 0)
+	{
+		phpOutput.write(buffer, bytesRead);
+	}
+	client._response += phpOutput.str();
+	std::cout << "out while\n";
+	// std::cout << "request: " << request << "\n";
+	close(client.pipe1[0]);
+
 }
 
 void	WebServ::response(int i)
