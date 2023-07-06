@@ -273,16 +273,8 @@ void	WebServ::receive_data(int i)
 			else
 				response_parser((*it).second, _locations);
 
-
-			/*SET FD SOCKET TO WRITE (EPOLLIN)*/
-			if ((*it).second._method == "GET")
-				(*it).second._upload_content_size = (size_t)atoi((*it).second._content_length.c_str());
-			
-			if ((*it).second._upload_content_size == (size_t)atoi((*it).second._content_length.c_str()))
-			{
-				_ev.events = EPOLLOUT | EPOLLONESHOT;
-				epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
-			}
+			_ev.events = EPOLLOUT | EPOLLONESHOT;
+			epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 		}
 	}
 }
