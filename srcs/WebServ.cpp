@@ -103,11 +103,13 @@ void	WebServ::run()
 				if (_ep_event[i].data.fd == _fd_listener)
 				{
 					std::cout << "accept_new_connection" << "\n";
-					accept_new_connection();
+					int fd1 = accept_new_connection();
+					std::cout << "accept buff run func: " << map_connections[fd1]._upload_buff_size << "\n";
 				}
 				/*CLIENT SOCKET*/
 				else 
 				{
+					std::cout << "accept buff run func 2: " << map_connections[_ep_event[i].data.fd]._upload_buff_size << "fd: " << _ep_event[i].data.fd <<  "\n";
 					std::cout << "\nRECEIVE_DATA FUNCTION fd: " << _ep_event[i].data.fd << "\n\n";
 					receive_data(i);
 				}
@@ -151,7 +153,7 @@ void	WebServ::delete_timeout_socket()
 	}
 };
 
-void	WebServ::accept_new_connection()
+int		WebServ::accept_new_connection()
 {
 	_addrlen = sizeof (struct sockaddr_storage);
 
@@ -178,43 +180,45 @@ void	WebServ::accept_new_connection()
 	}
 
 	/*ADD fd_new TO MAP_CONNECTIONS AND SET TO EMPTY*/
-	t_client	c;
-	initialize_client_struct(c, fd_new);
-	map_connections[fd_new] = c;
+
+	initialize_client_struct(map_connections, fd_new);
+
+	std::cout << "accep buff: " << map_connections[fd_new]._upload_buff_size << "\n";
+	return (fd_new);
 }
 
-void			WebServ::initialize_client_struct(t_client &c, int fd_new)
+void			WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_new)
 {
-	c.fd = fd_new;
-	c.start_connection = time(NULL);
-	c._request = "";
-	c._method = "";
-	c._url = "";
-	c._protocol = "";
-	c._content_type = "";
-	c._content_length = "";
-	c._server_name = "";
-	c._server_port = "";
-	c._user_agent = "";
-	c._http_host = "";
-	c._http_accept = "";
-	c._http_accept_encoding = "";
-	c._http_accept_language = "";
-	c._query_string = "";
-	c._path_info = "";
-	c._request_uri = "";
-	c._remote_host = "";
-	c._boundary = "";
-	c._content = "";
-	c._url_file = "";
-	c._server_path = "";
-	c._response = "";
-	c._upload_content_size = 0;
-	c._upload_buff_size = _buffer_size;
-	c.pipe0[0] = 0;
-	c.pipe0[1] = 0;
-	c.pipe1[0] = 0;
-	c.pipe1[1] = 0;
+	map[fd_new].fd = fd_new;
+	map[fd_new].start_connection = time(NULL);
+	map[fd_new]._request = "";
+	map[fd_new]._method = "";
+	map[fd_new]._url = "";
+	map[fd_new]._protocol = "";
+	map[fd_new]._content_type = "";
+	map[fd_new]._content_length = "";
+	map[fd_new]._server_name = "";
+	map[fd_new]._server_port = "";
+	map[fd_new]._user_agent = "";
+	map[fd_new]._http_host = "";
+	map[fd_new]._http_accept = "";
+	map[fd_new]._http_accept_encoding = "";
+	map[fd_new]._http_accept_language = "";
+	map[fd_new]._query_string = "";
+	map[fd_new]._path_info = "";
+	map[fd_new]._request_uri = "";
+	map[fd_new]._remote_host = "";
+	map[fd_new]._boundary = "";
+	map[fd_new]._content = "";
+	map[fd_new]._url_file = "";
+	map[fd_new]._server_path = "";
+	map[fd_new]._response = "";
+	map[fd_new]._upload_content_size = 0;
+	map[fd_new]._upload_buff_size = _buffer_size;
+	map[fd_new].pipe0[0] = 0;
+	map[fd_new].pipe0[1] = 0;
+	map[fd_new].pipe1[0] = 0;
+	map[fd_new].pipe1[1] = 0;
 
 }
 
@@ -222,16 +226,18 @@ void	WebServ::receive_data(int i)
 {
 	std::map<int, t_client>::iterator	it;
 	it = map_connections.find(_ep_event[i].data.fd);
-	t_client client = (*it).second;
 	
-	char	buff[client._upload_buff_size];
+	std::cout << "buff: " << (*it).second._upload_buff_size << " : " << _buffer_size;
+	char	buff[(*it).second._upload_buff_size];
 	memset (&buff, '\0', sizeof (buff));
 	
 	/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
 	ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
 	if (numbytes == -1)
+	{
 		std::cout << "ERROR: recv" << std::endl;
-	
+		map_connections.erase(_ep_event[i].data.fd);
+	}
 	/*CONNECTION CLOSED BY THE CLIENT*/
 	else if (numbytes == 0)
 	{
@@ -285,13 +291,14 @@ void	WebServ::receive_data(int i)
 	}
 }
 
-
 void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
 {
 	std::cout << "\nEXEC_CGI FUNCTION" << "\n\n";
 
 	int				pid;
 	char			*arg2[3];
+	char			buff[client._upload_buff_size];
+	char			buffer[client._upload_buff_size];
 	
 	arg2[0] = (char *)"/usr/bin/php-cgi7.4";
 	arg2[1] = (char *)html.c_str();
@@ -337,7 +344,6 @@ void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
 
 	if (client._method == "POST")
 	{
-		char	buff[client._upload_buff_size];
 
 		std::cout << "CONTENT: " << client._content << "\n\n";
 		std::cout << "CONTENT_SIZE: " << client._content.size() << "\n\n";
@@ -363,7 +369,6 @@ void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
 	std::cout << "\n\nSTART READ CGI OUTPUT FROM PIPE\n\n";
 	close(client.pipe1[1]);
 	std::stringstream phpOutput;
-	char		buffer[client._upload_buff_size];
 	ssize_t bytesRead;
 	while ((bytesRead = read(client.pipe1[0], buffer, sizeof(buffer))) != 0)
 	{

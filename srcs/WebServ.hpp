@@ -42,12 +42,12 @@ class WebServ : protected FileParser, ListenerSocket, HttpRequest, HttpResponse
 		void	run();
 		
 		void	delete_timeout_socket();
-		void	accept_new_connection();
+		int		accept_new_connection();
 		void	receive_data(int i);
 		void	response(int i);
 
-		void	initialize_client_struct(t_client &c, int fd_new);
-		void			exec_cgi(std::string &html, t_client &client, int i);
+		void	initialize_client_struct(std::map<int, t_client> &map, int fd_new);
+		void	exec_cgi(std::string &html, t_client &client, int i);
 };
 
 #endif
