@@ -56,40 +56,38 @@ void	HttpResponse::chk_indexies(t_client &client, std::string &html, std::map<st
 
 }
 
-std::string	HttpResponse::looking_for_path(t_client &client, std::map<std::string, directive> &locations, std::vector<std::string> indexes)
+void	HttpResponse::looking_for_path(t_client &client, std::map<std::string, directive> &locations, std::vector<std::string> indexes)
 {
 	std::cout << "\nLOOKING_FOR_PATH FUNCTION\n";
-	
-	std::string	html = "";
 
 	/*IF REQUEST IS A LOCATION, APPEND INDEX.HTML FILES DEFINED INTO CONFIGURATION FILE*/
 	if(locations.find(client._url) != locations.end())
 	{
 		std::cout << "path on location map found: " << client._url << "\n";
-		chk_indexies(client, html, locations, indexes);
+		chk_indexies(client, client._server_path, locations, indexes);
 		if (locations[client._url]._path_ok == true)
-			return(html);
+			return ;
 	}
 	
 	/*CHECK FOR FILE IN THE END OF THE PATH REQUEST*/
 	if (client._url_file == "")
 	{
-		html = locations[client._url]._server_path;
+		client._server_path = locations[client._url]._server_path;
 		locations[client._url]._path_ok = false;
 		std::cout << "path_ok = " << locations[client._url]._path_ok << "\n";
-		std::cout << "path on location map not found: " << html << "\n";
-		return (html);
+		std::cout << "path on location map not found: " << client._server_path << "\n";
+		return ;
 	}
 
 	if(locations.find(client._url_location) != locations.end())
 	{
 		if (client._url_file_extension == ".php")
-			html = "php-cgi" + client._url_file;
+			client._server_path = "php-cgi" + client._url_file;
 		else
-			html = locations[client._url_location]._server_path + client._url_file;
-		std::cout << "html: " << html << "\n";
+			client._server_path = locations[client._url_location]._server_path + client._url_file;
+		std::cout << "html: " << client._server_path << "\n";
 		client._url = client._url_location;
-		if (access(html.c_str(), F_OK) == 0)
+		if (access(client._server_path.c_str(), F_OK) == 0)
 		{
 			locations[client._url_location]._path_ok = true;
 			std::cout << "path_ok = " << locations[client._url_location]._path_ok << "\n";
@@ -111,11 +109,9 @@ std::string	HttpResponse::looking_for_path(t_client &client, std::map<std::strin
 	}
 
 	/*REWRITE THE PATH CORRECTILY IF '//' IS FIND*/
-		size_t pos = html.find("//");
-		if (pos != html.npos)
-			html.replace(pos, 1, "");
-
-	return (html);
+		size_t pos = client._server_path.find("//");
+		if (pos != client._server_path.npos)
+			client._server_path.replace(pos, 1, "");
 }
 
 void	HttpResponse::diretory_list(std::stringstream &buff, std::string path, std::string html)

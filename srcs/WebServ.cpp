@@ -262,13 +262,7 @@ void	WebServ::receive_data(int i)
 		{
 			split_header_and_content((*it).second, tmp);
 			request_parser((*it).second);
-			
-
-			// std::cout << "tmp:\n" << tmp << "\n";
-			// std::cout << "str:\n" << str << "\n";
-			// std::cout << "_content:\n" << (*it).second._content << "\n";
-
-			(*it).second._server_path = looking_for_path((*it).second, _locations, _index);
+			looking_for_path((*it).second, _locations, _index);
 			
 			if((*it).second._url_file_extension == ".php")
 			{
