@@ -47,7 +47,7 @@ class WebServ : protected FileParser, ListenerSocket, HttpRequest, HttpResponse
 		void	response(int i);
 
 		void	initialize_client_struct(std::map<int, t_client> &map, int fd_new);
-		void	exec_cgi(std::string &html, t_client &client, int i);
+		void	exec_cgi(std::string &html, t_client &client, int &pid);
 };
 
 #endif

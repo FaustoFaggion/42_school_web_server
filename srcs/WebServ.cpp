@@ -264,12 +264,59 @@ void	WebServ::receive_data(int i)
 			request_parser((*it).second);
 			looking_for_path((*it).second, _locations, _index);
 			
+			int	pid;
 			if((*it).second._url_file_extension == ".php")
 			{
-				exec_cgi((*it).second._server_path, (*it).second, i);
+				exec_cgi((*it).second._server_path, (*it).second, pid);
 			}
 			else
 				response_parser((*it).second, _locations);
+
+
+			if((*it).second._url_file_extension == ".php")
+			{
+				if ((*it).second._method == "POST")
+				{
+				
+					std::cout << "CONTENT: " << (*it).second._content << "\n\n";
+					std::cout << "CONTENT_SIZE: " << (*it).second._content.size() << "\n\n";
+					std::cout << "UPLOAD_CONTENT_SIZE: " << (*it).second._upload_content_size << "\n\n";
+					close((*it).second.pipe0[0]);
+					write((*it).second.pipe0[1], (*it).second._content.c_str(), (*it).second._content.size());
+					(*it).second._upload_content_size = (*it).second._content.size();
+					std::cout << (*it).second._content.size() << " : " << (*it).second._upload_content_size << "\n\n";
+					while ((*it).second._upload_content_size < (size_t)atoi((*it).second._content_length.c_str()))
+					{
+						memset (&buff, '\0', sizeof (buff));
+						/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
+						ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
+						std::cout << "BUFF: " << buff[0] << " : " << buff[numbytes - 1] << " <>\n\n";
+						write((*it).second.pipe0[1], buff, numbytes);
+						(*it).second._upload_content_size += numbytes;
+						std::cout << (*it).second._upload_content_size << " : " << numbytes << " > ";
+					}
+					close((*it).second.pipe0[1]);
+				}
+				waitpid(pid, NULL, 0);
+				(*it).second._response = "HTTP/1.1 200 OK\r\n";
+				std::cout << "\n\nSTART READ CGI OUTPUT FROM PIPE\n\n";
+				close((*it).second.pipe1[1]);
+				std::stringstream phpOutput;
+				ssize_t bytesRead;
+				memset (&buff, '\0', sizeof (buff));
+				while ((bytesRead = read((*it).second.pipe1[0], buff, sizeof(buff))) != 0)
+				{
+					phpOutput.write(buff, bytesRead);
+				}
+				(*it).second._response += phpOutput.str();
+				std::cout << "\n\nFINISH READ CGI OUTPUT FROM PIPE\n";
+				// std::cout << "request: " << request << "\n";
+				close((*it).second.pipe1[0]);
+			}
+
+
+
+
 
 			_ev.events = EPOLLOUT | EPOLLONESHOT;
 			epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
@@ -277,15 +324,12 @@ void	WebServ::receive_data(int i)
 	}
 }
 
-void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
+void	WebServ::exec_cgi(std::string &html, t_client &client, int &pid)
 {
 	std::cout << "\nEXEC_CGI FUNCTION" << "\n\n";
 
-	int				pid;
 	char			*arg2[3];
-	char			buff[client._upload_buff_size];
-	char			buffer[client._upload_buff_size];
-	
+
 	arg2[0] = (char *)"/usr/bin/php-cgi7.4";
 	arg2[1] = (char *)html.c_str();
 	arg2[2] = NULL;
@@ -327,44 +371,6 @@ void	WebServ::exec_cgi(std::string &html, t_client &client, int i)
 			exit(1);
 		}
 	}
-
-	if (client._method == "POST")
-	{
-
-		std::cout << "CONTENT: " << client._content << "\n\n";
-		std::cout << "CONTENT_SIZE: " << client._content.size() << "\n\n";
-		std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
-		close(client.pipe0[0]);
-		write(client.pipe0[1], client._content.c_str(), client._content.size());
-		client._upload_content_size = client._content.size();
-		std::cout << client._content.size() << " : " << client._upload_content_size << "\n\n";
-		while (client._upload_content_size < (size_t)atoi(client._content_length.c_str()))
-		{
-			memset (&buff, '\0', sizeof (buff));
-			/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
-			ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
-			std::cout << "BUFF: " << buff[0] << " : " << buff[numbytes - 1] << " <>\n\n";
-			write(client.pipe0[1], buff, numbytes);
-			client._upload_content_size += numbytes;
-			std::cout << client._upload_content_size << " : " << numbytes << " > ";
-		}
-		close(client.pipe0[1]);
-	}
-	waitpid(pid, NULL, 0);
-	client._response = "HTTP/1.1 200 OK\r\n";
-	std::cout << "\n\nSTART READ CGI OUTPUT FROM PIPE\n\n";
-	close(client.pipe1[1]);
-	std::stringstream phpOutput;
-	ssize_t bytesRead;
-	while ((bytesRead = read(client.pipe1[0], buffer, sizeof(buffer))) != 0)
-	{
-		phpOutput.write(buffer, bytesRead);
-	}
-	client._response += phpOutput.str();
-	std::cout << "\n\nFINISH READ CGI OUTPUT FROM PIPE\n";
-	// std::cout << "request: " << request << "\n";
-	close(client.pipe1[0]);
-
 }
 
 void	WebServ::response(int i)
