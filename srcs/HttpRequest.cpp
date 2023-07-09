@@ -216,3 +216,13 @@ void		HttpRequest::request_parser(t_client &client)
 		std::cout << "_url_file_extension: " << client._url_file_extension << "\n";
 		std::cout << "_url_location: " << client._url_location << "\n";
 }
+
+void			HttpRequest::split_header_and_content(t_client &client, std::string buff)
+{
+	size_t	pos;
+
+	pos = buff.find("\r\n\r\n");
+	pos += 4;
+	client._request += buff.substr(0, pos);
+	client._content = buff.substr(pos, (buff.size() - pos));
+}

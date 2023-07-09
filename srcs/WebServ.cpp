@@ -260,17 +260,9 @@ void	WebServ::receive_data(int i)
 			map_connections[_ep_event[i].data.fd]._request += buff;
 		else
 		{
-			size_t	pos;
-			std::string	str;
-
-			pos = tmp.find("\r\n\r\n");
-			pos += 4;
-			str = tmp.substr(0, pos);
-			
-			map_connections[_ep_event[i].data.fd]._request += str;
+			split_header_and_content((*it).second, tmp);
 			request_parser((*it).second);
 			
-			(*it).second._content = tmp.substr(pos, atoi((*it).second._content_length.c_str()));
 
 			// std::cout << "tmp:\n" << tmp << "\n";
 			// std::cout << "str:\n" << str << "\n";

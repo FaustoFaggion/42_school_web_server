@@ -9,8 +9,9 @@ class HttpRequest
 		HttpRequest();
 		~HttpRequest();
 
-		void						request_parser(t_client &client);
-		std::string					parse_line(std::string &request, std::string start, std::string end);
+		void			request_parser(t_client &client);
+		std::string		parse_line(std::string &request, std::string start, std::string end);
+		void			split_header_and_content(t_client &client, std::string buff);
 };
 
 #endif
