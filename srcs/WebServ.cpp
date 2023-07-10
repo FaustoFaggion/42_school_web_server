@@ -26,11 +26,11 @@ void	WebServ::parse_file(char *file, std::string server_name)
 
 	parse_listener(_server_conf_file);
 	
-	std::cout << "_domain: " << get_domain() << "\n";
-	std::cout << "_port: " << get_port() << "\n";
-	std::cout << "_type: " << get_type() << "\n";
-	std::cout << "_flag: " << get_flag() << "\n";
-	std::cout << "_work_connections: " << get_worker_connections() << "\n";
+	// std::cout << "_domain: " << get_domain() << "\n";
+	// std::cout << "_port: " << get_port() << "\n";
+	// std::cout << "_type: " << get_type() << "\n";
+	// std::cout << "_flag: " << get_flag() << "\n";
+	// std::cout << "_work_connections: " << get_worker_connections() << "\n";
 
 	/*PARSE ROOT SIMPLE DIRECTIVE*/
 	bool	simple_root_directive;
@@ -42,7 +42,8 @@ void	WebServ::parse_file(char *file, std::string server_name)
 
 	/*PARSE BUFFER_SIZE*/
 	parse_buffer_size();
-	std::cout << _buffer_size << "\n";
+	// std::cout << _buffer_size << "\n";
+	
 	/*PARSE LOCATIONS*/
 	parse_locations(simple_root_directive);
 

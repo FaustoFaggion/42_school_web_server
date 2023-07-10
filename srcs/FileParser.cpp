@@ -212,10 +212,10 @@ void	FileParser::parse_index(std::vector<std::string> &idx, std::string &str)
 			std::string tmp = str_substring(str, "index", 0, '\n');
 	}
 
-	for (std::vector<std::string>::iterator it = idx.begin(); it != idx.end(); it++)
-	{
-		std::cout << (*it).c_str() << std::endl;
-	}
+	// for (std::vector<std::string>::iterator it = idx.begin(); it != idx.end(); it++)
+	// {
+	// 	std::cout << (*it).c_str() << std::endl;
+	// }
 }
 
 void	FileParser::parse_locations(bool simple_root_directive)
@@ -276,7 +276,7 @@ void	FileParser::parse_locations(bool simple_root_directive)
 		{
 			std::string	idx;
 			idx = str_substring(location, "index", 0, '\n');
-			std::cout << "location: " << location << "  idx: " << idx << "\n";
+			// std::cout << "location: " << location << "  idx: " << idx << "\n";
 			parse_index(_locations[request_path]._index_block, idx);
 		}
 		else
@@ -289,17 +289,17 @@ void	FileParser::parse_locations(bool simple_root_directive)
 			location = str_substring(_server_conf_file, duplicate, 0, '}');
 	}
 		/*PRINT*/
-		std::map<std::string, directive>::iterator	it;
-		it = _locations.begin();
-		std::cout << "Print Locations:\n";
-		for (; it != _locations.end(); it++)
-		{
-			std::cout << "location: " << (*it).first << "\n";
-			std::cout << "	server_path: " << (*it).second._server_path << std::endl;
-			std::cout << "	autoindex: " << (*it).second._autoindex << std::endl;
-			for (std::vector<std::string>::iterator it2 = (*it).second._index_block.begin(); it2 != (*it).second._index_block.end(); it2++)
-				std::cout << "	indexblock: " << *it2 << std::endl;
-		}
+		// std::map<std::string, directive>::iterator	it;
+		// it = _locations.begin();
+		// std::cout << "Print Locations:\n";
+		// for (; it != _locations.end(); it++)
+		// {
+		// 	std::cout << "location: " << (*it).first << "\n";
+		// 	std::cout << "	server_path: " << (*it).second._server_path << std::endl;
+		// 	std::cout << "	autoindex: " << (*it).second._autoindex << std::endl;
+		// 	for (std::vector<std::string>::iterator it2 = (*it).second._index_block.begin(); it2 != (*it).second._index_block.end(); it2++)
+		// 		std::cout << "	indexblock: " << *it2 << std::endl;
+		// }
 }
 
 void	FileParser::select_server(std::string file, std::string serv_name)
@@ -319,15 +319,15 @@ void	FileParser::select_server(std::string file, std::string serv_name)
 			if (file.at(end) == '{')
 			{
 				flag++;
-				std::cout << flag << "\n";
+				// std::cout << flag << "\n";
 			}
 			else if (file.at(end) == '}')
 			{
 				flag--;
-				std::cout << flag << "\n";
+				// std::cout << flag << "\n";
 			}
 			end++;
-			std::cout << file.at(end);
+			// std::cout << file.at(end);
 		}
 		tmp_server = file.substr(start, (end - start));
 		start = tmp_server.find("server_name", 0);
