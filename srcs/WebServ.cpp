@@ -105,12 +105,13 @@ void	WebServ::run()
 				{
 					std::cout << "accept_new_connection" << "\n";
 					int fd1 = accept_new_connection();
-					std::cout << "accept buff run func: " << map_connections[fd1]._upload_buff_size << "\n";
+					(void)fd1;
+					// std::cout << "accept buff run func: " << map_connections.at(fd1)._upload_buff_size << "\n";
 				}
 				/*CLIENT SOCKET*/
 				else 
 				{
-					std::cout << "accept buff run func 2: " << map_connections[_ep_event[i].data.fd]._upload_buff_size << "fd: " << _ep_event[i].data.fd <<  "\n";
+					// std::cout << "accept buff run func 2: " << map_connections.at(_ep_event[i].data.fd)._upload_buff_size << "fd: " << _ep_event[i].data.fd <<  "\n";
 					std::cout << "\nRECEIVE_DATA FUNCTION fd: " << _ep_event[i].data.fd << "\n\n";
 					receive_data(i);
 				}
@@ -130,27 +131,26 @@ void	WebServ::delete_timeout_socket()
 
 	// std::cout << "\nDELETE_TIMEOUT_SOCKET FUNCTION\n";
 
-	int j = 0;
-
-	while (_ep_event[j].data.fd)
+	for (std::map<int, t_client>::iterator it = map_connections.begin(); it != map_connections.end(); it++)
 	{
-		double	timeout = difftime(time(NULL), map_connections[_ep_event[j].data.fd].start_connection);
-		if (_ep_event[j].data.fd != _fd_listener)
-		{
+		// std::cout << "map.size() A: " << map_connections.size() << " - fd: " << (*it).second.fd << "\n";
+		
+		double	timeout = difftime(time(NULL), (*it).second.start_connection);
+
 			if (timeout > 2.0)
 			{
-				int	fd = _ep_event[j].data.fd;
+				int	fd = (*it).second.fd;
 
 				/*DELETE FROM EPOLL AND CLOSE FD*/
-				epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev);
+				epoll_ctl(_efd, EPOLL_CTL_DEL, (*it).second.fd, &_ev);
 				// if (epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev) == -1)
 				// 	std::cout << "EPOLL_CTL_DEL FAIL fd: " << _ep_event[j].data.fd << "\n";
 				// _ep_event[j].data.fd = 0;
 				close(fd);
-				map_connections.erase(fd);
+				map_connections.erase((*it).second.fd);
+				break ;
 			}
-		}
-		j++;
+
 	}
 };
 
@@ -181,45 +181,46 @@ int		WebServ::accept_new_connection()
 	}
 
 	/*ADD fd_new TO MAP_CONNECTIONS AND SET TO EMPTY*/
-
+	// map_connections.insert(std::make_pair(fd_new, t_client()));
+	map_connections[fd_new];
 	initialize_client_struct(map_connections, fd_new);
 
-	std::cout << "accep buff: " << map_connections[fd_new]._upload_buff_size << "\n";
+	std::cout << "accep buff: " << map_connections.at(fd_new)._upload_buff_size << "\n";
 	return (fd_new);
 }
 
 void			WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_new)
 {
-	map[fd_new].fd = fd_new;
-	map[fd_new].start_connection = time(NULL);
-	map[fd_new]._request = "";
-	map[fd_new]._method = "";
-	map[fd_new]._url = "";
-	map[fd_new]._protocol = "";
-	map[fd_new]._content_type = "";
-	map[fd_new]._content_length = "";
-	map[fd_new]._server_name = "";
-	map[fd_new]._server_port = "";
-	map[fd_new]._user_agent = "";
-	map[fd_new]._http_host = "";
-	map[fd_new]._http_accept = "";
-	map[fd_new]._http_accept_encoding = "";
-	map[fd_new]._http_accept_language = "";
-	map[fd_new]._query_string = "";
-	map[fd_new]._path_info = "";
-	map[fd_new]._request_uri = "";
-	map[fd_new]._remote_host = "";
-	map[fd_new]._boundary = "";
-	map[fd_new]._content = "";
-	map[fd_new]._url_file = "";
-	map[fd_new]._server_path = "";
-	map[fd_new]._response = "";
-	map[fd_new]._upload_content_size = 0;
-	map[fd_new]._upload_buff_size = _buffer_size;
-	map[fd_new].pipe0[0] = 0;
-	map[fd_new].pipe0[1] = 0;
-	map[fd_new].pipe1[0] = 0;
-	map[fd_new].pipe1[1] = 0;
+	map.at(fd_new).fd = fd_new;
+	map.at(fd_new).start_connection = time(NULL);
+	map.at(fd_new)._request = "";
+	map.at(fd_new)._method = "";
+	map.at(fd_new)._url = "";
+	map.at(fd_new)._protocol = "";
+	map.at(fd_new)._content_type = "";
+	map.at(fd_new)._content_length = "";
+	map.at(fd_new)._server_name = "";
+	map.at(fd_new)._server_port = "";
+	map.at(fd_new)._user_agent = "";
+	map.at(fd_new)._http_host = "";
+	map.at(fd_new)._http_accept = "";
+	map.at(fd_new)._http_accept_encoding = "";
+	map.at(fd_new)._http_accept_language = "";
+	map.at(fd_new)._query_string = "";
+	map.at(fd_new)._path_info = "";
+	map.at(fd_new)._request_uri = "";
+	map.at(fd_new)._remote_host = "";
+	map.at(fd_new)._boundary = "";
+	map.at(fd_new)._content = "";
+	map.at(fd_new)._url_file = "";
+	map.at(fd_new)._server_path = "";
+	map.at(fd_new)._response = "";
+	map.at(fd_new)._upload_content_size = 0;
+	map.at(fd_new)._upload_buff_size = _buffer_size;
+	map.at(fd_new).pipe0[0] = 0;
+	map.at(fd_new).pipe0[1] = 0;
+	map.at(fd_new).pipe1[0] = 0;
+	map.at(fd_new).pipe1[1] = 0;
 
 }
 
@@ -258,7 +259,7 @@ void	WebServ::receive_data(int i)
 		std::string	tmp(buff);
 		/*CHECK IF REQUEST DATA FINISHED*/
 		if (tmp.find("\r\n\r\n") == std::string::npos)
-			map_connections[_ep_event[i].data.fd]._request += buff;
+			map_connections.at(_ep_event[i].data.fd)._request += buff;
 		else
 		{
 			split_header_and_content((*it).second, tmp);
