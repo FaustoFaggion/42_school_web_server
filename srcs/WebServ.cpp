@@ -227,7 +227,7 @@ void			WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_ne
 	map.at(fd_new).pipe1[0] = 0;
 	map.at(fd_new).pipe1[1] = 0;
 	map.at(fd_new)._response_step_flag = 0;
-
+	map.at(fd_new)._pid = -1;
 }
 
 void	WebServ::receive_data(int i)
@@ -270,22 +270,9 @@ void	WebServ::receive_data(int i)
 		{
 			if ((*it).second._response_step_flag == 0)
 				verify_received_data((*it).second, _locations, _index, tmp);
-			int	pid;
 
 			if ((*it).second._response_step_flag == 1)
-			{
-				if((*it).second._url_file_extension == ".php")
-				{
-					exec_cgi((*it).second._server_path, (*it).second, pid);
-					(*it).second._response_step_flag = 2;
-				}
-				else
-				{
-					response_parser((*it).second, _locations);
-					_ev.events = EPOLLOUT | EPOLLONESHOT;
-					epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
-				}
-			}
+				decide_how_to_respond((*it).second, _locations, i);
 
 			if((*it).second._response_step_flag > 1)
 			{
@@ -359,6 +346,22 @@ void	WebServ::verify_received_data(t_client &client, std::map<std::string, direc
 	request_parser(client);
 	looking_for_path(client, locations, indexes);
 	client._response_step_flag = 1;
+}
+
+void	WebServ::decide_how_to_respond(t_client &client, std::map<std::string, directive> &locations, int i)
+{
+	
+	if(client._url_file_extension == ".php")
+	{
+		exec_cgi(client._server_path, client, client._pid);
+		client._response_step_flag = 2;
+	}
+	else
+	{
+		response_parser(client, locations);
+		_ev.events = EPOLLOUT | EPOLLONESHOT;
+		epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
+	}
 }
 
 void	WebServ::exec_cgi(std::string &html, t_client &client, int &pid)
