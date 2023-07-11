@@ -279,24 +279,7 @@ void	WebServ::receive_data(int i)
 				write_data_to_cgi((*it).second, buff, numbytes);
 
 				if((*it).second._response_step_flag == 4)
-				{
-					(*it).second._response = "HTTP/1.1 200 OK\r\n";
-					std::cout << "\n\nSTART READ CGI OUTPUT FROM PIPE\n\n";
-					close((*it).second.pipe1[1]);
-					std::stringstream phpOutput;
-					ssize_t bytesRead;
-					memset (&buff, '\0', sizeof (buff));
-					while ((bytesRead = read((*it).second.pipe1[0], buff, sizeof(buff))) != 0)
-					{
-						phpOutput.write(buff, bytesRead);
-					}
-					(*it).second._response += phpOutput.str();
-					std::cout << "\n\nFINISH READ CGI OUTPUT FROM PIPE\n";
-					// std::cout << "request: " << request << "\n";
-					close((*it).second.pipe1[0]);
-					_ev.events = EPOLLOUT | EPOLLONESHOT;
-					epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
-				}
+					write_response_to_string((*it).second);
 
 			}
 		}
@@ -367,6 +350,28 @@ void	WebServ::write_data_to_cgi(t_client &client, char *buff, size_t numbytes)
 	}
 	else if (client._method == "GET")
 		client._response_step_flag = 4;
+}
+
+void	WebServ::write_response_to_string(t_client &client)
+{
+	client._response = "HTTP/1.1 200 OK\r\n";
+	std::cout << "\n\nSTART READ CGI OUTPUT FROM PIPE\n\n";
+	close(client.pipe1[1]);
+	std::stringstream phpOutput;
+	ssize_t bytesRead;
+
+	char	buff[_buffer_size];
+	memset (&buff, '\0', sizeof (buff));
+	while ((bytesRead = read(client.pipe1[0], buff, sizeof(buff))) != 0)
+	{
+		phpOutput.write(buff, bytesRead);
+	}
+	client._response += phpOutput.str();
+	std::cout << "\n\nFINISH READ CGI OUTPUT FROM PIPE\n";
+	// std::cout << "request: " << request << "\n";
+	close(client.pipe1[0]);
+	_ev.events = EPOLLOUT | EPOLLONESHOT;
+	epoll_ctl(_efd, EPOLL_CTL_MOD, client.fd, &_ev);
 }
 
 void	WebServ::exec_cgi(std::string &html, t_client &client)
