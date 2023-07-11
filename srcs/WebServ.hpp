@@ -44,6 +44,7 @@ class WebServ : protected FileParser, ListenerSocket, HttpRequest, HttpResponse
 		void	delete_timeout_socket();
 		int		accept_new_connection();
 		void	receive_data(int i);
+		void	verify_received_data(t_client &client, std::map<std::string, directive> &locations, std::vector<std::string> indexes, std::string buff);
 		void	response(int i);
 
 		void	initialize_client_struct(std::map<int, t_client> &map, int fd_new);

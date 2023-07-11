@@ -268,15 +268,8 @@ void	WebServ::receive_data(int i)
 			map_connections.at(_ep_event[i].data.fd)._request += buff;
 		else
 		{
-			(*it).second.connection_time = time(NULL);
-
 			if ((*it).second._response_step_flag == 0)
-			{
-				split_header_and_content((*it).second, tmp);
-				request_parser((*it).second);
-				looking_for_path((*it).second, _locations, _index);
-				(*it).second._response_step_flag = 1;
-			}
+				verify_received_data((*it).second, _locations, _index, tmp);
 			int	pid;
 
 			if ((*it).second._response_step_flag == 1)
@@ -355,15 +348,17 @@ void	WebServ::receive_data(int i)
 				}
 
 			}
-
-			std::cout << "\nRAONIIIIIIIIIIIIIIIIIII\n";
-
-
-
 		}
 	}
 	(*it).second.connection_time = time(NULL);
+}
 
+void	WebServ::verify_received_data(t_client &client, std::map<std::string, directive> &locations, std::vector<std::string> indexes, std::string buff)
+{
+	split_header_and_content(client, buff);
+	request_parser(client);
+	looking_for_path(client, locations, indexes);
+	client._response_step_flag = 1;
 }
 
 void	WebServ::exec_cgi(std::string &html, t_client &client, int &pid)
