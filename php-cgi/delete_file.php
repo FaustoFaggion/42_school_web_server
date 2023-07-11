@@ -1,7 +1,7 @@
 
 <?php
 
-$fileToDelete = "../locations/uploads/" . $_GET['file_path'];
+$fileToDelete = "../locations/uploads/" . $_POST['file_path'];
 
 echo $fileToDelete . "<hr>";
 
