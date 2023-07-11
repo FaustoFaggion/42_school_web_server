@@ -77,6 +77,11 @@ void	WebServ::create_connections()
 	/*FD IS AVAIABLE FOR READ*/
 	_ev.events = EPOLLIN;
 	_ev.data.fd = _fd_listener;
+
+	/*SET FD SOCKET TO NONBLOCKING*/
+	int fd_flag = fcntl(_fd_listener, F_GETFL, 0);
+	fcntl(_fd_listener, F_SETFL, fd_flag | O_NONBLOCK);
+
 	if (epoll_ctl (_efd, EPOLL_CTL_ADD, _fd_listener, &_ev) == -1)
 		std::cout << "ERROR: epoll_ctl" << std::endl;
 }
@@ -133,12 +138,12 @@ void	WebServ::delete_timeout_socket()
 
 	for (std::map<int, t_client>::iterator it = map_connections.begin(); it != map_connections.end(); it++)
 	{
-		// std::cout << "map.size() A: " << map_connections.size() << " - fd: " << (*it).second.fd << "\n";
 		
-		double	timeout = difftime(time(NULL), (*it).second.start_connection);
+		double	timeout = difftime(time(NULL), (*it).second.connection_time);
 
 			if (timeout > 2.0)
 			{
+				std::cout << "map.size() A: " << map_connections.size() << " - fd: " << (*it).second.fd << "\n";
 				int	fd = (*it).second.fd;
 
 				/*DELETE FROM EPOLL AND CLOSE FD*/
@@ -168,7 +173,7 @@ int		WebServ::accept_new_connection()
 	fcntl(fd_new, F_SETFL, fd_flag | O_NONBLOCK);
 	
 	/*ADD NEW FD EPOOL TO MONNITORING THE EVENTS*/
-	_ev.events = EPOLLIN | EPOLLHUP; // | EPOLLONESHOT;
+	_ev.events = EPOLLIN; // | EPOLLONESHOT;
 	_ev.data.fd = fd_new;
 	
 	std::cout << "new_fd: " << fd_new << "\n";
@@ -192,7 +197,7 @@ int		WebServ::accept_new_connection()
 void			WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_new)
 {
 	map.at(fd_new).fd = fd_new;
-	map.at(fd_new).start_connection = time(NULL);
+	map.at(fd_new).connection_time = time(NULL);
 	map.at(fd_new)._request = "";
 	map.at(fd_new)._method = "";
 	map.at(fd_new)._url = "";
@@ -221,6 +226,7 @@ void			WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_ne
 	map.at(fd_new).pipe0[1] = 0;
 	map.at(fd_new).pipe1[0] = 0;
 	map.at(fd_new).pipe1[1] = 0;
+	map.at(fd_new)._response_step_flag = 0;
 
 }
 
@@ -228,8 +234,8 @@ void	WebServ::receive_data(int i)
 {
 	std::map<int, t_client>::iterator	it;
 	it = map_connections.find(_ep_event[i].data.fd);
-	
-	std::cout << "buff: " << (*it).second._upload_buff_size << " : " << _buffer_size;
+	// std::cout << "buff: " << (*it).second._upload_buff_size << " : " << _buffer_size;
+
 	char	buff[(*it).second._upload_buff_size];
 	memset (&buff, '\0', sizeof (buff));
 	
@@ -256,72 +262,105 @@ void	WebServ::receive_data(int i)
 	}
 	else 
 	{
+		
 		std::string	tmp(buff);
 		/*CHECK IF REQUEST DATA FINISHED*/
-		if (tmp.find("\r\n\r\n") == std::string::npos)
+		if ((*it).second._response_step_flag == 0 && tmp.find("\r\n\r\n") == std::string::npos)
 			map_connections.at(_ep_event[i].data.fd)._request += buff;
 		else
 		{
-			split_header_and_content((*it).second, tmp);
-			request_parser((*it).second);
-			looking_for_path((*it).second, _locations, _index);
-			
-			int	pid;
-			if((*it).second._url_file_extension == ".php")
+			(*it).second.connection_time = time(NULL);
+
+			if ((*it).second._response_step_flag == 0)
 			{
-				exec_cgi((*it).second._server_path, (*it).second, pid);
+				split_header_and_content((*it).second, tmp);
+				request_parser((*it).second);
+				looking_for_path((*it).second, _locations, _index);
+				(*it).second._response_step_flag = 1;
 			}
-			else
-				response_parser((*it).second, _locations);
+			int	pid;
 
+			if ((*it).second._response_step_flag == 1)
+			{
+				if((*it).second._url_file_extension == ".php")
+				{
+					exec_cgi((*it).second._server_path, (*it).second, pid);
+					(*it).second._response_step_flag = 2;
+				}
+				else
+				{
+					response_parser((*it).second, _locations);
+					_ev.events = EPOLLOUT | EPOLLONESHOT;
+					epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
+				}
+			}
 
-			if((*it).second._url_file_extension == ".php")
+			if((*it).second._response_step_flag > 1)
 			{
 				if ((*it).second._method == "POST")
 				{
-				
-					std::cout << "CONTENT: " << (*it).second._content << "\n\n";
-					std::cout << "CONTENT_SIZE: " << (*it).second._content.size() << "\n\n";
-					std::cout << "UPLOAD_CONTENT_SIZE: " << (*it).second._upload_content_size << "\n\n";
-					close((*it).second.pipe0[0]);
-					write((*it).second.pipe0[1], (*it).second._content.c_str(), (*it).second._content.size());
-					(*it).second._upload_content_size = (*it).second._content.size();
-					std::cout << (*it).second._content.size() << " : " << (*it).second._upload_content_size << "\n\n";
-					while ((*it).second._upload_content_size < (size_t)atoi((*it).second._content_length.c_str()))
+					if ((*it).second._response_step_flag == 3)
 					{
-						memset (&buff, '\0', sizeof (buff));
-						/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
-						ssize_t numbytes = recv (_ep_event[i].data.fd, &buff, sizeof(buff), 0);
-						std::cout << "BUFF: " << buff[0] << " : " << buff[numbytes - 1] << " <>\n\n";
-						write((*it).second.pipe0[1], buff, numbytes);
-						(*it).second._upload_content_size += numbytes;
-						std::cout << (*it).second._upload_content_size << " : " << numbytes << " > ";
+						std::cout << "Flag 3 CONTENT_SIZE: " << (*it).second._content.size() << "  ";
+						std::cout << "UPLOAD_CONTENT_SIZE: " << (*it).second._upload_content_size << "\n\n";
+							/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
+							std::cout << "BUFF: " << buff[0] << " : " << buff[numbytes - 1] << " <>\n\n";
+							write((*it).second.pipe0[1], buff, numbytes);
+							(*it).second._upload_content_size += numbytes;
+							std::cout << (*it).second._upload_content_size << " : " << numbytes << " > ";
+						if ((*it).second._upload_content_size >= (size_t)atoi((*it).second._content_length.c_str()))
+						{
+							close((*it).second.pipe0[1]);
+							(*it).second._response_step_flag = 4;
+						}
 					}
-					close((*it).second.pipe0[1]);
+					if((*it).second._response_step_flag == 2)
+					{
+						std::cout << "Flag 2 CONTENT_SIZE: " << (*it).second._content.size() << "\n\n";
+						std::cout << "UPLOAD_CONTENT_SIZE: " << (*it).second._upload_content_size << "\n\n";
+						close((*it).second.pipe0[0]);
+						write((*it).second.pipe0[1], (*it).second._content.c_str(), (*it).second._content.size());
+						(*it).second._upload_content_size = (*it).second._content.size();
+						std::cout << (*it).second._content.size() << " : " << (*it).second._upload_content_size << "\n\n";
+						
+						if ((*it).second._upload_content_size >= (size_t)atoi((*it).second._content_length.c_str()))
+						{
+							close((*it).second.pipe0[1]);
+							(*it).second._response_step_flag = 4;
+						}
+						else
+							(*it).second._response_step_flag = 3;
+					}
 				}
-				waitpid(pid, NULL, 0);
-				(*it).second._response = "HTTP/1.1 200 OK\r\n";
-				std::cout << "\n\nSTART READ CGI OUTPUT FROM PIPE\n\n";
-				close((*it).second.pipe1[1]);
-				std::stringstream phpOutput;
-				ssize_t bytesRead;
-				memset (&buff, '\0', sizeof (buff));
-				while ((bytesRead = read((*it).second.pipe1[0], buff, sizeof(buff))) != 0)
+				else if ((*it).second._method == "GET")
+					(*it).second._response_step_flag = 4;
+
+				if((*it).second._response_step_flag == 4)
 				{
-					phpOutput.write(buff, bytesRead);
+					(*it).second._response = "HTTP/1.1 200 OK\r\n";
+					std::cout << "\n\nSTART READ CGI OUTPUT FROM PIPE\n\n";
+					close((*it).second.pipe1[1]);
+					std::stringstream phpOutput;
+					ssize_t bytesRead;
+					memset (&buff, '\0', sizeof (buff));
+					while ((bytesRead = read((*it).second.pipe1[0], buff, sizeof(buff))) != 0)
+					{
+						phpOutput.write(buff, bytesRead);
+					}
+					(*it).second._response += phpOutput.str();
+					std::cout << "\n\nFINISH READ CGI OUTPUT FROM PIPE\n";
+					// std::cout << "request: " << request << "\n";
+					close((*it).second.pipe1[0]);
+					_ev.events = EPOLLOUT | EPOLLONESHOT;
+					epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 				}
-				(*it).second._response += phpOutput.str();
-				std::cout << "\n\nFINISH READ CGI OUTPUT FROM PIPE\n";
-				// std::cout << "request: " << request << "\n";
-				close((*it).second.pipe1[0]);
+
 			}
 
+			std::cout << "\nRAONIIIIIIIIIIIIIIIIIII\n";
 
 
 
-
-			_ev.events = EPOLLOUT | EPOLLONESHOT;
-			epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 		}
 	}
 }
@@ -367,6 +406,9 @@ void	WebServ::exec_cgi(std::string &html, t_client &client, int &pid)
 		close(client.pipe0[1]);
 		close(client.pipe1[0]);
 		close(client.pipe1[1]);
+		close(_fd_listener);
+		close(client.fd);
+
 		if (execve(arg2[0], arg2, envp_cgi) == -1)
 		{
 			write(2, strerror(errno), strlen(strerror(errno)));

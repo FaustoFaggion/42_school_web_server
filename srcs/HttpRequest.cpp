@@ -194,27 +194,27 @@ void		HttpRequest::request_parser(t_client &client)
 			client._url_location = '/';
 	}
 
-		std::cout << "_method: " << client._method << "\n";
-		std::cout << "_url: " << client._url << "\n";
-		std::cout << "_protocol: " << client._protocol << "\n";
-		std::cout << "_content_type: " << client._content_type << "\n";
-		std::cout << "_content_length: " << client._content_length << "\n";
-		std::cout << "_server_name: " << client._server_name << "\n";
-		std::cout << "_server_port: " << client._server_port << "\n";
-		std::cout << "_user_agent: " << client._user_agent << "\n";
-		std::cout << "_http_host: " << client._http_host << "\n";
-		std::cout << "_http_accept: " << client._http_accept << "\n";
-		std::cout << "_http_accept_encoding: " << client._http_accept_encoding << "\n";
-		std::cout << "_http_accept_language: " << client._http_accept_language << "\n";
-		std::cout << "_query_string: " << client._query_string << "\n";
-		std::cout << "_path_info: " << client._path_info << "\n";
-		std::cout << "_request_uri: " << client._request_uri << "\n";
-		std::cout << "_remote_host: " << client._remote_host << "\n";
-		std::cout << "_boundary: " << client._boundary << "\n";
-		std::cout << "_content: " << client._content << "\n";
-		std::cout << "_url_file: " << client._url_file << "\n";
-		std::cout << "_url_file_extension: " << client._url_file_extension << "\n";
-		std::cout << "_url_location: " << client._url_location << "\n";
+		// std::cout << "_method: " << client._method << "\n";
+		// std::cout << "_url: " << client._url << "\n";
+		// std::cout << "_protocol: " << client._protocol << "\n";
+		// std::cout << "_content_type: " << client._content_type << "\n";
+		// std::cout << "_content_length: " << client._content_length << "\n";
+		// std::cout << "_server_name: " << client._server_name << "\n";
+		// std::cout << "_server_port: " << client._server_port << "\n";
+		// std::cout << "_user_agent: " << client._user_agent << "\n";
+		// std::cout << "_http_host: " << client._http_host << "\n";
+		// std::cout << "_http_accept: " << client._http_accept << "\n";
+		// std::cout << "_http_accept_encoding: " << client._http_accept_encoding << "\n";
+		// std::cout << "_http_accept_language: " << client._http_accept_language << "\n";
+		// std::cout << "_query_string: " << client._query_string << "\n";
+		// std::cout << "_path_info: " << client._path_info << "\n";
+		// std::cout << "_request_uri: " << client._request_uri << "\n";
+		// std::cout << "_remote_host: " << client._remote_host << "\n";
+		// std::cout << "_boundary: " << client._boundary << "\n";
+		// std::cout << "_content: " << client._content << "\n";
+		// std::cout << "_url_file: " << client._url_file << "\n";
+		// std::cout << "_url_file_extension: " << client._url_file_extension << "\n";
+		// std::cout << "_url_location: " << client._url_location << "\n";
 }
 
 void			HttpRequest::split_header_and_content(t_client &client, std::string buff)

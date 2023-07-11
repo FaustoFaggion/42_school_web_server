@@ -173,116 +173,116 @@ void	HttpResponse::cgi_envs_parser(t_client client, std::string html)
 	
 	/*SET REDIRECT_STATUS ENV*/
 	_cgi_envs.push_back("REDIRECT_STATUS=200");
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/* SSL HAS TO BE CHECKED INTO THE FILE PARSER*/
 	// _cgi_envs.push_back("AUTH_TYPE=NULL");
 	// setenv("AUTY_TYPE", "NULL", 1);
 	_cgi_envs.push_back("AUTY_TYPE=NULL");
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*CONTENT_LENGTH*/
 	env = "CONTENT_LENGTH=" + client._content_length;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*CONTENT_TYPE*/
 	env = "CONTENT_TYPE=" + client._content_type;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*GATWAY_INTERFACE*/ //?????????????????????????????????
 	_cgi_envs.push_back("GATEWAY_INTERFACE=CGI/7.4");
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_ACCEPT*/
 	env = "HTTP_ACCEPT=" + client._http_accept;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_ACCEPT_ENCODING*/
 	env = "HTTP_ACCEPT_ENCODING=" + client._http_accept_encoding;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_ACCEPT_LANGUAGE*/
 	env = "HTTP_ACCEPT_LANGUAGE=" + client._http_accept_language;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*HTTP_HOST*/
 	env = "HTTP_HOST=" + client._http_host;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*SERVER_NAME*/
 	env = "SERVER_NAME=" + client._server_name;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*SERVER_PORT*/
 	env = "SERVER_PORT=" + client._server_port;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 
 	/*HTTP_USER_AGENT*/
 	env = "HTTP_USER_AGENT=" + client._user_agent;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*QUERY_STRING*/
 	env = "QUERY_STRING=" + client._query_string;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*PATH_INFO*/
 	env = "PATH_INFO=" + client._path_info;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*REQUEST_URI*/
 	env = "REQUEST_URI=" + client._request_uri;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*REQUEST_METHOD*/
 	env = "REQUEST_METHOD=" + client._method;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*SERVER_PROTOCOL*/
 	env = "SERVER_PROTOCOL=" + client._protocol;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*REMOTE_HOST*/
 	env = "REMOTE_HOST=" + client._remote_host;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*SCRIPT_NAME*/
 	env = "SCRIPT_NAME=/usr/bin/php-cgi";
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 	
 	/*SCRIPT_FILENAME*/
 	env = "SCRIPT_FILENAME=" + html;
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	env = "DOCUMENT_ROOT=/home/fausto/42SP/webserv_git";
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	_cgi_envs.push_back("REDIRECT_STATUS=true");
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	std::ostringstream oss;
     oss << client._upload_buff_size;
 	env = "BUFFER_SIZE=" + oss.str();
 	_cgi_envs.push_back(env);
-	std::cout << *(_cgi_envs.end() - 1) << "\n";
+	// std::cout << *(_cgi_envs.end() - 1) << "\n";
 
 	/*ADD ENVP TO CGI_ENVS */
 	extern char** environ; 
@@ -394,9 +394,6 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 
 	std::cout << "\nRESPONSE_PARSE FUNCTION\n";
 
-	// client._server_path = looking_for_path(client, locations, indexes);
-
-
 	std::cout << "\n";
 	for (std::map<std::string, directive>::iterator it = locations.begin(); it != locations.end(); it++)
 	{
@@ -424,23 +421,13 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 			std::cout << "autoindex off\n";
 			buff_file(conf_file, buff, client._server_path);
 		}
-
-		// if (client._url_file_extension == ".php")
-		// {
-		// 	exec_cgi(client._server_path, client);
-		// 	std::cout << "cgi request:\n" << client._request << "\n\n";
-		// }
-		// else
-			http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
 	else if (client._method.compare("POST") == 0)
 	{
 		buff_file(conf_file, buff, client._server_path);
-		// if (client._url_file_extension == ".php")
-		// 	exec_cgi(client._server_path, client);
-		// else
-			http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
+		http_response_syntax("HTTP/1.1 200 OK\r\n", client._response, buff, client._content_type);
 		conf_file.close();
 	}
 	else if (client._method.compare("DELETE") == 0)

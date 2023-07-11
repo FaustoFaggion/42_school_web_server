@@ -41,7 +41,7 @@ typedef struct client {
 	int				pipe0[2];
 	int				pipe1[2];
 
-	time_t			start_connection;
+	time_t			connection_time;
 	
 	std::string		_response;
 	std::string		_request;
@@ -70,7 +70,7 @@ typedef struct client {
 	std::string		_server_path;
 	size_t			_upload_content_size;
 	size_t			_upload_buff_size;
-
+	int				_response_step_flag;
 
 } t_client;
 
