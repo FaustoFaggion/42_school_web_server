@@ -276,10 +276,7 @@ void	WebServ::receive_data(int i)
 
 			if((*it).second._response_step_flag > 1)
 			{
-				if ((*it).second._method == "POST")
-					write_data_to_cgi((*it).second, buff, numbytes);
-				else if ((*it).second._method == "GET")
-					(*it).second._response_step_flag = 4;
+				write_data_to_cgi((*it).second, buff, numbytes);
 
 				if((*it).second._response_step_flag == 4)
 				{
@@ -333,38 +330,43 @@ void	WebServ::decide_how_to_respond(t_client &client, std::map<std::string, dire
 
 void	WebServ::write_data_to_cgi(t_client &client, char *buff, size_t numbytes)
 {
-	if (client._response_step_flag == 3)
+	if (client._method == "POST")
 	{
-		std::cout << "Flag 3 CONTENT_SIZE: " << client._content.size() << "  ";
-		std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
-			/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
-			std::cout << "BUFF: " << buff[0] << " : " << buff[numbytes - 1] << " <>\n\n";
-			write(client.pipe0[1], buff, numbytes);
-			client._upload_content_size += numbytes;
-			std::cout << client._upload_content_size << " : " << numbytes << " > ";
-		if (client._upload_content_size >= (size_t)atoi(client._content_length.c_str()))
+		if (client._response_step_flag == 3)
 		{
-			close(client.pipe0[1]);
-			client._response_step_flag = 4;
+			std::cout << "Flag 3 CONTENT_SIZE: " << client._content.size() << "  ";
+			std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
+				/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
+				std::cout << "BUFF: " << buff[0] << " : " << buff[numbytes - 1] << " <>\n\n";
+				write(client.pipe0[1], buff, numbytes);
+				client._upload_content_size += numbytes;
+				std::cout << client._upload_content_size << " : " << numbytes << " > ";
+			if (client._upload_content_size >= (size_t)atoi(client._content_length.c_str()))
+			{
+				close(client.pipe0[1]);
+				client._response_step_flag = 4;
+			}
+		}
+		if(client._response_step_flag == 2)
+		{
+			std::cout << "Flag 2 CONTENT_SIZE: " << client._content.size() << "\n\n";
+			std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
+			close(client.pipe0[0]);
+			write(client.pipe0[1], client._content.c_str(), client._content.size());
+			client._upload_content_size = client._content.size();
+			std::cout << client._content.size() << " : " << client._upload_content_size << "\n\n";
+
+			if (client._upload_content_size >= (size_t)atoi(client._content_length.c_str()))
+			{
+				close(client.pipe0[1]);
+				client._response_step_flag = 4;
+			}
+			else
+				client._response_step_flag = 3;
 		}
 	}
-	if(client._response_step_flag == 2)
-	{
-		std::cout << "Flag 2 CONTENT_SIZE: " << client._content.size() << "\n\n";
-		std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
-		close(client.pipe0[0]);
-		write(client.pipe0[1], client._content.c_str(), client._content.size());
-		client._upload_content_size = client._content.size();
-		std::cout << client._content.size() << " : " << client._upload_content_size << "\n\n";
-		
-		if (client._upload_content_size >= (size_t)atoi(client._content_length.c_str()))
-		{
-			close(client.pipe0[1]);
-			client._response_step_flag = 4;
-		}
-		else
-			client._response_step_flag = 3;
-	}
+	else if (client._method == "GET")
+		client._response_step_flag = 4;
 }
 
 void	WebServ::exec_cgi(std::string &html, t_client &client)
