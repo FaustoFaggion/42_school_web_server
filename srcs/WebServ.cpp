@@ -141,7 +141,7 @@ void	WebServ::delete_timeout_socket()
 		
 		double	timeout = difftime(time(NULL), (*it).second.connection_time);
 
-			if (timeout > 2.0)
+			if (timeout > 1.0)
 			{
 				std::cout << "map.size() A: " << map_connections.size() << " - fd: " << (*it).second.fd << "\n";
 				int	fd = (*it).second.fd;
@@ -262,7 +262,6 @@ void	WebServ::receive_data(int i)
 	}
 	else 
 	{
-		
 		std::string	tmp(buff);
 		/*CHECK IF REQUEST DATA FINISHED*/
 		if ((*it).second._response_step_flag == 0 && tmp.find("\r\n\r\n") == std::string::npos)
@@ -363,6 +362,8 @@ void	WebServ::receive_data(int i)
 
 		}
 	}
+	(*it).second.connection_time = time(NULL);
+
 }
 
 void	WebServ::exec_cgi(std::string &html, t_client &client, int &pid)
