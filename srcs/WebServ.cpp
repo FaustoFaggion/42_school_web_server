@@ -227,7 +227,7 @@ void			WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_ne
 	map.at(fd_new).pipe1[0] = 0;
 	map.at(fd_new).pipe1[1] = 0;
 	map.at(fd_new)._response_step_flag = 0;
-	map.at(fd_new)._pid = -1;
+
 }
 
 void	WebServ::receive_data(int i)
@@ -353,7 +353,7 @@ void	WebServ::decide_how_to_respond(t_client &client, std::map<std::string, dire
 	
 	if(client._url_file_extension == ".php")
 	{
-		exec_cgi(client._server_path, client, client._pid);
+		exec_cgi(client._server_path, client);
 		client._response_step_flag = 2;
 	}
 	else
@@ -364,11 +364,12 @@ void	WebServ::decide_how_to_respond(t_client &client, std::map<std::string, dire
 	}
 }
 
-void	WebServ::exec_cgi(std::string &html, t_client &client, int &pid)
+void	WebServ::exec_cgi(std::string &html, t_client &client)
 {
 	std::cout << "\nEXEC_CGI FUNCTION" << "\n\n";
 
 	char			*arg2[3];
+	int				pid;
 
 	arg2[0] = (char *)"/usr/bin/php-cgi7.4";
 	arg2[1] = (char *)html.c_str();

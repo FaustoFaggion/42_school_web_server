@@ -71,7 +71,6 @@ typedef struct client {
 	size_t			_upload_content_size;
 	size_t			_upload_buff_size;
 	int				_response_step_flag;
-	int				_pid;
 
 } t_client;
 
