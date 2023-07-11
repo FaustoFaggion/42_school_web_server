@@ -125,7 +125,7 @@ void	WebServ::run()
 			else if ((_ep_event[i].events & EPOLLOUT) == EPOLLOUT)
 			{
 				std::cout << "\nRESPONSE FUNCTION fd: " << _ep_event[i].data.fd << "\n\n";
-				response(i);
+				send_response(i);
 			}
 		}
 	}
@@ -289,7 +289,7 @@ void	WebServ::receive_data(int i)
 
 void	WebServ::verify_received_data(t_client &client, std::map<std::string, directive> &locations, std::vector<std::string> indexes, std::string buff)
 {
-	split_header_and_content(client, buff);
+	split_header_and_body(client, buff);
 	request_parser(client);
 	looking_for_path(client, locations, indexes);
 	client._response_step_flag = 1;
@@ -427,7 +427,7 @@ void	WebServ::exec_cgi(std::string &html, t_client &client)
 	}
 }
 
-void	WebServ::response(int i)
+void	WebServ::send_response(int i)
 {
 	std::map<int, t_client>::iterator	it;
 	it = map_connections.find(_ep_event[i].data.fd);

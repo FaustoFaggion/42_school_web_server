@@ -207,7 +207,7 @@ void		HttpRequest::request_parser(t_client &client)
 		// std::cout << "_url_location: " << client._url_location << "\n";
 }
 
-void			HttpRequest::split_header_and_content(t_client &client, std::string buff)
+void			HttpRequest::split_header_and_body(t_client &client, std::string buff)
 {
 	size_t	pos;
 
