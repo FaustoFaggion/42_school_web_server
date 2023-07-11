@@ -46,6 +46,7 @@ class WebServ : protected FileParser, ListenerSocket, HttpRequest, HttpResponse
 		void	receive_data(int i);
 		void	verify_received_data(t_client &client, std::map<std::string, directive> &locations, std::vector<std::string> indexes, std::string buff);
 		void	decide_how_to_respond(t_client &client, std::map<std::string, directive> &locations, int i);
+		void	write_data_to_cgi(t_client &client, char *buff, size_t numbytes);
 		void	response(int i);
 
 		void	initialize_client_struct(std::map<int, t_client> &map, int fd_new);
