@@ -198,7 +198,7 @@ void	WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_new)
 {
 	map.at(fd_new).fd = fd_new;
 	map.at(fd_new).connection_time = time(NULL);
-	map.at(fd_new)._request = "";
+	map.at(fd_new)._header = "";
 	map.at(fd_new)._method = "";
 	map.at(fd_new)._url = "";
 	map.at(fd_new)._protocol = "";
@@ -216,7 +216,7 @@ void	WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_new)
 	map.at(fd_new)._request_uri = "";
 	map.at(fd_new)._remote_host = "";
 	map.at(fd_new)._boundary = "";
-	map.at(fd_new)._content = "";
+	map.at(fd_new)._body = "";
 	map.at(fd_new)._url_file = "";
 	map.at(fd_new)._server_path = "";
 	map.at(fd_new)._response = "";
@@ -265,7 +265,7 @@ void	WebServ::receive_data(int i)
 		std::string	tmp(buff);
 		/*CHECK IF REQUEST DATA FINISHED*/
 		if ((*it).second._response_step_flag == 0 && tmp.find("\r\n\r\n") == std::string::npos)
-			map_connections.at(_ep_event[i].data.fd)._request += buff;
+			map_connections.at(_ep_event[i].data.fd)._header += buff;
 		else
 		{
 			if ((*it).second._response_step_flag == 0)
@@ -317,7 +317,7 @@ void	WebServ::write_data_to_cgi(t_client &client, char *buff, size_t numbytes)
 	{
 		if (client._response_step_flag == 3)
 		{
-			std::cout << "Flag 3 CONTENT_SIZE: " << client._content.size() << "  ";
+			std::cout << "Flag 3 CONTENT_SIZE: " << client._body.size() << "  ";
 			std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
 				/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
 				std::cout << "BUFF: " << buff[0] << " : " << buff[numbytes - 1] << " <>\n\n";
@@ -332,12 +332,12 @@ void	WebServ::write_data_to_cgi(t_client &client, char *buff, size_t numbytes)
 		}
 		if(client._response_step_flag == 2)
 		{
-			std::cout << "Flag 2 CONTENT_SIZE: " << client._content.size() << "\n\n";
+			std::cout << "Flag 2 CONTENT_SIZE: " << client._body.size() << "\n\n";
 			std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
 			close(client.pipe0[0]);
-			write(client.pipe0[1], client._content.c_str(), client._content.size());
-			client._upload_content_size = client._content.size();
-			std::cout << client._content.size() << " : " << client._upload_content_size << "\n\n";
+			write(client.pipe0[1], client._body.c_str(), client._body.size());
+			client._upload_content_size = client._body.size();
+			std::cout << client._body.size() << " : " << client._upload_content_size << "\n\n";
 
 			if (client._upload_content_size >= (size_t)atoi(client._content_length.c_str()))
 			{
@@ -432,8 +432,8 @@ void	WebServ::response(int i)
 	std::map<int, t_client>::iterator	it;
 	it = map_connections.find(_ep_event[i].data.fd);
 	/*PROTECTION FROM CONNECTION HAND-SHAKE*/
-	if (!(*it).second._request.empty())
-	{
+	// if (!(*it).second._header.empty())
+	// {
 		// std::cout << "inside response fd: " << _ep_event[i].data.fd << "\n" << (*it).second.response.c_str() << "\n";
 		send(_ep_event[i].data.fd, (*it).second._response.c_str(), (*it).second._response.size(), 0);
 		
@@ -441,5 +441,5 @@ void	WebServ::response(int i)
 		/*If keep-alive SET FD SOCKET TO READ AGAIN*/
 		_ev.events = EPOLLIN | EPOLLHUP | EPOLLONESHOT;
 		epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
-	}
+	// }
 }
