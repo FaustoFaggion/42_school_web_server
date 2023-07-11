@@ -350,6 +350,8 @@ void	WebServ::write_data_to_cgi(t_client &client, char *buff, size_t numbytes)
 	}
 	else if (client._method == "GET")
 		client._response_step_flag = 4;
+	else if (client._method == "DELETE")
+		client._response_step_flag = 4;
 }
 
 void	WebServ::write_response_to_string(t_client &client)
