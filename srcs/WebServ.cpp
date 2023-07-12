@@ -286,10 +286,21 @@ void	WebServ::receive_data(int i)
 
 			if((*it).second._response_step_flag > 1)
 			{
-				write_data_to_cgi((*it).second, buff, numbytes);
+				if ((*it).second._response_step_flag <4)
+					write_data_to_cgi((*it).second, buff, numbytes);
 
 				if((*it).second._response_step_flag == 4)
-					write_response_to_string((*it).second);
+				{
+					if (it->second._status_code.compare("200") == 0)
+						write_response_to_string((*it).second);
+					else
+					{
+						response_parser(it->second, _locations);
+						_ev.events = EPOLLOUT | EPOLLONESHOT;
+						epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
+					}
+				}
+
 			}
 		}
 	}
@@ -302,7 +313,10 @@ void	WebServ::verify_received_data(t_client &client, std::map<std::string, direc
 	request_parser(client);
 	looking_for_path(client, locations, indexes);
 	std::cout << "_status_code: " << client._status_code << "\n";
-	client._response_step_flag = 1;
+	if (client._status_code.compare("200") == 0)
+		client._response_step_flag = 1;
+	else
+		client._response_step_flag = 4;
 }
 
 void	WebServ::decide_how_to_respond(t_client &client, std::map<std::string, directive> &locations, int i)

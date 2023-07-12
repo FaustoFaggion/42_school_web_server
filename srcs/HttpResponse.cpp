@@ -25,8 +25,6 @@ void	HttpResponse::chk_indexies(t_client &client, std::string &html, std::map<st
 		{
 			flag = true;
 			locations[client._url]._path_ok = true;
-			client._status_code = "200";
-			client._status_msg = "OK";
 			std::cout << "1 -path_ok = " << locations[client._url]._path_ok << "\n";
 			std::cout << "index found block directive: " << html << "\n";
 		}
@@ -42,8 +40,6 @@ void	HttpResponse::chk_indexies(t_client &client, std::string &html, std::map<st
 			{
 				flag = true;
 				locations[client._url]._path_ok = true;
-				client._status_code = "200";
-				client._status_msg = "OK";
 				std::cout << "2 -path_ok = " << locations[client._url]._path_ok << "\n";
 				std::cout << "index found simple directive: " << html << "\n";
 			}
@@ -71,8 +67,6 @@ void	HttpResponse::looking_for_path(t_client &client, std::map<std::string, dire
 	{
 		std::cout << "path on location map found: " << client._url << "\n";
 		chk_indexies(client, client._server_path, locations, indexes);
-		client._status_code = "200";
-		client._status_msg = "OK";
 		if (locations[client._url]._path_ok == true)
 			return ;
 	}
@@ -99,8 +93,6 @@ void	HttpResponse::looking_for_path(t_client &client, std::map<std::string, dire
 		client._url = client._url_location;
 		if (access(client._server_path.c_str(), F_OK) == 0)
 		{
-			client._status_code = "200";
-			client._status_msg = "OK";
 			locations[client._url_location]._path_ok = true;
 			std::cout << "path_ok = " << locations[client._url_location]._path_ok << "\n";
 			std::cout << "find path on location map and file: " << client._url_location <<"\n";
