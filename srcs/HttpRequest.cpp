@@ -110,6 +110,14 @@ void		HttpRequest::request_parser(t_client &client)
 		getline(iss0, tmp, ' ');
 		getline(iss0, client._content_length, ' ');
 	}
+	else
+	{
+		if (client._status_code.compare("200") == 0 && client._method.compare("POST") == 0)
+		{
+			client._status_code = "411";
+			client._status_msg = "Length Required";
+		}
+	}
 	/*CHECK ERROR CONTENT_LENGTH*/
 	if (client._status_code.compare("200") == 0 && atoi(client._content_length.c_str()) > atoi(client._max_body_length.c_str()))
 	{
