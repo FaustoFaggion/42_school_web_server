@@ -26,11 +26,11 @@ if (isset($_FILES['userfile']))
     // Move the uploaded file to the target directory
     if (move_uploaded_file($tempFilePath, $targetFilePath))
     {
-        echo "<br>File saved successfully.";
+        echo "<br> File saved successfully.";
     }
     else
     {
-        echo "\n\nError saving the file.";
+        echo "<br> Error saving the file.";
     }
 }
 else

@@ -227,7 +227,7 @@ void	HttpResponse::http_response_error(t_client &client)
 	<body> \n \
 		<div class='container'> \n \
 			<div> \n \
-			<h1 class='error-code'>Error" + client._status_code + "</h1> \n \
+			<h1 class='error-code'>Error " + client._status_code + "</h1> \n \
 			<p class='error-message'>" + client._status_msg + "</p> \n \
 			</div> \n \
 		</div> \n \
@@ -476,7 +476,7 @@ void	HttpResponse::response_parser(t_client &client, std::map<std::string, direc
 	std::cout << "client._server_path: " << client._server_path << std::endl;
 	std::cout << "\n";
 
-	if (client._status_code == "200")
+	if (client._status_code.compare("200") == 0 || locations[client._url]._autoindex == true)
 	{
 		if (client._method.compare("GET") == 0)
 		{
