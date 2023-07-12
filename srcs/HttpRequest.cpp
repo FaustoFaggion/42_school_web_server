@@ -65,12 +65,11 @@ void		HttpRequest::request_parser(t_client &client)
 	iss0 >> client._method >> client._url >> client._protocol;
 
 	/*CHECK METHOD ERROR*/
-	if (client._status_code.compare("200") == 0 && client._method.compare("POST") != 0 \
+	if (client._method.compare("POST") != 0 \
 		&& client._method.compare("GET") != 0 && client._method.compare("DELETE") != 0)
 	{
-		std::cout << "ERRO MÉTODO\n\n";
-		client._status_code = "405";
-		client._status_msg = "Method Not Allowed";
+		client._status_code = "501";
+		client._status_msg = "Not Implemented";
 	}
 	/*URL, QUERY_STRING*/
 	pos = client._url.find("?");
@@ -114,7 +113,6 @@ void		HttpRequest::request_parser(t_client &client)
 	/*CHECK ERROR CONTENT_LENGTH*/
 	if (client._status_code.compare("200") == 0 && atoi(client._content_length.c_str()) > atoi(client._max_body_length.c_str()))
 	{
-		std::cout << "ERRO TAMANHO\n\n";
 		client._status_code = "400";
 		client._status_msg = "Bad Request";
 	}

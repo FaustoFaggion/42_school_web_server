@@ -33,8 +33,10 @@ void		FileParser::file_to_string(char *file, std::string &response)
 
 	open_file.open(file,  std::fstream::in);
 	if (open_file.fail())
+	{
 		std::cout << "Configuration file fail to read" << std::endl;
-
+		exit(1);
+	}
 	while (!open_file.eof())
 	{
 		std::getline(open_file, buff,'\n');
@@ -375,6 +377,7 @@ void	FileParser::select_server(std::string file, std::string serv_name)
 			break ;
 		else
 			i = end;
+		
 	}
 	_server_conf_file = tmp_server;
 }

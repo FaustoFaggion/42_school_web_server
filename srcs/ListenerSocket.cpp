@@ -170,13 +170,19 @@ void	ListenerSocket::parse_listener(std::string &_server_conf_file)
 	
 	/*PARSE SERVER FAMILY AND PORT*/
 	std::string	ltn;
-	while (_server_conf_file.find("listen", 0) != _server_conf_file.npos)
+	if (_server_conf_file.find("listen", 0) != _server_conf_file.npos)
 	{
-		ltn = str_substring(_server_conf_file, "listen", 0, '\n');
-		chk_simple_directive(ltn);
-		setup_listener(ltn);
+		while (_server_conf_file.find("listen", 0) != _server_conf_file.npos)
+		{
+			ltn = str_substring(_server_conf_file, "listen", 0, '\n');
+			chk_simple_directive(ltn);
+			setup_listener(ltn);
+		}
 	}
-
+	else
+	{
+		
+	}
 	// // /*PARSE SERVER_NAME*/
 	std::string	sn;;
 	while (_server_conf_file.find("server_name", 0) != _server_conf_file.npos)
