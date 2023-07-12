@@ -197,8 +197,13 @@ int		WebServ::accept_new_connection()
 void	WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_new)
 {
 	map.at(fd_new).fd = fd_new;
-	map.at(fd_new).connection_time = time(NULL);
+	
+	map.at(fd_new)._status_code = "200";
+	map.at(fd_new)._status_msg = "OK";
+
+	map.at(fd_new)._max_body_length = _max_body_size;
 	map.at(fd_new)._header = "";
+	map.at(fd_new).connection_time = time(NULL);
 	map.at(fd_new)._method = "";
 	map.at(fd_new)._url = "";
 	map.at(fd_new)._protocol = "";
@@ -280,7 +285,6 @@ void	WebServ::receive_data(int i)
 
 				if((*it).second._response_step_flag == 4)
 					write_response_to_string((*it).second);
-
 			}
 		}
 	}
@@ -300,6 +304,7 @@ void	WebServ::decide_how_to_respond(t_client &client, std::map<std::string, dire
 	
 	if(client._url_file_extension == ".php")
 	{
+
 		exec_cgi(client._server_path, client);
 		client._response_step_flag = 2;
 	}

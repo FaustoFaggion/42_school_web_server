@@ -172,7 +172,45 @@ void	FileParser::parse_buffer_size()
 	}
 	else
 	{
-		std::cout << "ERROR: proxy_file_buffer directive too large. Max 1M";
+		std::cout << "ERROR: proxy_file_buffer directive too large. Max 2M";
+		exit(1);
+	}
+}
+
+void	FileParser::parse_body_size()
+{
+	size_t		pos, size;
+	std::string	buff, digits;
+
+	pos = _server_conf_file.find("client_max_body_size", 0);
+
+	if (pos != _server_conf_file.npos)
+	{
+		parse_path(_server_conf_file, "client_max_body_size", buff, SIMPLE_DIRECTIVE);
+	}
+
+	if ((pos = buff.find("K", 0)) != buff.npos)
+	{
+		for (std::string::iterator it = buff.begin(); (*it) != 'K'; it++)
+			digits+= (*it);
+		size = atoi(digits.c_str());
+		_max_body_size = size * 1024;
+	}
+	else if ((pos = buff.find("M", 0)) != buff.npos)
+	{
+		for (std::string::iterator it = buff.begin(); (*it) != 'M'; it++)
+			digits+= (*it);
+		if (digits != "1")
+		{
+			std::cout << "ERROR: client_max_body_size directive too large. Max 1M";
+			exit(1);
+		}
+		size = atoi(digits.c_str());
+		_max_body_size = size * 1024 * 1024;
+	}
+	else
+	{
+		std::cout << "ERROR: client_max_body_size directive too large. Max 2M";
 		exit(1);
 	}
 }

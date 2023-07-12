@@ -21,6 +21,7 @@ class HttpResponse
 		void			diretory_list(std::stringstream &buff, std::string path, std::string html);
 		void			buff_file(std::fstream &conf_file, std::stringstream &buff, std::string html);
 		void			http_response_syntax(std::string status, std::string &request, std::stringstream &buff, std::string content_type);
+		void			http_response_error(t_client &client);
 
 		void			cgi_envs_parser(t_client client, std::string html);
 		// void			exec_cgi(std::string &html, t_client &client);

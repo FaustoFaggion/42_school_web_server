@@ -64,6 +64,13 @@ void		HttpRequest::request_parser(t_client &client)
 	std::istringstream iss0(requestLine);
 	iss0 >> client._method >> client._url >> client._protocol;
 
+	/*CHECK METHOD ERROR*/
+	if (client._status_code.compare("200") && !client._method.compare("POST") \
+		&& !client._method.compare("GET") && !client._method.compare("DELETE"))
+	{
+		client._status_code = "405";
+		client._status_msg = "Method Not Allowed";
+	}
 	/*URL, QUERY_STRING*/
 	pos = client._url.find("?");
 	if (pos != client._url.npos)
@@ -103,7 +110,12 @@ void		HttpRequest::request_parser(t_client &client)
 		getline(iss0, tmp, ' ');
 		getline(iss0, client._content_length, ' ');
 	}
-
+	/*CHECK ERROR CONTENT_LENGTH*/
+	if (client._status_code.compare("200") && client._content_length > client._max_body_length)
+	{
+		client._status_code = "400";
+		client._status_msg = "Bad Request";
+	}
 	/*HTTP_HOST*/
 	pos = client._header.find("Host: ");
 	if (pos != client._header.npos)

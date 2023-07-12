@@ -44,6 +44,8 @@ typedef struct client {
 	time_t			connection_time;
 	
 	std::string		_response;
+	std::string		_status_code;
+	std::string		_status_msg;
 	std::string		_header;
 	
 	std::string		_method;
@@ -51,6 +53,7 @@ typedef struct client {
 	std::string		_protocol;
 	std::string		_content_type;
 	std::string		_content_length;
+	std::string		_max_body_length;
 	std::string		_server_name;
 	std::string		_server_port;
 	std::string		_user_agent;

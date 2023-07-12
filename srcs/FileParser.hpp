@@ -19,6 +19,7 @@ class FileParser {
 		std::map<std::string, directive>	_locations;
 		std::vector<std::string>			_index;
 		size_t								_buffer_size;
+		size_t								_max_body_size;
 		
 
 	public:
@@ -36,6 +37,7 @@ class FileParser {
 		void			parse_locations(bool simple_root_directive);
 		void			parse_index(std::vector<std::string> &idx, std::string &str);
 		void			parse_buffer_size();
+		void			parse_body_size();
 		void			parse_path(std::string &str, std::string find, std::string &root_path, int flag);
 
 		std::string		str_substring(std::string &str, std::string find, int init, char finish);
