@@ -65,9 +65,10 @@ void		HttpRequest::request_parser(t_client &client)
 	iss0 >> client._method >> client._url >> client._protocol;
 
 	/*CHECK METHOD ERROR*/
-	if (client._status_code.compare("200") && !client._method.compare("POST") \
-		&& !client._method.compare("GET") && !client._method.compare("DELETE"))
+	if (client._status_code.compare("200") == 0 && client._method.compare("POST") != 0 \
+		&& client._method.compare("GET") != 0 && client._method.compare("DELETE") != 0)
 	{
+		std::cout << "ERRO MÉTODO\n\n";
 		client._status_code = "405";
 		client._status_msg = "Method Not Allowed";
 	}
@@ -111,8 +112,9 @@ void		HttpRequest::request_parser(t_client &client)
 		getline(iss0, client._content_length, ' ');
 	}
 	/*CHECK ERROR CONTENT_LENGTH*/
-	if (client._status_code.compare("200") && client._content_length > client._max_body_length)
+	if (client._status_code.compare("200") == 0 && atoi(client._content_length.c_str()) > atoi(client._max_body_length.c_str()))
 	{
+		std::cout << "ERRO TAMANHO\n\n";
 		client._status_code = "400";
 		client._status_msg = "Bad Request";
 	}
@@ -200,7 +202,8 @@ void		HttpRequest::request_parser(t_client &client)
 		// std::cout << "_url: " << client._url << "\n";
 		// std::cout << "_protocol: " << client._protocol << "\n";
 		// std::cout << "_content_type: " << client._content_type << "\n";
-		// std::cout << "_content_length: " << client._content_length << "\n";
+		std::cout << "_content_length: " << client._content_length << "\n";
+		std::cout << "_max_body_length: " << client._max_body_length << "\n";
 		// std::cout << "_server_name: " << client._server_name << "\n";
 		// std::cout << "_server_port: " << client._server_port << "\n";
 		// std::cout << "_user_agent: " << client._user_agent << "\n";
@@ -217,6 +220,7 @@ void		HttpRequest::request_parser(t_client &client)
 		// std::cout << "_url_file: " << client._url_file << "\n";
 		// std::cout << "_url_file_extension: " << client._url_file_extension << "\n";
 		// std::cout << "_url_location: " << client._url_location << "\n";
+		std::cout << "_status_code: " << client._status_code << "\n";
 }
 
 void			HttpRequest::split_header_and_body(t_client &client, std::string buff)

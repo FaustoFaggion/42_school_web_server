@@ -5,6 +5,7 @@
 #include <iostream>		// For cout
 #include <fstream>
 #include <sstream>
+#include <string>		//std::to_string
 #include <string.h>		// For memset
 #include <unistd.h>		// For read
 #include <cstdlib>		// For exit() and EXIT_FAILURE

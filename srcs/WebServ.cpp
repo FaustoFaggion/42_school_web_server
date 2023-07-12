@@ -44,6 +44,9 @@ void	WebServ::parse_file(char *file, std::string server_name)
 	parse_buffer_size();
 	// std::cout << _buffer_size << "\n";
 	
+	/*PARSE BODY_SIZE*/
+	parse_body_size();
+
 	/*PARSE LOCATIONS*/
 	parse_locations(simple_root_directive);
 
@@ -201,7 +204,9 @@ void	WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_new)
 	map.at(fd_new)._status_code = "200";
 	map.at(fd_new)._status_msg = "OK";
 
-	map.at(fd_new)._max_body_length = _max_body_size;
+	std::ostringstream oss;
+    oss << _max_body_size;
+	map.at(fd_new)._max_body_length = oss.str();
 	map.at(fd_new)._header = "";
 	map.at(fd_new).connection_time = time(NULL);
 	map.at(fd_new)._method = "";
@@ -296,6 +301,7 @@ void	WebServ::verify_received_data(t_client &client, std::map<std::string, direc
 	split_header_and_body(client, buff);
 	request_parser(client);
 	looking_for_path(client, locations, indexes);
+	std::cout << "_status_code: " << client._status_code << "\n";
 	client._response_step_flag = 1;
 }
 
