@@ -293,7 +293,7 @@ void	WebServ::receive_data(int i)
 				verify_received_data((*it).second, _locations, _index, tmp);
 
 			if ((*it).second._response_step_flag == 1)
-				decide_how_to_respond((*it).second, _locations, i);
+				decide_how_to_respond((*it).second);
 			
 			if((*it).second._response_step_flag > 1)
 			{
@@ -303,17 +303,15 @@ void	WebServ::receive_data(int i)
 
 				if ((*it).second._response_step_flag == 2)
 					write_first_body_chunk_to_cgi((*it).second);
-					
+
 				if((*it).second._response_step_flag == 4)
+					write_response_to_string((*it).second);
+
+				if((*it).second._response_step_flag == 5)
 				{
-					if (it->second._status_code.compare("200") == 0)
-						write_response_to_string((*it).second);
-					else
-					{
-						response_parser(it->second, _locations);
-						_ev.events = EPOLLOUT | EPOLLONESHOT;
-						epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
-					}
+					response_parser(it->second, _locations);
+					_ev.events = EPOLLOUT | EPOLLONESHOT;
+					epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 				}
 
 			}
@@ -331,10 +329,10 @@ void	WebServ::verify_received_data(t_client &client, std::map<std::string, direc
 	if (client._status_code.compare("200") == 0)
 		client._response_step_flag = 1;
 	else
-		client._response_step_flag = 4;
+		client._response_step_flag = 5;
 }
 
-void	WebServ::decide_how_to_respond(t_client &client, std::map<std::string, directive> &locations, int i)
+void	WebServ::decide_how_to_respond(t_client &client)
 {
 	
 	if(client._url_file_extension == ".php")
@@ -344,11 +342,7 @@ void	WebServ::decide_how_to_respond(t_client &client, std::map<std::string, dire
 		client._response_step_flag = 2;
 	}
 	else
-	{
-		response_parser(client, locations);
-		_ev.events = EPOLLOUT | EPOLLONESHOT;
-		epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
-	}
+		client._response_step_flag = 5;
 }
 void	WebServ::write_first_body_chunk_to_cgi(t_client &client)
 {
