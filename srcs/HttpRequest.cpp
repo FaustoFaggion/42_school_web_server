@@ -204,6 +204,19 @@ void		HttpRequest::request_parser(t_client &client)
 			client._url_location = '/';
 	}
 
+	/*CONNECTION KEEP_ALIVE*/
+	pos = client._header.find("Connection: ");
+	if (pos != client._header.npos)
+	{
+		requestLine = parse_line(client._header, "Connection: ", "\r\n");
+		std::istringstream iss0(requestLine);
+		getline(iss0, tmp, ' ');
+		getline(iss0, tmp, ' ');
+		if (tmp.compare("keep_alive") == 0)
+			client._keep_alive = true;
+	}
+
+
 		// std::cout << "_method: " << client._method << "\n";
 		// std::cout << "_url: " << client._url << "\n";
 		// std::cout << "_protocol: " << client._protocol << "\n";

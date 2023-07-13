@@ -75,6 +75,7 @@ typedef struct client {
 	std::string		_url_file_extension; /*IF .PHP RUN CGI*/
 	std::string		_url_location;
 	std::string		_server_path;
+	bool			_keep_alive;
 	
 	/*REQUEST BODY*/
 	std::string		_body;

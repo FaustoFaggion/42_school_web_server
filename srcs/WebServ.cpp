@@ -150,10 +150,9 @@ void	WebServ::delete_timeout_socket()
 				int	fd = (*it).second.fd;
 
 				/*DELETE FROM EPOLL AND CLOSE FD*/
-				epoll_ctl(_efd, EPOLL_CTL_DEL, (*it).second.fd, &_ev);
-				// if (epoll_ctl(_efd, EPOLL_CTL_DEL, _ep_event[j].data.fd, &_ev) == -1)
-				// 	std::cout << "EPOLL_CTL_DEL FAIL fd: " << _ep_event[j].data.fd << "\n";
-				// _ep_event[j].data.fd = 0;
+				// epoll_ctl(_efd, EPOLL_CTL_DEL, (*it).second.fd, &_ev);
+				if (epoll_ctl(_efd, EPOLL_CTL_DEL, (*it).second.fd, &_ev) == -1)
+					std::cout << "EPOLL_CTL_DEL FAIL fd: " << (*it).second.fd << "\n";
 				close(fd);
 				map_connections.erase((*it).second.fd);
 				break ;
@@ -237,6 +236,7 @@ void	WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_new)
 	map.at(fd_new)._boundary = "";
 	map.at(fd_new)._url_file = "";
 	map.at(fd_new)._server_path = "";
+	map.at(fd_new)._keep_alive = false;
 	
 	/*REQUEST BODY*/
 	map.at(fd_new)._body = "";
@@ -478,9 +478,22 @@ void	WebServ::send_response(int i)
 		send(_ep_event[i].data.fd, (*it).second._response.c_str(), (*it).second._response.size(), 0);
 		
 		
-		/*If keep-alive SET FD SOCKET TO READ AGAIN*/
-		_ev.events = EPOLLIN | EPOLLHUP | EPOLLONESHOT;
+	if (it->second._keep_alive == true)
+	{
+		_ev.events = EPOLLIN | EPOLLHUP;
 		epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
+	}
+	else
+	{
+		int	fd = (*it).second.fd;
+		if (epoll_ctl(_efd, EPOLL_CTL_DEL, (*it).second.fd, &_ev) == -1)
+			std::cout << "EPOLL_CTL_DEL FAIL fd: " << (*it).second.fd << "\n";
+		close(fd);
+		map_connections.erase((*it).second.fd);
+	}
+	
+	
+	
 	// }
 }
 
