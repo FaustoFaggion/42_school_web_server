@@ -417,7 +417,6 @@ void	WebServ::exec_cgi(std::string &html, t_client &client)
 	std::cout << "\nEXEC_CGI FUNCTION" << "\n\n";
 
 	char			*arg2[3];
-	int				pid;
 
 	arg2[0] = (char *)"/usr/bin/php-cgi7.4";
 	arg2[1] = (char *)html.c_str();
@@ -428,10 +427,10 @@ void	WebServ::exec_cgi(std::string &html, t_client &client)
 	if (pipe(client.pipe1) == -1)
 		exit(write(1, "pipe error\n", 11));
 	
-	pid = fork();
-	if (pid < 0)
+	client._pid = fork();
+	if (client._pid < 0)
 		exit(write(1, "fork error\n", 11));
-	if (pid == 0)
+	if (client._pid == 0)
 	{
 
 		cgi_envs_parser(client, html);
@@ -464,7 +463,7 @@ void	WebServ::exec_cgi(std::string &html, t_client &client)
 		}
 	}
 	int wstatus;
-	waitpid(pid, &wstatus, WNOHANG);
+	waitpid(client._pid, &wstatus, WNOHANG);
 	std::cout << "wstatus: " << wstatus << "\n";
 }
 

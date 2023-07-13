@@ -45,6 +45,7 @@ typedef struct client {
 	time_t			connection_time;
 	
 	/*PHP_CGI*/
+	int				_pid;
 	int				pipe0[2];
 	int				pipe1[2];
 
