@@ -200,15 +200,24 @@ int		WebServ::accept_new_connection()
 void	WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_new)
 {
 	map.at(fd_new).fd = fd_new;
-	
-	map.at(fd_new)._status_code = "200";
-	map.at(fd_new)._status_msg = "OK";
 
+	/*TIMEOUT CONNECTION*/
+	map.at(fd_new).connection_time = time(NULL);
+	
+	/*PHP_CGI*/
+	map.at(fd_new).pipe0[0] = 0;
+	map.at(fd_new).pipe0[1] = 0;
+	map.at(fd_new).pipe1[0] = 0;
+	map.at(fd_new).pipe1[1] = 0;
+
+
+	map.at(fd_new)._response = "";
+	
+	/*REQUEST HEADER*/
 	std::ostringstream oss;
     oss << _max_body_size;
 	map.at(fd_new)._max_body_length = oss.str();
 	map.at(fd_new)._header = "";
-	map.at(fd_new).connection_time = time(NULL);
 	map.at(fd_new)._method = "";
 	map.at(fd_new)._url = "";
 	map.at(fd_new)._protocol = "";
@@ -226,18 +235,20 @@ void	WebServ::initialize_client_struct(std::map<int, t_client> &map, int fd_new)
 	map.at(fd_new)._request_uri = "";
 	map.at(fd_new)._remote_host = "";
 	map.at(fd_new)._boundary = "";
-	map.at(fd_new)._body = "";
 	map.at(fd_new)._url_file = "";
 	map.at(fd_new)._server_path = "";
-	map.at(fd_new)._response = "";
+	
+	/*REQUEST BODY*/
+	map.at(fd_new)._body = "";
+	
+	/*SERVER CONFIGURATION FILE*/
 	map.at(fd_new)._upload_content_size = 0;
 	map.at(fd_new)._upload_buff_size = _buffer_size;
-	map.at(fd_new).pipe0[0] = 0;
-	map.at(fd_new).pipe0[1] = 0;
-	map.at(fd_new).pipe1[0] = 0;
-	map.at(fd_new).pipe1[1] = 0;
-	map.at(fd_new)._response_step_flag = 0;
 
+	/*PROGRAM LOGIC*/
+	map.at(fd_new)._response_step_flag = 0;
+	map.at(fd_new)._status_code = "200";
+	map.at(fd_new)._status_msg = "OK";
 }
 
 void	WebServ::receive_data(int i)

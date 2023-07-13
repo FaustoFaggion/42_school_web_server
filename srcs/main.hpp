@@ -38,17 +38,20 @@ struct directive {
 };
 
 typedef struct client {
+	
 	int				fd;
+	
+	/*TIMEOUT CONNECTION*/
+	time_t			connection_time;
+	
+	/*PHP_CGI*/
 	int				pipe0[2];
 	int				pipe1[2];
 
-	time_t			connection_time;
-	
 	std::string		_response;
-	std::string		_status_code;
-	std::string		_status_msg;
-	std::string		_header;
 	
+	/*REQUEST HEADER*/
+	std::string		_header;
 	std::string		_method;
 	std::string		_url;
 	std::string		_protocol;
@@ -67,14 +70,23 @@ typedef struct client {
 	std::string		_request_uri;
 	std::string		_remote_host;
 	std::string		_boundary;
-	std::string		_body;
 	std::string		_url_file; /*FILE IN THE END OF URL REQUEST*/
 	std::string		_url_file_extension; /*IF .PHP RUN CGI*/
 	std::string		_url_location;
 	std::string		_server_path;
+	
+	/*REQUEST BODY*/
+	std::string		_body;
+
+	/*SERVER CONFIGURATION FILE*/
 	size_t			_upload_content_size;
 	size_t			_upload_buff_size;
+	
+	/*PROGRAM LOGIC*/
+	std::string		_status_code;
+	std::string		_status_msg;
 	int				_response_step_flag;
+	
 
 } t_client;
 
