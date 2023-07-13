@@ -480,7 +480,7 @@ void	WebServ::send_response(int i)
 		
 	if (it->second._keep_alive == true)
 	{
-		_ev.events = EPOLLIN | EPOLLHUP;
+		_ev.events = EPOLLIN | EPOLLHUP | EPOLLONESHOT;
 		epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 	}
 	else
