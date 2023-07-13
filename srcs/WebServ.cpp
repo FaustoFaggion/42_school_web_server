@@ -294,12 +294,16 @@ void	WebServ::receive_data(int i)
 
 			if ((*it).second._response_step_flag == 1)
 				decide_how_to_respond((*it).second, _locations, i);
-
+			
 			if((*it).second._response_step_flag > 1)
 			{
-				if ((*it).second._response_step_flag <4)
-					write_data_to_cgi((*it).second, buff, numbytes);
+				
+				if ((*it).second._response_step_flag == 3)
+					write_remaining_body_chunks_to_cgi((*it).second, buff, numbytes);
 
+				if ((*it).second._response_step_flag == 2)
+					write_first_body_chunk_to_cgi((*it).second);
+					
 				if((*it).second._response_step_flag == 4)
 				{
 					if (it->second._status_code.compare("200") == 0)
@@ -346,28 +350,10 @@ void	WebServ::decide_how_to_respond(t_client &client, std::map<std::string, dire
 		epoll_ctl(_efd, EPOLL_CTL_MOD, _ep_event[i].data.fd, &_ev);
 	}
 }
-
-void	WebServ::write_data_to_cgi(t_client &client, char *buff, size_t numbytes)
+void	WebServ::write_first_body_chunk_to_cgi(t_client &client)
 {
 	if (client._method == "POST")
 	{
-		if (client._response_step_flag == 3)
-		{
-			std::cout << "Flag 3 CONTENT_SIZE: " << client._body.size() << "  ";
-			std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
-				/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
-				std::cout << "BUFF: " << buff[0] << " : " << buff[numbytes - 1] << " <>\n\n";
-				write(client.pipe0[1], buff, numbytes);
-				client._upload_content_size += numbytes;
-				std::cout << client._upload_content_size << " : " << numbytes << " > ";
-			if (client._upload_content_size >= (size_t)atoi(client._content_length.c_str()))
-			{
-				close(client.pipe0[1]);
-				client._response_step_flag = 4;
-			}
-		}
-		if(client._response_step_flag == 2)
-		{
 			std::cout << "Flag 2 CONTENT_SIZE: " << client._body.size() << "\n\n";
 			std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
 			close(client.pipe0[0]);
@@ -382,12 +368,32 @@ void	WebServ::write_data_to_cgi(t_client &client, char *buff, size_t numbytes)
 			}
 			else
 				client._response_step_flag = 3;
-		}
 	}
 	else if (client._method == "GET")
 		client._response_step_flag = 4;
 	else if (client._method == "DELETE")
 		client._response_step_flag = 4;
+
+}
+
+void	WebServ::write_remaining_body_chunks_to_cgi(t_client &client, char *buff, size_t numbytes)
+{
+	if (client._method == "POST")
+	{
+		
+		std::cout << "Flag 3 CONTENT_SIZE: " << client._body.size() << "  ";
+		std::cout << "UPLOAD_CONTENT_SIZE: " << client._upload_content_size << "\n\n";
+			/*RECEIVING CLIENT DATA CHUNCKS REQUEST */
+			std::cout << "BUFF: " << buff[0] << " : " << buff[numbytes - 1] << " <>\n\n";
+			write(client.pipe0[1], buff, numbytes);
+			client._upload_content_size += numbytes;
+			std::cout << client._upload_content_size << " : " << numbytes << " > ";
+		if (client._upload_content_size >= (size_t)atoi(client._content_length.c_str()))
+		{
+			close(client.pipe0[1]);
+			client._response_step_flag = 4;
+		}
+	}
 }
 
 void	WebServ::write_response_to_string(t_client &client)
