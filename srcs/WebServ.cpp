@@ -452,6 +452,9 @@ void	WebServ::exec_cgi(std::string &html, t_client &client)
 			exit(1);
 		}
 	}
+	int wstatus;
+	waitpid(pid, &wstatus, WNOHANG);
+	std::cout << "wstatus: " << wstatus << "\n";
 }
 
 void	WebServ::send_response(int i)

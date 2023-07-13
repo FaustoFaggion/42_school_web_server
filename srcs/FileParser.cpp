@@ -196,18 +196,23 @@ void	FileParser::parse_body_size()
 		for (std::string::iterator it = buff.begin(); (*it) != 'K'; it++)
 			digits+= (*it);
 		size = atoi(digits.c_str());
+		if (size > 2000)
+		{
+			std::cout << "ERROR: client_max_body_size directive too large. Max 2M";
+			exit(1);
+		}
 		_max_body_size = size * 1024;
 	}
 	else if ((pos = buff.find("M", 0)) != buff.npos)
 	{
 		for (std::string::iterator it = buff.begin(); (*it) != 'M'; it++)
 			digits+= (*it);
-		if (digits != "1")
+		size = atoi(digits.c_str());
+		if (size > 2)
 		{
-			std::cout << "ERROR: client_max_body_size directive too large. Max 1M";
+			std::cout << "ERROR: client_max_body_size directive too large. Max 2M";
 			exit(1);
 		}
-		size = atoi(digits.c_str());
 		_max_body_size = size * 1024 * 1024;
 	}
 	else
