@@ -1,30 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>AGORA VAI RAONIIIIIII</title>
+	<title>WebServer Text Register</title>
 
 	<link rel="icon" href="favicon.ico" type="image/x-icon">
-	<script>
-		function openPage()
-		{	
-			var message = document.getElementById('text').value;
-			var url = "html_post.html?message=" + encodeURIComponent(message);
-			window.location.href = url;
-			alert("opa");
+	<style>
+		body {
+			background-color: #474f4a;
 		}
-	</script>
-</head>
-<body>
-	<h1>"GET METHOD"</h1>
-	<form>
-		<p>Texto</p>
-		<input type="text" id="text">
-		<button onclick="openPage()">Open</button>
-	</form>
 
+		h1 {
+			text-align: center;
+			color: #FFFFFF;
+			font-family: sans-serif;
+		}
+
+		.presentation {
+			text-align: left;
+			color: #FFFFFF;
+			font-family: sans-serif;
+		}
+		
+		.field{
+			border-radius: 5px;
+			border-color: lightgray;
+			font-family: sans-serif;
+
+		}
+
+	</style>
+</head>
+
+<body>
+	<h1>Text Register</h1>
+	<form>
+		<p class="presentation">Please inform the text you want to register in the server:</p>
+		<input class="field" type="text" id="text">
+		<button id="saveButton" onclick="redirectMessage()" disabled>Save</button>
+	</form>
 </body>
+
 </html>
+
 </html>
+<script>
+	var message = document.getElementById('text');
+	var button = document.getElementById('saveButton');
+
+	console.log(message)
+	message.addEventListener('input', function() {
+		if (message.value.trim() === ''){
+			button.disabled = true;
+		} else {
+			button.disabled = false;
+		}
+	});
+
+function redirectMessage() {
+
+	var message = document.getElementById('text').value;			
+	var url = "html_post.html?message=" + encodeURIComponent(message);
+	window.location.href = url;
+	alert("opa");
+}
+</script> 

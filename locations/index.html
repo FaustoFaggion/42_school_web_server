@@ -1,24 +1,61 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-   <style>
-    body {
-    background-color: burlywood;
-    }
-   </style>
-  <title>HTTP Index</title>
-  <link rel="icon" href="test/favicon.ico" type="image/x-icon">
+	<style>
+		body {
+			background-color: #474f4a;
+		}
+
+		h1 {
+			text-align: center;
+			color: #FFFFFF;
+			font-family: sans-serif;
+		}
+
+		.presentation {
+			text-align: center;
+			color: #FFFFFF;
+			font-family: sans-serif;
+		}
+
+		section {
+			text-align: center;
+			font-family: sans-serif;
+			margin-top: 50px;
+		}
+
+		a:link {
+			color: #FFFFFF
+		}
+
+		a:hover {
+			color: black
+		}
+
+		a:visited {
+			color: grey
+		}
+	</style>
+	<title>WebServer Index</title>
+	<link rel="icon" href="test/favicon.ico" type="image/x-icon">
 </head>
+
 <body>
-  <h1>HTTP Index Page</h1>
-  <ul>
-    <li><a href="test/html_get.html">Page 1</a></li>
-    <li><a href="test/delete_file.html">DELETE FILE</a></li>
-    <li><a href="test/html_post.html">Page 3</a></li>
-    <li><a href="test/criar_conta.html">CGI POST CRIAR_CONTA</a></li>
-    <li><a href="test/GET_NO_QUERY_STRING.php">GET_NO_QUERY_STRING</a></li>
-    <li><a href="test/GET_QUERY_STRING.html">GET_QUERY_STRING</a></li>
-    <li><a href="test/upload_files.html">Upload File</a></li>
-  </ul>
+	<h1>WebServer Page</h1>
+	<p class="presentation">Welcome to the ft_webserver, it was developed by fagiusep and rruiz-la.</p>
+	<p class="presentation">The server work with Get, Post and Delete methods. You can test using the following options:
+	</p>
+	<section>
+		<ul>
+			<ol><a href="test/html_get.html">Text Register (Get Method)</a></ol>
+			<ol><a href="test/account_register.html">Cgi account register (Post Method)</a></ol>
+			<ol><a href="test/GET_NO_QUERY_STRING.php">GET_NO_QUERY_STRING</a></ol>
+			<ol><a href="test/GET_QUERY_STRING.html">GET_QUERY_STRING</a></ol>
+			<ol><a href="test/upload_files.html">Upload File</a></ol>
+			<ol><a href="test/delete_file.html">Delete file</a></ol>
+		</ul>
+	</section>
 </body>
+
 </html>
