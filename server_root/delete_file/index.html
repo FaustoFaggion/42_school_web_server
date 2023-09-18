@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Delete File</title>
+</head>
+<body>
+    <h1>Delete File</h1>
+    <form action="/php-cgi/delete_file.php" method="POST">
+        <input type="hidden" name="_method" value="DELETE">
+        <label for="file_path">File Path:</label>
+        <input type="text" id="file_path" name="file_path" required>
+        <button type="submit">Delete</button>
+    </form>
+</body>
+</html>

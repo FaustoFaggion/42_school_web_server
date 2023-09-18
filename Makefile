@@ -2,7 +2,7 @@ NAME		=	webserv
 
 #COMPILATION
 CC			=	c++
-FLAGS		=	-Wall -Wextra -Werror  -std=c++98 -g3
+FLAGS		=	-Wall -Wextra -Werror  -std=c++98 -g3 #-fsanitize=address
 
 PATH_SRC	=	./srcs/
 PATH_OBJ	=	./obj/
@@ -10,10 +10,8 @@ PATH_OBJ	=	./obj/
 SRC			=	main.cpp\
 				ListenerSocket.cpp\
 				WebServ.cpp\
-				Parser.cpp\
+				Monitor.cpp\
 				FileParser.cpp\
-				HttpResponse.cpp\
-				HttpRequest.cpp\
 
 VPATH		=	$(PATH_SRC)\
 				
@@ -23,10 +21,8 @@ OBJ			=	$(SRC:%.cpp=$(PATH_OBJ)%.o)
 HEADER		=	WebServ.hpp\
 				ListenerSocket.hpp\
 				main.hpp\
-				Parser.hpp\
+				Monitor.hpp\
 				FileParser.hpp\
-				HttpResponse.hpp\
-				httpRequest.hpp\
 
 all:	$(NAME)
 

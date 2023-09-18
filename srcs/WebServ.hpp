@@ -12,49 +12,58 @@
 #include <dirent.h>
 #include "ListenerSocket.hpp"
 #include "FileParser.hpp"
-#include "HttpResponse.hpp"
 #include <map>
 
-class WebServ : protected FileParser, ListenerSocket, HttpRequest, HttpResponse
+class WebServ
 {
 	private:
-		int							_fd_listener;
+		FileParser			_server_config_file;
+		/*LISTENER*/
+		int					_domain;
+		int					_type;
+		int					_flag;
+		std::string			_server_name;
+		std::string			_port;
+		int					_fd_listener;
 
-		std::map<int, t_client>		map_connections;
-		int 						_efd;
-		int							_nfds;
-		struct epoll_event			_ev;
-		struct epoll_event			_ep_event [MAX_CONNECTIONS];
-		socklen_t 					_addrlen;
-		struct sockaddr_storage		_client_saddr; // Can store a IPv4 and IPv6 struct
+		std::map<std::string, directive>	_location;
+		std::vector<std::string>			_webserv_index;
+		size_t								_buff_size;
+		size_t								_body_max_size;
+		std::map<std::string, std::string>	_error_page_map;
+		std::vector<std::string>			_allowed_methods;
+
+		struct addrinfo						_hints;
+		struct addrinfo						*_result;
+		int									_s;
 
 	public:
 		WebServ();
-		WebServ(char *file, std::string server_name);
+		WebServ(FileParser fileParser);
 		~WebServ();
 	
-		int				getFdListener() const;
+		int									getFdListener() const;
+		std::string							get_port() const;
+		std::map<std::string, directive>	getLocation() const;
+		std::vector<std::string> 			getWebservIndex() const;
+		size_t								getBuffSize() const;
+		size_t								getBodyMaxSize() const;
+		std::vector<std::string>			getAllowedMethods() const;
+		std::map<std::string, std::string>	getErrorPageMap() const;
+		FileParser							getServerConfigFile() const;
 
-		void	parse_file(char *file, std::string server_name);
-		void	setup_server(int type);
+		int		setupServers(int max_worker_connections);
+		int		setup_addrinfo();
 		void	create_listener_socket();
-		void	create_connections();
-		void	run();
-		
-		void	delete_timeout_socket();
-		int		accept_new_connection();
-		void	receive_data(int i);
-		void	verify_received_data(t_client &client, std::map<std::string, directive> &locations, std::vector<std::string> indexes, std::string buff);
-		void	decide_how_to_respond(t_client &client);
-		
-		void	write_first_body_chunk_to_cgi(t_client &client);
-		void	write_remaining_body_chunks_to_cgi(t_client &client, char *buff, size_t numbytes);
+		void	bind_listener_socket();
+		void	start_listen();
 
-		void	write_response_to_string(t_client &client);
-		void	send_response(int i);
 
-		void	initialize_client_struct(std::map<int, t_client> &map, int fd_new);
-		void	exec_cgi(std::string &html, t_client &client);
+		void	setup_domain_and_port(std::vector<std::string> listens, int &domain, std::string &port);
+		void	setup_server_name_flag(std::string buff, int &flag);
+		void	setup_error_pages();
+
+		void	parseListenLine(size_t i, std::string &line, std::string &response);
 };
 
 #endif

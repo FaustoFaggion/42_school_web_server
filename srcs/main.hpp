@@ -9,7 +9,6 @@
 #include <string.h>		// For memset
 #include <unistd.h>		// For read
 #include <cstdlib>		// For exit() and EXIT_FAILURE
-#include <errno.h>
 #include <cstdio>		// For stderr
 
 #include <netdb.h>		// For struct addinfo
@@ -28,13 +27,18 @@
 
 # include <sys/wait.h>
 
-#define MAX_CONNECTIONS		10
+#define CONNECTION_MAX_TIME		4
 
 struct directive {
 	bool						_autoindex;
 	std::vector<std::string>	_index_block;
 	std::string					_server_path;
 	bool						_path_ok;
+	std::vector<std::string>	_allowed_methods;
+	std::string					_redirect_url;
+	std::string					_redirect_code;
+	std::string					_cgi_pass;
+	size_t						_max_body_size;
 };
 
 typedef struct client {
@@ -88,8 +92,12 @@ typedef struct client {
 	std::string		_status_code;
 	std::string		_status_msg;
 	int				_response_step_flag;
-	
 
+	std::map<std::string, directive>	_location_;
+	std::vector<std::string>			_index_;
+	std::vector<std::string>			_cgi_envs;
+	std::vector<std::string>			_allowed_methods;
+	std::map<std::string, std::string>	_error_page_map;
 } t_client;
 
 #endif
