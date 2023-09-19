@@ -51,6 +51,7 @@ class WebServ
 		std::vector<std::string>			getAllowedMethods() const;
 		std::map<std::string, std::string>	getErrorPageMap() const;
 		FileParser							getServerConfigFile() const;
+		std::string							getServerName() const;
 
 		int		setupServers(int max_worker_connections);
 		int		setup_addrinfo();

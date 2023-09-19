@@ -16,6 +16,7 @@ std::vector<WebServ*>	Monitor::getWebServers() const
 	return (_web_servers);
 }
 
+
 std::vector<int>		Monitor::getVectorFds() const
 {
 	return (_vector_fds);
@@ -294,7 +295,7 @@ void	Monitor::initialize_client_struct(WebServ *server, std::map<int, t_client> 
 	map.at(fd_new)._protocol = "";
 	map.at(fd_new)._content_type = "";
 	map.at(fd_new)._content_length = "";
-	map.at(fd_new)._server_name = "";
+	map.at(fd_new)._server_name = server->getServerName();
 	map.at(fd_new)._server_port = "";
 	map.at(fd_new)._user_agent = "";
 	map.at(fd_new)._http_host = "";
@@ -794,12 +795,14 @@ void	Monitor::request_parser(t_client &client)
 	pos = client._header.find("Host: ");
 	if (pos != client._header.npos)
 	{
+		std::string	host;
+
 		requestLine = parse_line(client._header, "Host: ", "\r\n");
 		std::istringstream iss0(requestLine);
 		getline(iss0, tmp, ' ');
 		getline(iss0, client._http_host, ' ');
 		std::istringstream iss1(client._http_host);
-		getline(iss1, client._server_name, ':');
+		getline(iss1, host, ':');
 		getline(iss1, client._server_port, ':');
 	}
 
@@ -864,9 +867,6 @@ void	Monitor::request_parser(t_client &client)
 		if (tmp.compare("keep_alive") == 0)
 			client._keep_alive = true;
 	}
-
-	
-
 
 }
 

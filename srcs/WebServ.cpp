@@ -12,7 +12,8 @@ WebServ::WebServ(FileParser fileParser)
 	_type = 0;
 	_flag = 0;
 	_port = "";
-	_server_name = "";
+	_server_name = fileParser.getServerName();
+	std::cout << "server_name: "<< fileParser.getServerName() << "\n";
 	_fd_listener = -1;
 	_result = NULL;
 	_location = fileParser.getLocations();
@@ -196,4 +197,9 @@ std::vector<std::string>			WebServ::getAllowedMethods() const
 std::map<std::string, std::string>	WebServ::getErrorPageMap() const
 {
 	return (_error_page_map);
+}
+
+std::string							WebServ::getServerName() const
+{
+	return (_server_name);
 }

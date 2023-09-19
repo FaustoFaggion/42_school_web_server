@@ -326,8 +326,15 @@ void	FileParser::parse_server_name_flag(std::string &server_conf_file)
 {
 	if (server_conf_file.find("server_name", 0) != server_conf_file.npos)
 	{
-		serverName = str_substring(server_conf_file, "server_name", 0, '\n');
-		chk_simple_directive(serverName);
+		std::string tmp1 = str_substring(server_conf_file, "server_name", 0, '\n');
+		chk_simple_directive(tmp1);
+	
+		std::istringstream iss(tmp1);
+		iss >> serverName;
+	
+		int value_count = 0;
+		while(iss >> serverName)
+			value_count++;
 	} 
 	else if (server_conf_file.find("localhost", 0) != server_conf_file.npos)
 		throw ServerExceptions("ERROR: server_name directive not found");
