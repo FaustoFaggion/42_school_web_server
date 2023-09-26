@@ -169,7 +169,7 @@ In summary, a web server uses HTTP, multiplexing, epoll (in some cases), CGI (fo
 
 ## Project fluxogram
 <p align="center">
-  <img src="imgs/fluxogram.png" alt="fluxogram " />
+  <img src="readme/imgs/fluxogram.png" alt="fluxogram " />
 </p>
 
 ## Dependencies
