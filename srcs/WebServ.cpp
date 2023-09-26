@@ -13,7 +13,6 @@ WebServ::WebServ(FileParser fileParser)
 	_flag = 0;
 	_port = "";
 	_server_name = fileParser.getServerName();
-	std::cout << "server_name: "<< fileParser.getServerName() << "\n";
 	_fd_listener = -1;
 	_result = NULL;
 	_location = fileParser.getLocations();

@@ -1318,7 +1318,6 @@ void	Monitor::write_response_to_string(t_client &client)
 		client._response += tmp;
 		close(client.pipe1[0]);
 		client._response_step_flag = 6;
-		std::cout << "tmp: " << tmp << "\n";
 		if (tmp.find("File fail to delete.") != tmp.npos)
 		{
 			client._response_step_flag = 5;
