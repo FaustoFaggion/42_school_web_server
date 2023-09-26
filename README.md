@@ -1,6 +1,6 @@
 <p align="center">
-  <img src="imgs/grade.png" alt="grade " />
-  <img src="imgs/badge.png" alt="badge " />
+  <img src="readme/imgs/grade.png" alt="grade " />
+  <img src="readme/imgs/badge.png" alt="badge " />
 </p>
 
 # 42_webser
